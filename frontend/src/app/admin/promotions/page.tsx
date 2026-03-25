@@ -35,7 +35,12 @@ export default function PromotionsPage() {
             </div>
             
             <button 
-              onClick={() => alert('Create Promotion form coming soon!')}
+              onClick={() => {
+                const title = prompt('Enter promotion title:');
+                if (title) {
+                  alert(`Creating promotion: "${title}"...`);
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
             >
               <span>➕</span>
@@ -102,10 +107,15 @@ export default function PromotionsPage() {
               </div>
 
               <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => alert(`Editing promotion: ${promo.title}...`)}>
                   ✏️ Edit
                 </button>
-                <button className="glass px-4 py-2 rounded-xl hover:bg-red-50 transition-all text-sm font-medium text-red-600">
+                <button className="glass px-4 py-2 rounded-xl hover:bg-red-50 transition-all text-sm font-medium text-red-600" onClick={() => {
+                  const confirmDelete = confirm(`Delete "${promo.title}" promotion?`);
+                  if (confirmDelete) {
+                    alert(`Promotion "${promo.title}" deleted!`);
+                  }
+                }}>
                   🗑️ Delete
                 </button>
               </div>

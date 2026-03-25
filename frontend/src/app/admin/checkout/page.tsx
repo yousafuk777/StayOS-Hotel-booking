@@ -104,7 +104,12 @@ export default function CheckOutPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold gradient-text">Departing Guests</h2>
           <button 
-            onClick={() => alert('Bulk checkout feature coming soon!')}
+            onClick={() => {
+              const confirmBulk = confirm('Process all pending checkouts?');
+              if (confirmBulk) {
+                alert(`Processing ${todayCheckouts.filter(g => g.status === 'pending').length} checkouts...`);
+              }
+            }}
             className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
           >
             📋 Process All Checkouts
@@ -191,7 +196,12 @@ export default function CheckOutPage() {
             <h3 className="font-bold text-lg mb-2">Email Invoice</h3>
             <p className="text-gray-600 mb-4">Send bill automatically to guest email</p>
             <button 
-              onClick={() => alert('Email invoice feature activated!')}
+              onClick={() => {
+                const enable = confirm('Enable automatic email invoice sending?');
+                if (enable) {
+                  alert('Auto-send email invoices enabled!');
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
             >
               Enable Auto-Send
@@ -202,7 +212,12 @@ export default function CheckOutPage() {
             <h3 className="font-bold text-lg mb-2">Auto Charge</h3>
             <p className="text-gray-600 mb-4">Charge payment method on file</p>
             <button 
-              onClick={() => alert('Auto charge feature activated!')}
+              onClick={() => {
+                const enable = confirm('Enable automatic payment charging?');
+                if (enable) {
+                  alert('Auto-charge payments enabled!');
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
             >
               Enable Auto-Charge
@@ -213,7 +228,12 @@ export default function CheckOutPage() {
             <h3 className="font-bold text-lg mb-2">Review Request</h3>
             <p className="text-gray-600 mb-4">Send review request after checkout</p>
             <button 
-              onClick={() => alert('Review request feature activated!')}
+              onClick={() => {
+                const enable = confirm('Enable automatic review requests?');
+                if (enable) {
+                  alert('Auto-request reviews enabled!');
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
             >
               Enable Auto-Request

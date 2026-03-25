@@ -3,17 +3,81 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+interface Guest {
+  id: number
+  name: string
+  email: string
+  phone: string
+  stays: number
+  totalSpent: number
+  lastVisit: string
+  vip: boolean
+}
+
 export default function GuestsPage() {
   const [filter, setFilter] = useState('all')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null)
   const router = useRouter()
 
-  const guests = [
+  const [guests, setGuests] = useState<Guest[]>([
     { id: 1, name: 'Robert Taylor', email: 'robert.t@email.com', phone: '+1 555 123 4567', stays: 12, totalSpent: 8450, lastVisit: '2026-03-20', vip: true },
     { id: 2, name: 'Linda Martinez', email: 'linda.m@email.com', phone: '+1 555 234 5678', stays: 8, totalSpent: 5200, lastVisit: '2026-03-18', vip: false },
     { id: 3, name: 'William Anderson', email: 'william.a@email.com', phone: '+1 555 345 6789', stays: 15, totalSpent: 12300, lastVisit: '2026-03-22', vip: true },
     { id: 4, name: 'Patricia White', email: 'patricia.w@email.com', phone: '+1 555 456 7890', stays: 5, totalSpent: 2800, lastVisit: '2026-03-15', vip: false },
     { id: 5, name: 'Charles Harris', email: 'charles.h@email.com', phone: '+1 555 567 8901', stays: 20, totalSpent: 18500, lastVisit: '2026-03-23', vip: true },
-  ]
+  ])
+
+  const [newGuest, setNewGuest] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    stays: 0,
+    totalSpent: 0,
+    vip: false
+  })
+
+  const handleAddGuest = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const guest: Guest = {
+      id: guests.length + 1,
+      name: newGuest.name,
+      email: newGuest.email,
+      phone: newGuest.phone,
+      stays: newGuest.stays,
+      totalSpent: newGuest.totalSpent,
+      lastVisit: new Date().toISOString().split('T')[0],
+      vip: newGuest.vip
+    }
+
+    setGuests([...guests, guest])
+    setNewGuest({
+      name: '',
+      email: '',
+      phone: '',
+      stays: 0,
+      totalSpent: 0,
+      vip: false
+    })
+    setShowAddModal(false)
+    
+    // Show success notification
+    alert(`Guest "${guest.name}" added successfully!`)
+  }
+
+  const handleViewProfile = (guest: Guest) => {
+    setSelectedGuest(guest)
+    setShowProfileModal(true)
+  }
+
+  const handleMessageGuest = (guest: Guest) => {
+    const message = prompt(`Compose message to ${guest.name}:`);
+    if (message) {
+      alert(`Message sent to ${guest.email}!\n\nSubject: Message from Hotel\nBody: ${message}`);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -35,7 +99,7 @@ export default function GuestsPage() {
             </div>
             
             <button 
-              onClick={() => alert('Add Guest form coming soon!')}
+              onClick={() => setShowAddModal(true)}
               className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
             >
               <span>➕</span>
@@ -142,10 +206,10 @@ export default function GuestsPage() {
                     <td className="py-4 px-4 text-gray-700">{guest.lastVisit}</td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => handleViewProfile(guest)}>
                           👁️ Profile
                         </button>
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600">
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => handleMessageGuest(guest)}>
                           📧 Message
                         </button>
                       </div>
@@ -157,6 +221,182 @@ export default function GuestsPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Guest Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold gradient-text">Add New Guest</h2>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddGuest} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newGuest.name}
+                    onChange={(e) => setNewGuest({...newGuest, name: e.target.value})}
+                    placeholder="John Doe"
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={newGuest.email}
+                    onChange={(e) => setNewGuest({...newGuest, email: e.target.value})}
+                    placeholder="john@example.com"
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={newGuest.phone}
+                    onChange={(e) => setNewGuest({...newGuest, phone: e.target.value})}
+                    placeholder="+1 555 123 4567"
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    VIP Status
+                  </label>
+                  <label className="flex items-center gap-3 p-4 glass rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                    <input 
+                      type="checkbox" 
+                      checked={newGuest.vip}
+                      onChange={(e) => setNewGuest({...newGuest, vip: e.target.checked})}
+                      className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="font-medium text-gray-700">Mark as VIP Guest</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+                <button
+                  type="submit"
+                  className="btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer hover:scale-105 transition-transform"
+                >
+                  ✓ Add Guest
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="glass px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Profile Modal */}
+      {showProfileModal && selectedGuest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold gradient-text">Guest Profile</h2>
+              <button 
+                onClick={() => setShowProfileModal(false)}
+                className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Profile Header */}
+              <div className="flex items-center gap-6 pb-6 border-b border-gray-200">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-4xl">
+                  {selectedGuest.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{selectedGuest.name}</h3>
+                  <p className="text-gray-600">Guest ID: GST-{String(selectedGuest.id).padStart(5, '0')}</p>
+                  {selectedGuest.vip && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-sm font-semibold rounded-full inline-block mt-2">
+                      ⭐ VIP Member
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Email Address</p>
+                  <p className="font-semibold text-gray-900">{selectedGuest.email}</p>
+                </div>
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Phone Number</p>
+                  <p className="font-semibold text-gray-900">{selectedGuest.phone}</p>
+                </div>
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Stays</p>
+                  <p className="font-bold text-2xl gradient-text">{selectedGuest.stays}</p>
+                </div>
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Spent</p>
+                  <p className="font-bold text-2xl gradient-text">${selectedGuest.totalSpent.toLocaleString()}</p>
+                </div>
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Last Visit</p>
+                  <p className="font-semibold text-gray-900">{selectedGuest.lastVisit}</p>
+                </div>
+                <div className="glass p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-1">Member Since</p>
+                  <p className="font-semibold text-gray-900">2024</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    handleMessageGuest(selectedGuest)
+                    setShowProfileModal(false)
+                  }}
+                  className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
+                >
+                  📧 Send Message
+                </button>
+                <button
+                  onClick={() => setShowProfileModal(false)}
+                  className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

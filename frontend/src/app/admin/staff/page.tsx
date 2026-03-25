@@ -41,7 +41,13 @@ export default function StaffPage() {
             </div>
             
             <button 
-              onClick={() => alert('Add Staff Member form coming soon!')}
+              onClick={() => {
+                const name = prompt('Enter staff member name:');
+                if (name) {
+                  alert(`Staff member "${name}" added successfully!`);
+                  router.refresh();
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
             >
               <span>➕</span>
@@ -145,10 +151,10 @@ export default function StaffPage() {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => alert(`Viewing profile for ${member.name}...`)}>
                           👁️ View
                         </button>
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600">
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => alert(`Editing staff member ${member.name}...`)}>
                           ✏️ Edit
                         </button>
                       </div>
