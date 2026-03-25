@@ -1,9 +1,89 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminPage() {
   const router = useRouter()
+  
+  // Initialize pending bookings from localStorage or use defaults
+  const [pendingBookings, setPendingBookings] = useState(() => {
+    // Check if we have saved pending bookings in localStorage
+    if (typeof window !== 'undefined') {
+      const storedPending = localStorage.getItem('pendingBookings')
+      if (storedPending) {
+        try {
+          const parsed = JSON.parse(storedPending)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed
+          }
+        } catch (e) {
+          console.error('Error loading pending bookings:', e)
+        }
+      }
+    }
+    // Default pending bookings
+    return [
+      { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'pending' },
+      { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending' },
+      { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'pending' },
+      { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip' },
+    ]
+  })
+  
+  // Save pending bookings to localStorage whenever they change
+  useEffect(() => {
+    console.log('Saving pending bookings to localStorage:', pendingBookings.length, 'bookings')
+    localStorage.setItem('pendingBookings', JSON.stringify(pendingBookings))
+  }, [pendingBookings])
+
+  const handleConfirmBooking = (booking: any) => {
+    console.log('Confirming booking:', booking)
+    
+    // Create a confirmed booking object
+    const confirmedBooking = {
+      ...booking,
+      status: 'confirmed',
+      id: Date.now() // Generate new unique ID for the confirmed booking
+    }
+    
+    // Get existing confirmed bookings from localStorage
+    const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]')
+    
+    // Add the new confirmed booking
+    existingBookings.push(confirmedBooking)
+    
+    // Save back to localStorage
+    localStorage.setItem('bookings', JSON.stringify(existingBookings))
+    console.log('Saved confirmed booking to localStorage')
+    
+    // Remove from pending list immediately - use functional update to ensure we have latest state
+    setPendingBookings(prev => {
+      const filtered = prev.filter((b: any) => b.id !== booking.id)
+      console.log('Filtered pending bookings:', filtered.length, 'bookings')
+      return filtered
+    })
+    
+    // Show success message
+    alert(`✅ Booking for ${booking.guest} confirmed!\n\nRoom: ${booking.room}\nCheck-in: ${booking.checkin}\nCheck-out: ${booking.checkout}\nNights: ${booking.nights}\nAmount: $${booking.amount.toLocaleString()}\n\nThe booking has been added to your bookings list and removed from pending.`)
+  }
+
+  const handleDeclineBooking = (booking: any) => {
+    console.log('Declining booking:', booking)
+    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed from the pending list.`)
+    
+    if (confirmDecline) {
+      // Remove from pending list immediately - use functional update to ensure we have latest state
+      setPendingBookings(prev => {
+        const filtered = prev.filter((b: any) => b.id !== booking.id)
+        console.log('Declined booking, filtered pending:', filtered.length, 'bookings')
+        return filtered
+      })
+      alert(`❌ Booking for ${booking.guest} has been declined and removed from the system.`)
+    } else {
+      console.log('Decline cancelled')
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -140,7 +220,7 @@ export default function AdminPage() {
                 { guest: 'Emma Williams', room: 'Standard Queen', checkin: 'Mar 27', checkout: 'Mar 29', nights: 2, amount: '$458', status: 'pending' },
                 { guest: 'James Brown', room: 'Presidential Suite', checkin: 'Mar 28', checkout: 'Apr 2', nights: 5, amount: '$2,495', status: 'vip' },
               ].map((booking, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors slide-up" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
+                <tr key={booking.id} className="hover:bg-gray-50 transition-colors slide-up" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
@@ -170,13 +250,13 @@ export default function AdminPage() {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => alert(`Booking for ${booking.guest} confirmed!`)}
+                        onClick={() => handleConfirmBooking(booking)}
                         className="glass px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer"
                       >
                         ✓ Confirm
                       </button>
                       <button 
-                        onClick={() => alert(`Booking for ${booking.guest} declined`)}
+                        onClick={() => handleDeclineBooking(booking)}
                         className="glass px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-sm font-medium text-red-600 cursor-pointer"
                       >
                         ✕ Decline

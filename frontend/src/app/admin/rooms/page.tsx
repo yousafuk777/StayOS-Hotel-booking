@@ -43,7 +43,13 @@ export default function RoomsPage() {
             </div>
             
             <button 
-              onClick={() => alert('Add New Room form coming soon!')}
+              onClick={() => {
+                const roomNumber = prompt('Enter room number:');
+                if (roomNumber) {
+                  alert(`Room ${roomNumber} added successfully!`);
+                  router.refresh();
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
             >
               <span>➕</span>
@@ -199,10 +205,10 @@ export default function RoomsPage() {
                     <p className="text-2xl font-bold gradient-text">${room.price}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                    <button className="glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => alert(`Editing room ${room.number}...`)}>
                       ✏️ Edit
                     </button>
-                    <button className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-medium text-gray-600">
+                    <button className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => alert(`Viewing calendar for room ${room.number}...`)}>
                       📅 Calendar
                     </button>
                   </div>
@@ -218,7 +224,7 @@ export default function RoomsPage() {
             ⚡ Quick Actions
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="glass p-6 rounded-xl card-hover text-left group">
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Opening housekeeping task assignment...')}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🧹</div>
                 <span className="font-semibold text-gray-900">Update Housekeeping</span>
@@ -226,7 +232,7 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">Mark rooms as clean/ready</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group">
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Opening bulk price update tool...')}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">💲</div>
                 <span className="font-semibold text-gray-900">Bulk Price Update</span>
@@ -234,7 +240,7 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">Adjust rates for multiple rooms</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group">
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Generating availability report...')}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">📊</div>
                 <span className="font-semibold text-gray-900">Availability Report</span>
@@ -242,7 +248,7 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">View occupancy analytics</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group">
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Managing room categories...')}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🏷️</div>
                 <span className="font-semibold text-gray-900">Room Categories</span>

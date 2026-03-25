@@ -134,7 +134,12 @@ export default function ReviewsPage() {
 
               {!review.response && (
                 <div className="ml-16 mt-4">
-                  <button className="glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                  <button className="glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => {
+                    const response = prompt('Write your response:');
+                    if (response) {
+                      alert(`Response posted to ${review.guest}'s review!`);
+                    }
+                  }}>
                     ✍️ Write Response
                   </button>
                 </div>

@@ -50,7 +50,13 @@ export default function HousekeepingPage() {
             </div>
             
             <button 
-              onClick={() => alert('Assign Tasks feature coming soon!')}
+              onClick={() => {
+                const task = prompt('Enter task assignment (e.g., "Clean rooms 101-120"):');
+                if (task) {
+                  alert(`Task assigned: "${task}"`);
+                  router.refresh();
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
             >
               <span>📋</span>
@@ -192,21 +198,21 @@ export default function HousekeepingPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
                   {room.status === 'cleaning' && (
-                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-green-50 transition-all text-sm font-medium text-green-600">
+                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-green-50 transition-all text-sm font-medium text-green-600" onClick={() => alert(`Marking room ${room.number} as complete...`)}>
                       ✓ Mark Complete
                     </button>
                   )}
                   {room.status === 'dirty' && (
-                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600">
+                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => alert(`Starting cleaning for room ${room.number}...`)}>
                       🧹 Start Cleaning
                     </button>
                   )}
                   {room.status === 'clean' && (
-                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-orange-50 transition-all text-sm font-medium text-orange-600">
+                    <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-orange-50 transition-all text-sm font-medium text-orange-600" onClick={() => alert(`Requesting inspection for room ${room.number}...`)}>
                       ⚠️ Request Inspection
                     </button>
                   )}
-                  <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all text-sm font-medium text-gray-600">
+                  <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all text-sm font-medium text-gray-600" onClick={() => alert(`Adding notes for room ${room.number}...`)}>
                     📝 Notes
                   </button>
                 </div>

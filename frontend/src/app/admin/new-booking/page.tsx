@@ -15,6 +15,7 @@ export default function NewBookingPage() {
     guests: 1,
     specialRequests: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const roomTypes = [
     'Standard Queen',
@@ -25,10 +26,56 @@ export default function NewBookingPage() {
     'Business Suite'
   ]
 
+  const calculateNights = (checkin: string, checkout: string) => {
+    const checkinDate = new Date(checkin)
+    const checkoutDate = new Date(checkout)
+    const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
+    return nights || 1
+  }
+
+  const calculateAmount = (roomType: string, nights: number) => {
+    const basePrices: { [key: string]: number } = {
+      'Standard Queen': 199,
+      'Deluxe Suite': 299,
+      'Executive King': 349,
+      'Ocean View': 399,
+      'Presidential Suite': 899,
+      'Business Suite': 449
+    }
+    return (basePrices[roomType] || 250) * nights
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Booking created successfully! Redirecting to bookings...')
-    router.push('/admin/bookings')
+    setIsSubmitting(true)
+    
+    const nights = calculateNights(formData.checkIn, formData.checkOut)
+    const amount = calculateAmount(formData.roomType, nights)
+    
+    const newBooking = {
+      id: Date.now(), // Use timestamp for unique ID
+      guest: formData.guestName,
+      room: formData.roomType,
+      checkin: formData.checkIn,
+      checkout: formData.checkOut,
+      nights: nights,
+      amount: amount,
+      status: 'pending',
+      guests: formData.guests
+    }
+    
+    // Save to localStorage - merge with existing bookings
+    const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]')
+    existingBookings.push(newBooking)
+    localStorage.setItem('bookings', JSON.stringify(existingBookings))
+    
+    // Show success message
+    alert(`✅ Booking created successfully!\n\nGuest: ${formData.guestName}\nRoom: ${formData.roomType}\nDates: ${formData.checkIn} → ${formData.checkOut}\nNights: ${nights}\nTotal: $${amount.toLocaleString()}\n\nRedirecting to bookings...`)
+    
+    // Redirect to bookings page
+    setTimeout(() => {
+      router.push('/admin/bookings')
+    }, 1000)
   }
 
   return (
@@ -148,6 +195,17 @@ export default function NewBookingPage() {
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
+              {formData.roomType && formData.checkIn && formData.checkOut && (
+                <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-sm text-green-800 font-semibold">💰 Price Calculation:</p>
+                  <p className="text-sm text-green-700 mt-1">
+                    {formData.roomType} × {calculateNights(formData.checkIn, formData.checkOut)} nights = 
+                    <span className="font-bold text-green-900 ml-2">
+                      ${calculateAmount(formData.roomType, calculateNights(formData.checkIn, formData.checkOut)).toLocaleString()}
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -168,9 +226,10 @@ export default function NewBookingPage() {
         <div className="flex items-center gap-4">
           <button
             type="submit"
-            className="btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer hover:scale-105 transition-transform"
+            disabled={isSubmitting}
+            className="btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ✓ Create Booking
+            {isSubmitting ? '⏳ Creating Booking...' : '✓ Create Booking'}
           </button>
           <button
             type="button"

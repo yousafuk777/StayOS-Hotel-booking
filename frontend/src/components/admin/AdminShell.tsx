@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ReactNode } from 'react'
 
@@ -10,6 +10,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
+  const router = useRouter()
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -143,20 +144,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <div className="flex items-center gap-4">
                 <div className="hidden md:flex items-center gap-3">
                   <button 
-                    onClick={() => alert('Notifications panel coming soon!')}
+                    onClick={() => router.push('/admin/notifications')}
                     className="glass p-3 rounded-xl hover:bg-gray-50 transition-all relative cursor-pointer"
                   >
                     <span className="text-xl">🔔</span>
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                   </button>
                   <button 
-                    onClick={() => alert('Messages feature coming soon!')}
+                    onClick={() => router.push('/admin/messages')}
                     className="glass p-3 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
                   >
                     <span className="text-xl">💬</span>
                   </button>
                   <button 
-                    onClick={() => alert('Help & Support coming soon!')}
+                    onClick={() => router.push('/admin/help')}
                     className="glass p-3 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
                   >
                     <span className="text-xl">❓</span>
