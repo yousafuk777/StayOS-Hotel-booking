@@ -4,6 +4,8 @@ from app.core.cache import redis_client
 import json
 
 
+from fastapi.responses import JSONResponse
+
 class TenantMiddleware(BaseHTTPMiddleware):
     """
     Resolves the current tenant from the request host.
@@ -17,22 +19,26 @@ class TenantMiddleware(BaseHTTPMiddleware):
         path = request.url.path
 
         # Skip tenant resolution for exempt paths
-        if any(path.startswith(p) for p in self.EXEMPT_PATHS):
+        if path == "/" or any(path.startswith(p) for p in self.EXEMPT_PATHS):
             return await call_next(request)
 
         host = request.headers.get("host", "")
         slug = self._extract_slug(host)
 
         if not slug:
-            raise HTTPException(status_code=400, detail="Invalid host")
+            return JSONResponse(status_code=400, content={"detail": "Invalid host"})
 
         # Try cache first
-        tenant = await self._get_tenant_cached(slug)
+        try:
+            tenant = await self._get_tenant_cached(slug)
+        except Exception:
+            tenant = None
+            
         if not tenant:
-            raise HTTPException(status_code=404, detail="Tenant not found")
+            return JSONResponse(status_code=404, content={"detail": "Tenant not found"})
 
         if not tenant.get("is_active"):
-            raise HTTPException(status_code=403, detail="Tenant is inactive")
+            return JSONResponse(status_code=403, content={"detail": "Tenant is inactive"})
 
         request.state.tenant_id = tenant["id"]
         request.state.tenant_slug = tenant["slug"]
