@@ -43,16 +43,29 @@ export default function BookingsPage() {
         const parsed: Booking[] = JSON.parse(storedBookings)
         console.log('Loaded', parsed.length, 'bookings from localStorage')
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Replace the initial bookings with stored bookings
-          // Store contains both user-created AND modified default bookings
-          setBookings([...parsed])
-          console.log('Total bookings loaded:', parsed.length)
+          // Start with default bookings
+          const defaultBookings: Booking[] = [
+            { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'confirmed', guests: 2 },
+            { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
+            { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'checked_in', guests: 2 },
+            { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
+            { id: 5, guest: 'Lisa Anderson', room: 'Ocean View', checkin: '2026-03-20', checkout: '2026-03-25', nights: 5, amount: 1875, status: 'checked_out', guests: 2 },
+          ]
+          
+          // Merge: use stored versions for modified defaults, keep defaults for unmodified, add user-created
+          const mergedBookings = defaultBookings.map(defaultBooking => {
+            const stored = parsed.find(b => b.id === defaultBooking.id)
+            return stored || defaultBooking
+          }).concat(parsed.filter(b => b.id > 5))
+          
+          setBookings(mergedBookings)
+          console.log('Total bookings after merge:', mergedBookings.length)
         }
       } catch (e) {
         console.error('Error loading bookings from localStorage:', e)
       }
     } else {
-      console.log('No saved bookings found in localStorage')
+      console.log('No saved bookings found in localStorage, using defaults')
     }
   }, [])
 
@@ -110,6 +123,27 @@ export default function BookingsPage() {
     guests: 1,
     specialRequests: ''
   })
+
+  const totalBookings = bookings.length
+  const now = new Date()
+  const bookingsThisMonth = bookings.filter((booking) => {
+    const checkin = new Date(booking.checkin)
+    return (
+      checkin.getFullYear() === now.getFullYear() &&
+      checkin.getMonth() === now.getMonth()
+    )
+  }).length
+  const pendingBookings = bookings.filter((booking) => booking.status === 'pending').length
+  const checkedInBookings = bookings.filter((booking) => booking.status === 'checked_in').length
+  const revenueThisMonth = bookings
+    .filter((booking) => {
+      const checkin = new Date(booking.checkin)
+      return (
+        checkin.getFullYear() === now.getFullYear() &&
+        checkin.getMonth() === now.getMonth()
+      )
+    })
+    .reduce((sum, booking) => sum + booking.amount, 0)
 
   const STATUS_CONFIG: any = {
     all: { label: 'All Bookings', color: 'bg-gray-100 text-gray-700' },
@@ -190,7 +224,7 @@ export default function BookingsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <header className="glass-card border-b border-gray-200 sticky top-0 z-50">
+      <header className="glass-card border-b border-gray-200 mb-8">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -281,22 +315,22 @@ export default function BookingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 slide-up" style={{ animationDelay: '0.1s' }}>
           <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
             <p className="text-gray-600 font-medium mb-2">Total Bookings</p>
-            <p className="text-4xl font-bold gradient-text">156</p>
-            <p className="text-sm text-gray-600 mt-2">This month</p>
+            <p className="text-4xl font-bold gradient-text">{totalBookings}</p>
+            <p className="text-sm text-gray-600 mt-2">This month: {bookingsThisMonth}</p>
           </div>
           <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-yellow-500">
             <p className="text-gray-600 font-medium mb-2">Pending</p>
-            <p className="text-4xl font-bold gradient-text">12</p>
+            <p className="text-4xl font-bold gradient-text">{pendingBookings}</p>
             <p className="text-sm text-gray-600 mt-2">Awaiting confirmation</p>
           </div>
           <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
             <p className="text-gray-600 font-medium mb-2">Checked In</p>
-            <p className="text-4xl font-bold gradient-text">48</p>
+            <p className="text-4xl font-bold gradient-text">{checkedInBookings}</p>
             <p className="text-sm text-gray-600 mt-2">Currently staying</p>
           </div>
           <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-purple-500">
             <p className="text-gray-600 font-medium mb-2">Revenue</p>
-            <p className="text-4xl font-bold gradient-text">$42.8K</p>
+            <p className="text-4xl font-bold gradient-text">${(revenueThisMonth / 1000).toFixed(1)}K</p>
             <p className="text-sm text-gray-600 mt-2">Monthly total</p>
           </div>
         </div>

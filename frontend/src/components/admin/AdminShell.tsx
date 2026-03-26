@@ -14,10 +14,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Sidebar - Always Visible */}
-      <aside className="w-72 min-h-screen sticky top-0 py-6 pr-4 glass-card border-r border-gray-200">
-        <div className="px-4 mb-6">
-          <Link href="/admin" className="flex items-center gap-3">
+      {/* Sidebar - Fixed with independent scrolling */}
+      <aside className="w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40">
+        <div className="px-4 py-6">
+          <Link href="/admin" className="flex items-center gap-3 mb-6">
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
               <span className="text-2xl">🏨</span>
             </div>
@@ -26,112 +26,112 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <p className="text-xs text-gray-600">Admin Panel</p>
             </div>
           </Link>
+
+          <nav className="space-y-2">
+            {/* Main Menu */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+                Main Menu
+              </h3>
+              <div className="space-y-1">
+                {[
+                  { id: 'dashboard', icon: '📊', label: 'Dashboard', path: '/admin' },
+                  { id: 'bookings', icon: '📅', label: 'Bookings', path: '/admin/bookings' },
+                  { id: 'calendar', icon: '🗓️', label: 'Calendar', path: '/admin/calendar' },
+                  { id: 'rooms', icon: '🛏️', label: 'Rooms & Inventory', path: '/admin/rooms' },
+                  { id: 'housekeeping', icon: '🧹', label: 'Housekeeping', path: '/admin/housekeeping' },
+                ].map((item) => {
+                  const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.path}
+                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                      {isActive && <span className="ml-auto">→</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Management */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+                Management
+              </h3>
+              <div className="space-y-1">
+                {[
+                  { id: 'staff', icon: '👥', label: 'Staff Management', path: '/admin/staff' },
+                  { id: 'guests', icon: '👤', label: 'Guests', path: '/admin/guests' },
+                  { id: 'analytics', icon: '📈', label: 'Analytics & Reports', path: '/admin/analytics' },
+                  { id: 'promotions', icon: '🏷️', label: 'Promotions', path: '/admin/promotions' },
+                  { id: 'reviews', icon: '⭐', label: 'Reviews', path: '/admin/reviews' },
+                ].map((item) => {
+                  const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.path}
+                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                      {isActive && <span className="ml-auto">→</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Configuration */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+                Configuration
+              </h3>
+              <div className="space-y-1">
+                {[
+                  { id: 'settings', icon: '⚙️', label: 'Hotel Settings', path: '/admin/settings' },
+                  { id: 'theme', icon: '🎨', label: 'Theme & Branding', path: '/admin/theme' },
+                  { id: 'policies', icon: '📋', label: 'Policies', path: '/admin/policies' },
+                ].map((item) => {
+                  const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.path}
+                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                      {isActive && <span className="ml-auto">→</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </nav>
         </div>
-
-        <nav className="space-y-2 px-2">
-          {/* Main Menu */}
-          <div className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
-              Main Menu
-            </h3>
-            <div className="space-y-1">
-              {[
-                { id: 'dashboard', icon: '📊', label: 'Dashboard', path: '/admin' },
-                { id: 'bookings', icon: '📅', label: 'Bookings', path: '/admin/bookings' },
-                { id: 'calendar', icon: '🗓️', label: 'Calendar', path: '/admin/calendar' },
-                { id: 'rooms', icon: '🛏️', label: 'Rooms & Inventory', path: '/admin/rooms' },
-                { id: 'housekeeping', icon: '🧹', label: 'Housekeeping', path: '/admin/housekeeping' },
-              ].map((item) => {
-                const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.path}
-                    className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && <span className="ml-auto">→</span>}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Management */}
-          <div className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
-              Management
-            </h3>
-            <div className="space-y-1">
-              {[
-                { id: 'staff', icon: '👥', label: 'Staff Management', path: '/admin/staff' },
-                { id: 'guests', icon: '👤', label: 'Guests', path: '/admin/guests' },
-                { id: 'analytics', icon: '📈', label: 'Analytics & Reports', path: '/admin/analytics' },
-                { id: 'promotions', icon: '🏷️', label: 'Promotions', path: '/admin/promotions' },
-                { id: 'reviews', icon: '⭐', label: 'Reviews', path: '/admin/reviews' },
-              ].map((item) => {
-                const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.path}
-                    className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && <span className="ml-auto">→</span>}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Configuration */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
-              Configuration
-            </h3>
-            <div className="space-y-1">
-              {[
-                { id: 'settings', icon: '⚙️', label: 'Hotel Settings', path: '/admin/settings' },
-                { id: 'theme', icon: '🎨', label: 'Theme & Branding', path: '/admin/theme' },
-                { id: 'policies', icon: '📋', label: 'Policies', path: '/admin/policies' },
-              ].map((item) => {
-                const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.path}
-                    className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && <span className="ml-auto">→</span>}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header Bar */}
-        <header className="glass-card border-b border-gray-200 sticky top-0 z-50">
+      {/* Main Content Area - Independent scrolling */}
+      <div className="flex-1 flex flex-col ml-72">
+        {/* Top Header Bar - Fixed */}
+        <header className="glass-card border-b border-gray-200 fixed top-0 right-0 left-72 z-30">
           <div className="max-w-[1600px] mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -178,8 +178,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-8">
+        {/* Page Content - Independent scrolling */}
+        <main className="flex-1 overflow-y-auto pt-20 p-8">
           <div className="max-w-[1600px] mx-auto">
             {children}
           </div>

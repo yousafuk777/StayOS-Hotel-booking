@@ -5,80 +5,84 @@ import { useRouter } from 'next/navigation'
 
 export default function AdminPage() {
   const router = useRouter()
-  
-  // Initialize pending bookings from localStorage or use defaults
-  const [pendingBookings, setPendingBookings] = useState(() => {
-    // Check if we have saved pending bookings in localStorage
-    if (typeof window !== 'undefined') {
-      const storedPending = localStorage.getItem('pendingBookings')
-      if (storedPending) {
-        try {
-          const parsed = JSON.parse(storedPending)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed
-          }
-        } catch (e) {
-          console.error('Error loading pending bookings:', e)
-        }
-      }
-    }
-    // Default pending bookings
-    return [
-      { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'pending' },
-      { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending' },
-      { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'pending' },
-      { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip' },
-    ]
-  })
-  
-  // Save pending bookings to localStorage whenever they change
+
+  const defaultBookings = [
+    { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'pending', guests: 2 },
+    { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
+    { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'pending', guests: 2 },
+    { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
+  ]
+
+  const [bookings, setBookings] = useState<any[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  const pendingBookings = bookings.filter((b) => b.status === 'pending' || b.status === 'vip')
+
   useEffect(() => {
-    console.log('Saving pending bookings to localStorage:', pendingBookings.length, 'bookings')
-    localStorage.setItem('pendingBookings', JSON.stringify(pendingBookings))
-  }, [pendingBookings])
+    const storedBookings = localStorage.getItem('bookings')
+    if (storedBookings) {
+      try {
+        const parsed = JSON.parse(storedBookings)
+        if (Array.isArray(parsed)) {
+          setBookings(parsed)
+        } else {
+          setBookings(defaultBookings)
+        }
+      } catch (e) {
+        console.error('Error loading bookings from localStorage:', e)
+        setBookings(defaultBookings)
+      }
+    } else {
+      setBookings(defaultBookings)
+    }
+    setIsHydrated(true)
+  }, [])
+
+  // Save bookings to localStorage whenever they change
+  useEffect(() => {
+    console.log('Saving bookings to localStorage:', bookings.length, 'bookings')
+    localStorage.setItem('bookings', JSON.stringify(bookings))
+  }, [bookings])
+
+  const now = new Date()
+  const bookingsThisMonth = bookings.filter((booking: any) => {
+    const checkinDate = new Date(booking.checkin)
+    return (
+      checkinDate.getFullYear() === now.getFullYear() &&
+      checkinDate.getMonth() === now.getMonth()
+    )
+  }).length
+  const pendingCount = pendingBookings.filter((b: any) => b.status === 'pending').length
+  const checkedInCount = bookings.filter((b: any) => b.status === 'checked_in').length
+  const vipGuestCount = bookings.reduce((sum: number, b: any) => sum + (b.status === 'vip' ? (b.guests || 1) : 0), 0)
+  const newBookingsCount = bookingsThisMonth + pendingCount
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading dashboard...
+      </div>
+    )
+  }
 
   const handleConfirmBooking = (booking: any) => {
     console.log('Confirming booking:', booking)
-    
-    // Create a confirmed booking object
-    const confirmedBooking = {
-      ...booking,
-      status: 'confirmed',
-      id: Date.now() // Generate new unique ID for the confirmed booking
-    }
-    
-    // Get existing confirmed bookings from localStorage
-    const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]')
-    
-    // Add the new confirmed booking
-    existingBookings.push(confirmedBooking)
-    
-    // Save back to localStorage
-    localStorage.setItem('bookings', JSON.stringify(existingBookings))
-    console.log('Saved confirmed booking to localStorage')
-    
-    // Remove from pending list immediately - use functional update to ensure we have latest state
-    setPendingBookings(prev => {
-      const filtered = prev.filter((b: any) => b.id !== booking.id)
-      console.log('Filtered pending bookings:', filtered.length, 'bookings')
-      return filtered
-    })
-    
-    // Show success message
-    alert(`✅ Booking for ${booking.guest} confirmed!\n\nRoom: ${booking.room}\nCheck-in: ${booking.checkin}\nCheck-out: ${booking.checkout}\nNights: ${booking.nights}\nAmount: $${booking.amount.toLocaleString()}\n\nThe booking has been added to your bookings list and removed from pending.`)
+
+    const updatedBookings = bookings.map((b) =>
+      b.id === booking.id ? { ...b, status: 'confirmed' } : b
+    )
+    setBookings(updatedBookings)
+
+    alert(`✅ Booking for ${booking.guest} confirmed!\n\nRoom: ${booking.room}\nCheck-in: ${booking.checkin}\nCheck-out: ${booking.checkout}\nNights: ${booking.nights}\nAmount: $${booking.amount.toLocaleString()}\n\nThe booking has been confirmed and will no longer appear in pending.`)
   }
 
   const handleDeclineBooking = (booking: any) => {
     console.log('Declining booking:', booking)
-    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed from the pending list.`)
-    
+    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed from pending.`)
+
     if (confirmDecline) {
-      // Remove from pending list immediately - use functional update to ensure we have latest state
-      setPendingBookings(prev => {
-        const filtered = prev.filter((b: any) => b.id !== booking.id)
-        console.log('Declined booking, filtered pending:', filtered.length, 'bookings')
-        return filtered
-      })
+      const updatedBookings = bookings.filter((b) => b.id !== booking.id)
+      setBookings(updatedBookings)
       alert(`❌ Booking for ${booking.guest} has been declined and removed from the system.`)
     } else {
       console.log('Decline cancelled')
@@ -108,7 +112,7 @@ export default function AdminPage() {
             </div>
             <div className="text-5xl float">💵</div>
           </div>
-          <div className="flex items-center gap-2 text-green-600 bg-green-100/50 px-3 py-1.5 rounded-full inline-block">
+          <div className="flex items-center gap-2 text-green-600 bg-green-100/50 px-3 py-1.5 rounded-full">
             <span>↑ 18%</span>
             <span className="font-semibold text-sm">vs yesterday</span>
           </div>
@@ -119,12 +123,12 @@ export default function AdminPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-gray-600 font-medium mb-2">New Bookings</p>
-              <p className="text-4xl font-bold gradient-text">24</p>
+              <p className="text-4xl font-bold gradient-text">{newBookingsCount}</p>
             </div>
             <div className="text-5xl float">📋</div>
           </div>
-          <div className="flex items-center gap-2 text-blue-600 bg-blue-100/50 px-3 py-1.5 rounded-full inline-block">
-            <span>+6</span>
+          <div className="flex items-center gap-2 text-blue-600 bg-blue-100/50 px-3 py-1.5 rounded-full">
+            <span>+{pendingCount}</span>
             <span className="font-semibold text-sm">pending confirmation</span>
           </div>
         </div>
@@ -134,12 +138,12 @@ export default function AdminPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-gray-600 font-medium mb-2">Check-ins</p>
-              <p className="text-4xl font-bold gradient-text">18</p>
+              <p className="text-4xl font-bold gradient-text">{checkedInCount}</p>
             </div>
             <div className="text-5xl float">🎉</div>
           </div>
-          <div className="flex items-center gap-2 text-purple-600 bg-purple-100/50 px-3 py-1.5 rounded-full inline-block">
-            <span className="font-semibold text-sm">5 VIP guests</span>
+          <div className="flex items-center gap-2 text-purple-600 bg-purple-100/50 px-3 py-1.5 rounded-full">
+            <span className="font-semibold text-sm">{vipGuestCount} VIP guests</span>
           </div>
         </div>
 
@@ -214,12 +218,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {[
-                { guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: 'Mar 25', checkout: 'Mar 28', nights: 3, amount: '$897', status: 'pending' },
-                { guest: 'Michael Chen', room: 'Executive King', checkin: 'Mar 26', checkout: 'Mar 30', nights: 4, amount: '$1,240', status: 'pending' },
-                { guest: 'Emma Williams', room: 'Standard Queen', checkin: 'Mar 27', checkout: 'Mar 29', nights: 2, amount: '$458', status: 'pending' },
-                { guest: 'James Brown', room: 'Presidential Suite', checkin: 'Mar 28', checkout: 'Apr 2', nights: 5, amount: '$2,495', status: 'vip' },
-              ].map((booking, index) => (
+              {pendingBookings.map((booking: any, index: number) => (
                 <tr key={booking.id} className="hover:bg-gray-50 transition-colors slide-up" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
