@@ -36,7 +36,7 @@ export default function TenantsPage() {
                 <p className="text-sm text-white/60">Manage all hotel tenants on the platform</p>
               </div>
             </div>
-            
+
             <button className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
               <span>➕</span>
               <span>Onboard New Tenant</span>
@@ -104,11 +104,10 @@ export default function TenantsPage() {
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                    filter === key
+                  className={`px-4 py-2 rounded-xl font-medium transition-all ${filter === key
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105'
                       : 'glass hover:bg-white/5 text-white/70'
-                  }`}
+                    }`}
                 >
                   {config.label}
                 </button>
@@ -157,8 +156,8 @@ export default function TenantsPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {tenants.map((tenant, index) => (
-                  <tr 
-                    key={tenant.id} 
+                  <tr
+                    key={tenant.id}
                     className="hover:bg-white/5 transition-colors slide-up"
                     style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                   >
@@ -178,11 +177,10 @@ export default function TenantsPage() {
                     </td>
                     <td className="py-4 px-4 text-white/70">{tenant.joined}</td>
                     <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        tenant.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                        tenant.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-red-500/20 text-red-400'
-                      }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tenant.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                          tenant.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-red-500/20 text-red-400'
+                        }`}>
                         {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
                       </span>
                     </td>
@@ -208,7 +206,7 @@ export default function TenantsPage() {
           <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
             💰 Commission Overview
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass p-6 rounded-xl">
               <p className="text-white/60 font-medium mb-2">Platform Commission Rate</p>

@@ -32,7 +32,7 @@ export default function SearchPage() {
               <span className="text-6xl">🔍</span>
             </div>
           </div>
-          <h1 className="text-6xl md:text-7xl font-extrabold gradient-text">
+          <h1 className="text-6xl md:text-7xl font-extrabold text-white drop-shadow-xl">
             Find Your Perfect Stay
           </h1>
           <p className="text-xl text-white/90 font-light max-w-2xl mx-auto">

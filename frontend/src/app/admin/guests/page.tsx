@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Guest {
@@ -18,17 +18,34 @@ export default function GuestsPage() {
   const [filter, setFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null)
   const router = useRouter()
-
-  const [guests, setGuests] = useState<Guest[]>([
-    { id: 1, name: 'Robert Taylor', email: 'robert.t@email.com', phone: '+1 555 123 4567', stays: 12, totalSpent: 8450, lastVisit: '2026-03-20', vip: true },
-    { id: 2, name: 'Linda Martinez', email: 'linda.m@email.com', phone: '+1 555 234 5678', stays: 8, totalSpent: 5200, lastVisit: '2026-03-18', vip: false },
-    { id: 3, name: 'William Anderson', email: 'william.a@email.com', phone: '+1 555 345 6789', stays: 15, totalSpent: 12300, lastVisit: '2026-03-22', vip: true },
-    { id: 4, name: 'Patricia White', email: 'patricia.w@email.com', phone: '+1 555 456 7890', stays: 5, totalSpent: 2800, lastVisit: '2026-03-15', vip: false },
-    { id: 5, name: 'Charles Harris', email: 'charles.h@email.com', phone: '+1 555 567 8901', stays: 20, totalSpent: 18500, lastVisit: '2026-03-23', vip: true },
-  ])
-
+  
+  // Initialize guests from localStorage or use defaults
+  const [guests, setGuests] = useState<Guest[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedGuests = localStorage.getItem('guests')
+      if (storedGuests) {
+        try {
+          const parsed = JSON.parse(storedGuests)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed
+          }
+        } catch (e) {
+          console.error('Error loading guests from localStorage:', e)
+        }
+      }
+    }
+    return [
+      { id: 1, name: 'Robert Taylor', email: 'robert.t@email.com', phone: '+1 555 123 4567', stays: 12, totalSpent: 8450, lastVisit: '2026-03-20', vip: true },
+      { id: 2, name: 'Linda Martinez', email: 'linda.m@email.com', phone: '+1 555 234 5678', stays: 8, totalSpent: 5200, lastVisit: '2026-03-18', vip: false },
+      { id: 3, name: 'William Anderson', email: 'william.a@email.com', phone: '+1 555 345 6789', stays: 15, totalSpent: 12300, lastVisit: '2026-03-22', vip: true },
+      { id: 4, name: 'Patricia White', email: 'patricia.w@email.com', phone: '+1 555 456 7890', stays: 5, totalSpent: 2800, lastVisit: '2026-03-15', vip: false },
+      { id: 5, name: 'Charles Harris', email: 'charles.h@email.com', phone: '+1 555 567 8901', stays: 20, totalSpent: 18500, lastVisit: '2026-03-23', vip: true },
+    ]
+  })
+  
   const [newGuest, setNewGuest] = useState({
     name: '',
     email: '',
@@ -37,6 +54,21 @@ export default function GuestsPage() {
     totalSpent: 0,
     vip: false
   })
+  
+  const [editGuestData, setEditGuestData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    stays: 0,
+    totalSpent: 0,
+    vip: false
+  })
+  
+  // Save guests to localStorage whenever they change
+  useEffect(() => {
+    console.log('Saving guests to localStorage:', guests.length, 'guests')
+    localStorage.setItem('guests', JSON.stringify(guests))
+  }, [guests])
 
   const handleAddGuest = (e: React.FormEvent) => {
     e.preventDefault()
@@ -177,8 +209,28 @@ export default function GuestsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {guests.map((guest) => (
-                  <tr key={guest.id} className="hover:bg-gray-50 transition-colors">
+                {(() => {
+                  // Filter guests based on filter and search
+                  const filteredGuests = guests.filter(guest => {
+                    // Status filter
+                    if (filter === 'vip' && !guest.vip) return false
+                    if (filter === 'frequent' && guest.stays < 10) return false
+                    
+                    return true
+                  })
+                  
+                  if (filteredGuests.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={6} className="text-center py-12 text-gray-500">
+                          👥 No guests found matching your filters
+                        </td>
+                      </tr>
+                    )
+                  }
+                  
+                  return filteredGuests.map((guest) => (
+                    <tr key={guest.id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
@@ -209,13 +261,28 @@ export default function GuestsPage() {
                         <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => handleViewProfile(guest)}>
                           👁️ Profile
                         </button>
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => handleMessageGuest(guest)}>
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => {
+                          setSelectedGuest(guest)
+                          setEditGuestData({
+                            name: guest.name,
+                            email: guest.email,
+                            phone: guest.phone,
+                            stays: guest.stays,
+                            totalSpent: guest.totalSpent,
+                            vip: guest.vip
+                          })
+                          setShowEditModal(true)
+                        }}>
+                          ✏️ Edit
+                        </button>
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium text-gray-600" onClick={() => handleMessageGuest(guest)}>
                           📧 Message
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                ))
+              })()}
               </tbody>
             </table>
           </div>
@@ -394,6 +461,132 @@ export default function GuestsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Edit Guest Modal */}
+      {showEditModal && selectedGuest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold gradient-text">✏️ Edit Guest Information</h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="glass p-3 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const updatedGuests = guests.map(g => 
+                g.id === selectedGuest.id ? {
+                  ...g,
+                  name: editGuestData.name,
+                  email: editGuestData.email,
+                  phone: editGuestData.phone,
+                  stays: editGuestData.stays,
+                  totalSpent: editGuestData.totalSpent,
+                  vip: editGuestData.vip
+                } : g
+              )
+              setGuests(updatedGuests)
+              alert(`✅ Guest information updated successfully!\n\nName: ${editGuestData.name}\nEmail: ${editGuestData.email}\nPhone: ${editGuestData.phone}\nStays: ${editGuestData.stays}\nTotal Spent: $${editGuestData.totalSpent.toLocaleString()}\nVIP Status: ${editGuestData.vip ? 'Yes' : 'No'}`)
+              setShowEditModal(false)
+              setSelectedGuest(null)
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                  <input
+                    type="text"
+                    value={editGuestData.name}
+                    onChange={(e) => setEditGuestData({ ...editGuestData, name: e.target.value })}
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <input
+                      type="email"
+                      value={editGuestData.email}
+                      onChange={(e) => setEditGuestData({ ...editGuestData, email: e.target.value })}
+                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                    <input
+                      type="tel"
+                      value={editGuestData.phone}
+                      onChange={(e) => setEditGuestData({ ...editGuestData, phone: e.target.value })}
+                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Stays *</label>
+                    <input
+                      type="number"
+                      value={editGuestData.stays}
+                      onChange={(e) => setEditGuestData({ ...editGuestData, stays: parseInt(e.target.value) })}
+                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Spent ($) *</label>
+                    <input
+                      type="number"
+                      value={editGuestData.totalSpent}
+                      onChange={(e) => setEditGuestData({ ...editGuestData, totalSpent: parseInt(e.target.value) })}
+                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="vip-edit"
+                    checked={editGuestData.vip}
+                    onChange={(e) => setEditGuestData({ ...editGuestData, vip: e.target.checked })}
+                    className="w-5 h-5 rounded accent-blue-600"
+                  />
+                  <label htmlFor="vip-edit" className="text-sm font-semibold text-gray-700">VIP Guest</label>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 btn-primary px-6 py-3 rounded-xl font-semibold"
+                  >
+                    ✓ Update Guest
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
