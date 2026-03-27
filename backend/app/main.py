@@ -30,7 +30,14 @@ async def startup_db_client():
             await conn.run_sync(Base.metadata.create_all)
 
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok", "version": "1.0.0"}
+
+@app.get("/")
+async def root():
+    """Redirect root to API documentation."""
+    return RedirectResponse(url="/docs")

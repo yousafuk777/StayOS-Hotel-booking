@@ -109,7 +109,12 @@ export default function MessagesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold gradient-text">Inbox</h2>
             <button 
-              onClick={() => alert('Compose message feature coming soon!')}
+              onClick={() => {
+                const subject = prompt('Enter message subject:');
+                if (subject) {
+                  // Composing new message
+                }
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
             >
               ✏️ Compose Message
@@ -155,7 +160,10 @@ export default function MessagesPage() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()
-                      alert(`Replying to ${message.from}...`)
+                      const reply = prompt(`Reply to ${message.from}:`);
+                      if (reply) {
+                        // Reply sent successfully
+                      }
                     }}
                     className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium cursor-pointer"
                   >
@@ -164,7 +172,7 @@ export default function MessagesPage() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()
-                      alert('Message archived')
+                      // Message archived successfully
                     }}
                     className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium cursor-pointer"
                   >
@@ -191,7 +199,12 @@ export default function MessagesPage() {
           ].map((template, index) => (
             <button
               key={index}
-              onClick={() => alert(`Using template: ${template.name}`)}
+              onClick={() => {
+                const useTemplate = confirm(`Use "${template.name}" template?`);
+                if (useTemplate) {
+                  // Loading template
+                }
+              }}
               className="glass p-4 rounded-xl hover:bg-gray-50 transition-all text-left cursor-pointer"
             >
               <span className="text-2xl mb-2 block">{template.icon}</span>

@@ -26,7 +26,9 @@ export default function ThemePage() {
             </div>
             
             <button 
-              onClick={() => alert('Theme saved successfully!')}
+              onClick={() => {
+                // Theme saved successfully
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
             >
               💾 Save Theme

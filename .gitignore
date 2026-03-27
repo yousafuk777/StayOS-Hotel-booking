@@ -1,0 +1,16 @@
+.env
+env/
+# Python cache
+# Python cache
+**/__pycache__/
+*.py[cod]
+
+# Environments
+.env
+venv/
+env/
+
+# Frontend
+node_modules/
+.next/
+

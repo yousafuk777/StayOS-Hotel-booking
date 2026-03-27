@@ -24,30 +24,21 @@ export default function UsersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="space-y-8">
       {/* Header */}
-      <header className="glass-dark border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button className="glass p-3 rounded-xl hover:bg-white/10 transition-all">
-                <span className="text-xl">←</span>
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold gradient-text">User Management</h1>
-                <p className="text-sm text-white/60">Manage all platform users</p>
-              </div>
-            </div>
-            
-            <button className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
-              <span>➕</span>
-              <span>Add User</span>
-            </button>
-          </div>
+      <div className="flex items-center justify-between fade-in">
+        <div>
+          <h1 className="text-4xl font-bold gradient-text">User Management</h1>
+          <p className="text-gray-600">Manage all platform users</p>
         </div>
-      </header>
+        
+        <button className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+          <span>➕</span>
+          <span>Add User</span>
+        </button>
+      </div>
 
-      <div className="max-w-[1800px] mx-auto p-8">
+      <div>
         {/* Platform Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-up">
           {[
@@ -58,7 +49,7 @@ export default function UsersPage() {
           ].map((stat, index) => (
             <div 
               key={index}
-              className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 text-white card-hover slide-up`}
+              className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 text-white card-hover shadow-lg slide-up`}
               style={{ animationDelay: `${0.1 + index * 0.1}s` }}
             >
               <div className="flex items-center justify-between mb-4">
@@ -74,7 +65,7 @@ export default function UsersPage() {
         </div>
 
         {/* Role Filters */}
-        <div className="glass-card rounded-2xl p-6 mb-8 slide-up border border-white/10" style={{ animationDelay: '0.5s' }}>
+        <div className="glass-card rounded-2xl p-6 mb-8 slide-up border border-gray-200" style={{ animationDelay: '0.5s' }}>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2 flex-wrap">
               {Object.entries(ROLE_CONFIG).map(([key, config]: any) => (
@@ -83,8 +74,8 @@ export default function UsersPage() {
                   onClick={() => setFilter(key)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                     filter === key
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-white/5 text-white/70'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
+                      : 'glass hover:bg-gray-100 text-gray-700'
                   }`}
                 >
                   <span>{config.icon}</span>
@@ -94,7 +85,7 @@ export default function UsersPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <select className="glass px-4 py-2 rounded-xl text-white focus:outline-none">
+              <select className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none">
                 <option>All Statuses</option>
                 <option>Active</option>
                 <option>Suspended</option>
@@ -103,19 +94,19 @@ export default function UsersPage() {
               <input
                 type="search"
                 placeholder="Search users..."
-                className="input-field px-4 py-2 rounded-xl w-64 bg-white/5 text-white focus:outline-none"
+                className="input-field px-4 py-2 rounded-xl w-64 text-gray-900 focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="glass-card rounded-2xl p-8 slide-up border border-white/10" style={{ animationDelay: '0.6s' }}>
+        <div className="glass-card rounded-2xl p-8 slide-up border border-gray-200" style={{ animationDelay: '0.6s' }}>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold gradient-text">
               {ROLE_CONFIG[filter]?.label || 'All Users'}
             </h2>
-            <button className="glass px-6 py-3 rounded-xl font-semibold hover:bg-white/10">
+            <button className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 text-gray-700">
               📥 Export Data
             </button>
           </div>
@@ -123,20 +114,20 @@ export default function UsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">User</th>
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">Role</th>
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">Activity</th>
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">Joined</th>
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">Status</th>
-                  <th className="text-left py-4 px-4 font-semibold text-white/70">Actions</th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">User</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Activity</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Joined</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-gray-100">
                 {users.map((user, index) => (
                   <tr 
                     key={user.id} 
-                    className="hover:bg-white/5 transition-colors slide-up"
+                    className="hover:bg-gray-50 transition-colors slide-up"
                     style={{ animationDelay: `${0.7 + index * 0.1}s` }}
                   >
                     <td className="py-4 px-4">
@@ -145,45 +136,45 @@ export default function UsersPage() {
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-white">{user.name}</h3>
-                          <p className="text-sm text-white/40">{user.email}</p>
+                          <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                          <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div>
-                        <p className="font-medium text-white capitalize">{user.role.replace('_', ' ')}</p>
+                        <p className="font-medium text-gray-900 capitalize">{user.role.replace('_', ' ')}</p>
                         {'hotel' in user && (
-                          <p className="text-sm text-white/40">{user.hotel}</p>
+                          <p className="text-sm text-gray-500">{user.hotel}</p>
                         )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       {user.role === 'guest' ? (
                         <div>
-                          <p className="text-white font-medium">{user.bookings} bookings</p>
-                          <p className="text-sm text-white/40">${(user as any).spent?.toLocaleString() ?? 0} spent</p>
+                          <p className="text-gray-900 font-medium">{user.bookings} bookings</p>
+                          <p className="text-sm text-gray-500">${(user as any).spent?.toLocaleString() ?? 0} spent</p>
                         </div>
                       ) : (
-                        <p className="text-white/70">Staff member</p>
+                        <p className="text-gray-600">Staff member</p>
                       )}
                     </td>
-                    <td className="py-4 px-4 text-white/70">{user.joined}</td>
+                    <td className="py-4 px-4 text-gray-600">{user.joined}</td>
                     <td className="py-4 px-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        user.status === 'vip' ? 'bg-yellow-500/20 text-yellow-400' :
-                        user.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                        'bg-red-500/20 text-red-400'
+                        user.status === 'vip' ? 'bg-yellow-100 text-yellow-700' :
+                        user.status === 'active' ? 'bg-green-100 text-green-700' :
+                        'bg-red-100 text-red-700'
                       }`}>
                         {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <button className="glass px-4 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
+                        <button className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-700">
                           👁️ View
                         </button>
-                        <button className="glass px-4 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
+                        <button className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-700">
                           ⚙️ Edit
                         </button>
                       </div>
@@ -196,18 +187,18 @@ export default function UsersPage() {
         </div>
 
         {/* User Growth Chart */}
-        <div className="glass-card rounded-2xl p-8 mt-8 slide-up border border-white/10" style={{ animationDelay: '1.5s' }}>
+        <div className="glass-card rounded-2xl p-8 mt-8 slide-up border border-gray-200" style={{ animationDelay: '1.5s' }}>
           <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
             📈 User Growth Trend
           </h2>
-          <div className="h-64 flex items-end justify-between gap-2 p-6 bg-gradient-to-t from-blue-500/10 to-purple-500/10 rounded-xl">
+          <div className="h-64 flex items-end justify-between gap-2 p-6 bg-gradient-to-t from-blue-500/5 to-purple-500/5 rounded-xl">
             {[45, 52, 58, 68, 75, 82, 89, 95, 100].map((height, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
                 <div 
-                  className="w-full bg-gradient-to-t from-blue-600 to-purple-600 rounded-t-lg transition-all duration-500 hover:from-blue-500 hover:to-purple-500"
+                  className="w-full bg-gradient-to-t from-blue-600 to-purple-600 rounded-t-lg transition-all duration-500 hover:from-blue-500 hover:to-purple-500 shadow-lg"
                   style={{ height: `${height}%` }}
                 />
-                <span className="text-xs text-white/60">
+                <span className="text-xs text-gray-500">
                   {['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i]}
                 </span>
               </div>
@@ -215,6 +206,6 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

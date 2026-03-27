@@ -1,9 +1,87 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminPage() {
   const router = useRouter()
+
+  const defaultBookings = [
+    { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'pending', guests: 2 },
+    { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
+    { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'pending', guests: 2 },
+    { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
+  ]
+
+  const [bookings, setBookings] = useState<any[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  const pendingBookings = bookings.filter((b) => b.status === 'pending' || b.status === 'vip')
+
+  useEffect(() => {
+    const storedBookings = localStorage.getItem('bookings')
+    if (storedBookings) {
+      try {
+        const parsed = JSON.parse(storedBookings)
+        if (Array.isArray(parsed)) {
+          setBookings(parsed)
+        } else {
+          setBookings(defaultBookings)
+        }
+      } catch (e) {
+        console.error('Error loading bookings from localStorage:', e)
+        setBookings(defaultBookings)
+      }
+    } else {
+      setBookings(defaultBookings)
+    }
+    setIsHydrated(true)
+  }, [])
+
+  const now = new Date()
+  const bookingsThisMonth = bookings.filter((booking: any) => {
+    const checkinDate = new Date(booking.checkin)
+    return (
+      checkinDate.getFullYear() === now.getFullYear() &&
+      checkinDate.getMonth() === now.getMonth()
+    )
+  }).length
+  const pendingCount = pendingBookings.filter((b: any) => b.status === 'pending').length
+  const checkedInCount = bookings.filter((b: any) => b.status === 'checked_in').length
+  const vipGuestCount = bookings.reduce((sum: number, b: any) => sum + (b.status === 'vip' ? (b.guests || 1) : 0), 0)
+  const newBookingsCount = bookingsThisMonth + pendingCount
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading dashboard...
+      </div>
+    )
+  }
+
+  const handleConfirmBooking = (booking: any) => {
+    console.log('Confirming booking:', booking)
+
+    const updatedBookings = bookings.map((b) =>
+      b.id === booking.id ? { ...b, status: 'confirmed' } : b
+    )
+    setBookings(updatedBookings)
+
+    // Booking confirmed successfully
+  }
+
+  const handleDeclineBooking = (booking: any) => {
+    console.log('Declining booking:', booking)
+    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed from pending.`)
+
+    if (confirmDecline) {
+      const updatedBookings = bookings.filter((b) => b.id !== booking.id)
+      setBookings(updatedBookings)
+      // Booking declined and removed
+    } else {
+      console.log('Decline cancelled')
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -28,7 +106,7 @@ export default function AdminPage() {
             </div>
             <div className="text-5xl float">💵</div>
           </div>
-          <div className="flex items-center gap-2 text-green-600 bg-green-100/50 px-3 py-1.5 rounded-full inline-block">
+          <div className="flex items-center gap-2 text-green-600 bg-green-100/50 px-3 py-1.5 rounded-full">
             <span>↑ 18%</span>
             <span className="font-semibold text-sm">vs yesterday</span>
           </div>
@@ -39,12 +117,12 @@ export default function AdminPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-gray-600 font-medium mb-2">New Bookings</p>
-              <p className="text-4xl font-bold gradient-text">24</p>
+              <p className="text-4xl font-bold gradient-text">{newBookingsCount}</p>
             </div>
             <div className="text-5xl float">📋</div>
           </div>
-          <div className="flex items-center gap-2 text-blue-600 bg-blue-100/50 px-3 py-1.5 rounded-full inline-block">
-            <span>+6</span>
+          <div className="flex items-center gap-2 text-blue-600 bg-blue-100/50 px-3 py-1.5 rounded-full">
+            <span>+{pendingCount}</span>
             <span className="font-semibold text-sm">pending confirmation</span>
           </div>
         </div>
@@ -54,12 +132,12 @@ export default function AdminPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-gray-600 font-medium mb-2">Check-ins</p>
-              <p className="text-4xl font-bold gradient-text">18</p>
+              <p className="text-4xl font-bold gradient-text">{checkedInCount}</p>
             </div>
             <div className="text-5xl float">🎉</div>
           </div>
-          <div className="flex items-center gap-2 text-purple-600 bg-purple-100/50 px-3 py-1.5 rounded-full inline-block">
-            <span className="font-semibold text-sm">5 VIP guests</span>
+          <div className="flex items-center gap-2 text-purple-600 bg-purple-100/50 px-3 py-1.5 rounded-full">
+            <span className="font-semibold text-sm">{vipGuestCount} VIP guests</span>
           </div>
         </div>
 
@@ -134,13 +212,8 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {[
-                { guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: 'Mar 25', checkout: 'Mar 28', nights: 3, amount: '$897', status: 'pending' },
-                { guest: 'Michael Chen', room: 'Executive King', checkin: 'Mar 26', checkout: 'Mar 30', nights: 4, amount: '$1,240', status: 'pending' },
-                { guest: 'Emma Williams', room: 'Standard Queen', checkin: 'Mar 27', checkout: 'Mar 29', nights: 2, amount: '$458', status: 'pending' },
-                { guest: 'James Brown', room: 'Presidential Suite', checkin: 'Mar 28', checkout: 'Apr 2', nights: 5, amount: '$2,495', status: 'vip' },
-              ].map((booking, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors slide-up" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
+              {pendingBookings.map((booking: any, index: number) => (
+                <tr key={booking.id} className="hover:bg-gray-50 transition-colors slide-up" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
@@ -170,13 +243,13 @@ export default function AdminPage() {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => alert(`Booking for ${booking.guest} confirmed!`)}
+                        onClick={() => handleConfirmBooking(booking)}
                         className="glass px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer"
                       >
                         ✓ Confirm
                       </button>
                       <button 
-                        onClick={() => alert(`Booking for ${booking.guest} declined`)}
+                        onClick={() => handleDeclineBooking(booking)}
                         className="glass px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-sm font-medium text-red-600 cursor-pointer"
                       >
                         ✕ Decline
@@ -221,7 +294,9 @@ export default function AdminPage() {
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">{arrival.time}</p>
                   <button 
-                    onClick={() => alert(`Checking in ${arrival.name} to Room ${arrival.room}...`)}
+                    onClick={() => {
+                      // Checking in guest
+                    }}
                     className="text-xs text-blue-600 font-medium hover:underline cursor-pointer"
                   >
                     Check-in →

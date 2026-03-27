@@ -1,27 +1,127 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+
+interface Booking {
+  id: number
+  guest: string
+  room: string
+  checkin: string
+  checkout: string
+  nights: number
+  amount: number
+  status: string
+  guests: number
+}
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 15)) // March 2026
   const [viewMode, setViewMode] = useState('month')
+  const [bookings, setBookings] = useState<Booking[]>([])
   const router = useRouter()
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
+  // Load bookings from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('bookings')
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setBookings(parsed)
+        }
+      } catch (e) {
+        console.error('Error loading bookings:', e)
+      }
+    }
+  }, [])
+
+  // Process bookings for calendar display
+  const getBookingsForDay = (day: number) => {
+    const currentMonth = currentDate.getMonth()
+    const currentYear = currentDate.getFullYear()
+    const targetDate = new Date(currentYear, currentMonth, day)
+    const targetDateStr = targetDate.toISOString().split('T')[0]
+
+    const dayBookings: any[] = []
+
+    bookings.forEach(booking => {
+      const checkinDate = new Date(booking.checkin)
+      const checkoutDate = new Date(booking.checkout)
+
+      // Check if this day is check-in
+      if (booking.checkin === targetDateStr) {
+        dayBookings.push({
+          ...booking,
+          type: 'check-in'
+        })
+      }
+      // Check if this day is during stay (between check-in and check-out, not check-in or check-out day)
+      else if (targetDate > checkinDate && targetDate < checkoutDate) {
+        dayBookings.push({
+          ...booking,
+          type: 'stay'
+        })
+      }
+      // Check if this day is check-out
+      else if (booking.checkout === targetDateStr) {
+        dayBookings.push({
+          ...booking,
+          type: 'check-out'
+        })
+      }
+    })
+
+    return dayBookings
+  }
+
+  // Calculate stats for current month
+  const calculateStats = () => {
+    const today = new Date()
+    const currentMonth = currentDate.getMonth()
+    const currentYear = currentDate.getFullYear()
+
+    let checkinsToday = 0
+    let checkoutsToday = 0
+    let occupiedRooms = 0
+    const totalRooms = 120
+
+    // Count today's check-ins and check-outs
+    bookings.forEach(booking => {
+      const checkinDate = new Date(booking.checkin)
+      const checkoutDate = new Date(booking.checkout)
+
+      if (checkinDate.toDateString() === today.toDateString()) {
+        checkinsToday++
+      }
+      if (checkoutDate.toDateString() === today.toDateString()) {
+        checkoutsToday++
+      }
+
+      // Count occupied rooms for today
+      if (today >= checkinDate && today < checkoutDate) {
+        occupiedRooms++
+      }
+    })
+
+    const occupancyRate = Math.round((occupiedRooms / totalRooms) * 100)
+    const availableRooms = totalRooms - occupiedRooms
+
+    return {
+      checkinsToday,
+      checkoutsToday,
+      occupancyRate,
+      availableRooms
+    }
+  }
+
+  const stats = calculateStats()
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December']
 
-  const bookings: any = {
-    5: [{ guest: 'John Smith', room: 'Deluxe Suite', type: 'check-in' }],
-    8: [{ guest: 'Sarah Johnson', room: 'Executive King', type: 'stay' }],
-    12: [{ guest: 'Mike Chen', room: 'Ocean View', type: 'check-out' }],
-    15: [{ guest: 'Emma Wilson', room: 'Presidential Suite', type: 'check-in' }, { guest: 'Tom Brown', room: 'Standard Queen', type: 'stay' }],
-    20: [{ guest: 'Lisa Anderson', room: 'Business Suite', type: 'check-in' }],
-    25: [{ guest: 'David Lee', room: 'Deluxe Suite', type: 'check-out' }],
-  }
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
 
   const TYPE_COLORS: any = {
     'check-in': 'bg-green-500',
@@ -32,7 +132,7 @@ export default function CalendarPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <header className="glass-card border-b border-gray-200 sticky top-0 z-50">
+      <header className="glass-card border-b border-gray-200 mb-8">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -56,7 +156,12 @@ export default function CalendarPage() {
                 ➕ New Booking
               </button>
               <button 
-                onClick={() => alert('Export calendar feature coming soon!')}
+                onClick={() => {
+                  const confirmExport = confirm('Export calendar to PDF?');
+                  if (confirmExport) {
+                    // Export logic would go here
+                  }
+                }}
                 className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 cursor-pointer"
               >
                 📥 Export
@@ -142,11 +247,11 @@ export default function CalendarPage() {
             <div className="ml-auto flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm text-gray-600">Occupancy Rate</p>
-                <p className="text-2xl font-bold gradient-text">78%</p>
+                <p className="text-2xl font-bold gradient-text">{stats.occupancyRate}%</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Available Rooms</p>
-                <p className="text-2xl font-bold gradient-text">26/120</p>
+                <p className="text-2xl font-bold gradient-text">{stats.availableRooms}/120</p>
               </div>
             </div>
           </div>
@@ -173,7 +278,8 @@ export default function CalendarPage() {
             {/* Days of the month */}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1
-              const hasBookings = bookings[day as keyof typeof bookings]
+              const dayBookings = getBookingsForDay(day)
+              const hasBookings = dayBookings.length > 0
               
               return (
                 <div
@@ -190,7 +296,7 @@ export default function CalendarPage() {
                     </span>
                     {hasBookings && (
                       <span className="text-xs text-gray-500">
-                        {hasBookings.length} booking{hasBookings.length > 1 ? 's' : ''}
+                        {dayBookings.length} booking{dayBookings.length > 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
@@ -198,7 +304,7 @@ export default function CalendarPage() {
                   {/* Booking Indicators */}
                   {hasBookings && (
                     <div className="space-y-1 overflow-y-auto max-h-24">
-                      {hasBookings.map((booking: any, idx: number) => (
+                      {dayBookings.map((booking: any, idx: number) => (
                         <div
                           key={idx}
                           className={`${TYPE_COLORS[booking.type]} text-white text-xs px-2 py-1 rounded truncate`}
@@ -220,10 +326,10 @@ export default function CalendarPage() {
         {/* Today's Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
           {[
-            { label: 'Check-ins Today', value: '12', icon: '🎉', color: 'border-green-500' },
-            { label: 'Check-outs Today', value: '8', icon: '👋', color: 'border-red-500' },
-            { label: 'Current Occupancy', value: '78%', icon: '📊', color: 'border-blue-500' },
-            { label: 'Available Rooms', value: '26', icon: '🏨', color: 'border-purple-500' },
+            { label: 'Check-ins Today', value: stats.checkinsToday.toString(), icon: '🎉', color: 'border-green-500' },
+            { label: 'Check-outs Today', value: stats.checkoutsToday.toString(), icon: '👋', color: 'border-red-500' },
+            { label: 'Current Occupancy', value: `${stats.occupancyRate}%`, icon: '📊', color: 'border-blue-500' },
+            { label: 'Available Rooms', value: `${stats.availableRooms}`, icon: '🏨', color: 'border-purple-500' },
           ].map((stat, index) => (
             <div 
               key={index}

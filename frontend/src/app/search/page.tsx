@@ -7,13 +7,13 @@ export default function SearchPage() {
   const [checkOut, setCheckOut] = useState('')
 
   return (
-    <main className="min-h-screen p-8 relative overflow-hidden">
+    <main className="min-h-screen p-8 relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-3 h-3 bg-white rounded-full opacity-10 float"
+            className="absolute w-3 h-3 bg-indigo-400 rounded-full opacity-10 float"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${20 + Math.random() * 60}%`,
@@ -28,24 +28,24 @@ export default function SearchPage() {
         {/* Header */}
         <div className="text-center space-y-4 fade-in">
           <div className="flex justify-center mb-6">
-            <div className="glass-card p-4 rounded-2xl glow float">
+            <div className="glass-card p-4 rounded-2xl shadow-xl float border border-gray-200">
               <span className="text-6xl">🔍</span>
             </div>
           </div>
-          <h1 className="text-6xl md:text-7xl font-extrabold gradient-text">
+          <h1 className="text-6xl md:text-7xl font-extrabold gradient-text drop-shadow-sm">
             Find Your Perfect Stay
           </h1>
-          <p className="text-xl text-white/90 font-light max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 font-light max-w-2xl mx-auto">
             Discover amazing hotels at unbeatable prices
           </p>
         </div>
 
         {/* Search Form */}
-        <div className="glass-card rounded-3xl p-8 shadow-2xl slide-up" style={{ animationDelay: '0.2s' }}>
+        <div className="glass-card rounded-3xl p-8 shadow-2xl slide-up border border-gray-200" style={{ animationDelay: '0.2s' }}>
           <div className="space-y-6">
             {/* Destination */}
             <div>
-              <label className="block text-lg font-semibold text-gray-800 mb-3">
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
                 📍 Where are you going?
               </label>
               <input
@@ -59,7 +59,7 @@ export default function SearchPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Check-in */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">
                   📅 Check-in
                 </label>
                 <input
@@ -72,7 +72,7 @@ export default function SearchPage() {
 
               {/* Check-out */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">
                   📅 Check-out
                 </label>
                 <input
@@ -85,7 +85,7 @@ export default function SearchPage() {
 
               {/* Guests */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">
                   👥 Guests
                 </label>
                 <select className="input-field w-full px-4 py-3 rounded-lg text-base focus:outline-none">
@@ -99,7 +99,7 @@ export default function SearchPage() {
 
               {/* Rooms */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">
                   🏨 Rooms
                 </label>
                 <select className="input-field w-full px-4 py-3 rounded-lg text-base focus:outline-none">
@@ -122,14 +122,14 @@ export default function SearchPage() {
         <div className="space-y-8">
           <div className="text-center slide-up" style={{ animationDelay: '0.4s' }}>
             <h2 className="text-4xl font-bold gradient-text mb-3">Featured Hotels</h2>
-            <p className="text-white/80 text-lg">Handpicked selection of the best properties</p>
+            <p className="text-gray-600 text-lg">Handpicked selection of the best properties</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((hotel, index) => (
               <div
                 key={hotel}
-                className="glass-card rounded-2xl overflow-hidden card-hover slide-up"
+                className="glass-card rounded-2xl overflow-hidden card-hover slide-up border border-gray-200"
                 style={{ animationDelay: `${0.5 + index * 0.1}s` }}
               >
                 {/* Hotel Image Placeholder */}
@@ -137,10 +137,10 @@ export default function SearchPage() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-8xl opacity-30">🏨</span>
                   </div>
-                  <div className="absolute top-4 right-4 glass px-3 py-1 rounded-full">
+                  <div className="absolute top-4 right-4 glass px-3 py-1 rounded-full border border-white/20">
                     <span className="text-yellow-400 font-bold">★★★★☆</span>
                   </div>
-                  <div className="absolute bottom-4 left-4 glass px-3 py-1 rounded-full">
+                  <div className="absolute bottom-4 left-4 glass px-3 py-1 rounded-full border border-white/20">
                     <span className="text-white font-semibold">Popular</span>
                   </div>
                 </div>
@@ -152,17 +152,17 @@ export default function SearchPage() {
                       Grand Palace Hotel {hotel}
                     </h3>
                     <p className="text-gray-600 flex items-center gap-2">
-                      <span>📍</span>
+                      <span className="text-blue-500">📍</span>
                       <span>New York, Manhattan</span>
                     </p>
                   </div>
 
                   {/* Amenities */}
                   <div className="flex flex-wrap gap-2">
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700">📶 WiFi</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700">🏊 Pool</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700">💪 Gym</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700">🅿️ Parking</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">📶 WiFi</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">🏊 Pool</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">💪 Gym</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">🅿️ Parking</span>
                   </div>
 
                   {/* Rating and Reviews */}
@@ -171,7 +171,7 @@ export default function SearchPage() {
                       <div className="flex text-yellow-500">
                         {'★'.repeat(4)}{'☆'}
                       </div>
-                      <span className="text-gray-600 text-sm">(248 reviews)</span>
+                      <span className="text-gray-500 text-sm">(248 reviews)</span>
                     </div>
                     <div className="text-right">
                       <span className="text-3xl font-bold gradient-text">$299</span>
@@ -190,7 +190,7 @@ export default function SearchPage() {
         </div>
 
         {/* Why Choose Us */}
-        <div className="glass-card rounded-3xl p-10 mt-16 slide-up" style={{ animationDelay: '1s' }}>
+        <div className="glass-card rounded-3xl p-10 mt-16 slide-up border border-gray-200" style={{ animationDelay: '1s' }}>
           <h2 className="text-4xl font-bold gradient-text text-center mb-10">Why Choose StayOS?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-4">

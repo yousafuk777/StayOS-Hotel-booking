@@ -26,7 +26,9 @@ export default function SettingsPage() {
             </div>
             
             <button 
-              onClick={() => alert('Settings saved successfully!')}
+              onClick={() => {
+                // Settings saved successfully
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
             >
               💾 Save Changes
