@@ -163,7 +163,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        alert(`Viewing details: ${notification.title}\n\n${notification.message}`);
+                        // Viewing notification details
                       }}
                       className="btn-primary px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer"
                     >

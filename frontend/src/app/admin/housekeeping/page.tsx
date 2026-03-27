@@ -344,7 +344,9 @@ export default function HousekeepingPage() {
                                 <div className="flex items-center gap-2">
                                   {room.status === 'cleaning' && (
                                     <button
-                                      onClick={() => alert(`Marking room ${room.number} as complete...`)}
+                                      onClick={() => {
+                                        // Marking room as complete
+                                      }}
                                       className="text-green-600 hover:text-green-900 px-3 py-1 rounded-lg hover:bg-green-50 transition-colors"
                                     >
                                       ✓ Complete
@@ -352,7 +354,9 @@ export default function HousekeepingPage() {
                                   )}
                                   {room.status === 'dirty' && (
                                     <button
-                                      onClick={() => alert(`Assigning cleaning task for room ${room.number}...`)}
+                                      onClick={() => {
+                                        // Assigning cleaning task
+                                      }}
                                       className="text-blue-600 hover:text-blue-900 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
                                     >
                                       🧹 Assign
@@ -360,14 +364,18 @@ export default function HousekeepingPage() {
                                   )}
                                   {room.status === 'inspection' && (
                                     <button
-                                      onClick={() => alert(`Approving room ${room.number}...`)}
+                                      onClick={() => {
+                                        // Approving room
+                                      }}
                                       className="text-purple-600 hover:text-purple-900 px-3 py-1 rounded-lg hover:bg-purple-50 transition-colors"
                                     >
                                       ✓ Approve
                                     </button>
                                   )}
                                   <button
-                                    onClick={() => alert(`Editing room ${room.number}...`)}
+                                    onClick={() => {
+                                      // Editing room
+                                    }}
                                     className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded-lg hover:bg-gray-50 transition-colors"
                                   >
                                     ✏️ Edit
@@ -462,7 +470,7 @@ export default function HousekeepingPage() {
               })
               
               setRooms(updatedRooms)
-              alert(`✅ Task Assigned Successfully!\n\nRoom: ${taskAssignment.roomNumber}\nAssigned to: ${taskAssignment.staff}\nTask: ${taskAssignment.task}`)
+              // Task assigned successfully
               setShowAssignModal(false)
               setTaskAssignment({ roomNumber: '', staff: 'Maria Garcia', task: 'Clean room' })
             }}>

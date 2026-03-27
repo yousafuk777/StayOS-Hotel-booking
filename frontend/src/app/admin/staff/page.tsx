@@ -298,7 +298,7 @@ export default function StaffPage() {
                 avatar: newStaff.name.split(' ').map(n => n[0]).join('').toUpperCase()
               }
               setStaff([...staff, staffMember])
-              alert(`✅ Staff member added successfully!\n\nName: ${staffMember.name}\nRole: ${staffMember.role}\nEmail: ${staffMember.email}\nPhone: ${staffMember.phone}\nStatus: ${staffMember.status}`)
+              // Staff member added successfully
               setShowAddModal(false)
               setNewStaff({ name: '', role: 'Front Desk Agent', email: '', phone: '', status: 'active' })
             }}>
@@ -423,7 +423,7 @@ export default function StaffPage() {
                 } : member
               )
               setStaff(updatedStaff)
-              alert(`✅ Staff member updated successfully!\n\nName: ${editStaffData.name}\nRole: ${editStaffData.role}\nEmail: ${editStaffData.email}\nPhone: ${editStaffData.phone}\nStatus: ${editStaffData.status}`)
+              // Staff member updated successfully
               setShowEditModal(false)
               setSelectedStaff(null)
             }}>

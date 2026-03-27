@@ -70,7 +70,7 @@ export default function NewBookingPage() {
     localStorage.setItem('bookings', JSON.stringify(existingBookings))
     
     // Show success message
-    alert(`✅ Booking created successfully!\n\nGuest: ${formData.guestName}\nRoom: ${formData.roomType}\nDates: ${formData.checkIn} → ${formData.checkOut}\nNights: ${nights}\nTotal: $${amount.toLocaleString()}\n\nRedirecting to bookings...`)
+    // Booking created successfully
     
     // Redirect to bookings page
     setTimeout(() => {

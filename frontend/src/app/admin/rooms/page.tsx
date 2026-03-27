@@ -434,7 +434,7 @@ export default function RoomsPage() {
             ⚡ Quick Actions
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Opening housekeeping task assignment...')}>
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {}}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🧹</div>
                 <span className="font-semibold text-gray-900">Update Housekeeping</span>
@@ -442,7 +442,9 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">Mark rooms as clean/ready</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Opening bulk price update tool...')}>
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
+              // Bulk price update logic would go here
+            }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">💲</div>
                 <span className="font-semibold text-gray-900">Bulk Price Update</span>
@@ -450,7 +452,9 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">Adjust rates for multiple rooms</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Generating availability report...')}>
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
+              // Availability report logic would go here
+            }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">📊</div>
                 <span className="font-semibold text-gray-900">Availability Report</span>
@@ -458,7 +462,9 @@ export default function RoomsPage() {
               <p className="text-sm text-gray-600">View occupancy analytics</p>
             </button>
 
-            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => alert('Managing room categories...')}>
+            <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
+              // Room categories management logic would go here
+            }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🏷️</div>
                 <span className="font-semibold text-gray-900">Room Categories</span>
@@ -495,7 +501,6 @@ export default function RoomsPage() {
                 capacity: newRoom.capacity
               }
               setRooms([...rooms, room])
-              alert(`✅ Room ${room.number} added successfully!\n\nType: ${room.type}\nFloor: ${room.floor}\nPrice: $${room.price}/night\nCapacity: ${room.capacity} guests\nStatus: ${room.status}`)
               setShowAddModal(false)
               setNewRoom({ number: '', type: 'Standard Queen', floor: 1, price: 199, capacity: 2, status: 'clean' })
             }}>
@@ -635,7 +640,6 @@ export default function RoomsPage() {
                 } : r
               )
               setRooms(updatedRooms)
-              alert(`✅ Room ${editRoomData.number} updated successfully!\n\nType: ${editRoomData.type}\nFloor: Floor ${editRoomData.floor}\nPrice: $${editRoomData.price}/night\nCapacity: ${editRoomData.capacity} guests`)
               setShowEditModal(false)
               setSelectedRoom(null)
             }}>

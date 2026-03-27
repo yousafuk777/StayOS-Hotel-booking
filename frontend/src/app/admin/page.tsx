@@ -38,12 +38,6 @@ export default function AdminPage() {
     setIsHydrated(true)
   }, [])
 
-  // Save bookings to localStorage whenever they change
-  useEffect(() => {
-    console.log('Saving bookings to localStorage:', bookings.length, 'bookings')
-    localStorage.setItem('bookings', JSON.stringify(bookings))
-  }, [bookings])
-
   const now = new Date()
   const bookingsThisMonth = bookings.filter((booking: any) => {
     const checkinDate = new Date(booking.checkin)
@@ -73,7 +67,7 @@ export default function AdminPage() {
     )
     setBookings(updatedBookings)
 
-    alert(`✅ Booking for ${booking.guest} confirmed!\n\nRoom: ${booking.room}\nCheck-in: ${booking.checkin}\nCheck-out: ${booking.checkout}\nNights: ${booking.nights}\nAmount: $${booking.amount.toLocaleString()}\n\nThe booking has been confirmed and will no longer appear in pending.`)
+    // Booking confirmed successfully
   }
 
   const handleDeclineBooking = (booking: any) => {
@@ -83,7 +77,7 @@ export default function AdminPage() {
     if (confirmDecline) {
       const updatedBookings = bookings.filter((b) => b.id !== booking.id)
       setBookings(updatedBookings)
-      alert(`❌ Booking for ${booking.guest} has been declined and removed from the system.`)
+      // Booking declined and removed
     } else {
       console.log('Decline cancelled')
     }
@@ -300,7 +294,9 @@ export default function AdminPage() {
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">{arrival.time}</p>
                   <button 
-                    onClick={() => alert(`Checking in ${arrival.name} to Room ${arrival.room}...`)}
+                    onClick={() => {
+                      // Checking in guest
+                    }}
                     className="text-xs text-blue-600 font-medium hover:underline cursor-pointer"
                   >
                     Check-in →

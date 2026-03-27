@@ -26,7 +26,9 @@ export default function PoliciesPage() {
             </div>
             
             <button 
-              onClick={() => alert('Policies saved successfully!')}
+              onClick={() => {
+                // Policies saved successfully
+              }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
             >
               💾 Save Policies

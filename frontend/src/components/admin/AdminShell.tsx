@@ -179,7 +179,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Content - Independent scrolling */}
-        <main className="flex-1 overflow-y-auto pt-20 p-8">
+        <main className="flex-1 overflow-y-auto pt-28 p-8">
           <div className="max-w-[1600px] mx-auto">
             {children}
           </div>

@@ -23,33 +23,16 @@ export default function CalendarPage() {
 
   // Load bookings from localStorage
   useEffect(() => {
-    const storedBookings = localStorage.getItem('bookings')
-    const defaultBookings: Booking[] = [
-      { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'confirmed', guests: 2 },
-      { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
-      { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'checked_in', guests: 2 },
-      { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
-      { id: 5, guest: 'Lisa Anderson', room: 'Ocean View', checkin: '2026-03-20', checkout: '2026-03-25', nights: 5, amount: 1875, status: 'checked_out', guests: 2 },
-    ]
-
-    if (storedBookings) {
+    const stored = localStorage.getItem('bookings')
+    if (stored) {
       try {
-        const parsed: Booking[] = JSON.parse(storedBookings)
+        const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Merge defaults with stored bookings
-          const mergedBookings = defaultBookings.map(defaultBooking => {
-            const stored = parsed.find(b => b.id === defaultBooking.id)
-            return stored || defaultBooking
-          }).concat(parsed.filter(b => b.id > 5))
-          setBookings(mergedBookings)
-        } else {
-          setBookings(defaultBookings)
+          setBookings(parsed)
         }
       } catch (e) {
-        setBookings(defaultBookings)
+        console.error('Error loading bookings:', e)
       }
-    } else {
-      setBookings(defaultBookings)
     }
   }, [])
 
@@ -176,7 +159,7 @@ export default function CalendarPage() {
                 onClick={() => {
                   const confirmExport = confirm('Export calendar to PDF?');
                   if (confirmExport) {
-                    alert('Calendar exported successfully! Download starting...');
+                    // Export logic would go here
                   }
                 }}
                 className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 cursor-pointer"

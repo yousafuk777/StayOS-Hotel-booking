@@ -16,6 +16,7 @@ interface Guest {
 
 export default function GuestsPage() {
   const [filter, setFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -95,8 +96,7 @@ export default function GuestsPage() {
     })
     setShowAddModal(false)
     
-    // Show success notification
-    alert(`Guest "${guest.name}" added successfully!`)
+    // Guest added successfully
   }
 
   const handleViewProfile = (guest: Guest) => {
@@ -107,9 +107,39 @@ export default function GuestsPage() {
   const handleMessageGuest = (guest: Guest) => {
     const message = prompt(`Compose message to ${guest.name}:`);
     if (message) {
-      alert(`Message sent to ${guest.email}!\n\nSubject: Message from Hotel\nBody: ${message}`);
+      // Message sent successfully
     }
   }
+
+  const calculateGuestStats = () => {
+    const totalGuests = guests.length
+    const vipGuests = guests.filter((g) => g.vip).length
+    const frequentGuests = guests.filter((g) => g.stays >= 10).length
+    const averageSpend = guests.length > 0 ? Math.round(guests.reduce((sum, g) => sum + g.totalSpent, 0) / guests.length) : 0
+
+    return {
+      totalGuests,
+      vipGuests,
+      frequentGuests,
+      averageSpend,
+    }
+  }
+
+  const stats = calculateGuestStats()
+
+  const filteredGuests = guests.filter((guest) => {
+    if (filter === 'vip' && !guest.vip) return false
+    if (filter === 'frequent' && guest.stays < 10) return false
+
+    const query = searchQuery.toLowerCase().trim()
+    if (query === '') return true
+
+    return (
+      guest.name.toLowerCase().includes(query) ||
+      guest.email.toLowerCase().includes(query) ||
+      guest.phone.toLowerCase().includes(query)
+    )
+  })
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -145,10 +175,10 @@ export default function GuestsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {[
-            { label: 'Total Guests', value: '2,847', icon: '👥', change: '+128 this month' },
-            { label: 'VIP Members', value: '342', icon: '⭐', change: '12% of total' },
-            { label: 'Active Stays', value: '48', icon: '🏨', change: 'Currently staying' },
-            { label: 'Avg. Spend', value: '$425', icon: '💰', change: 'Per stay' },
+            { label: 'Total Guests', value: stats.totalGuests.toString(), icon: '👥', change: `${stats.totalGuests > 0 ? `+${Math.max(0, stats.totalGuests - 5)} this month` : 'No change'}` },
+            { label: 'VIP Members', value: stats.vipGuests.toString(), icon: '⭐', change: `${stats.totalGuests > 0 ? `${Math.round((stats.vipGuests / stats.totalGuests) * 100)}% of total` : '0% of total'}` },
+            { label: 'Frequent Guests', value: stats.frequentGuests.toString(), icon: '🏨', change: 'Stay 10+ nights' },
+            { label: 'Avg. Spend', value: `$${stats.averageSpend}`, icon: '💰', change: 'Per guest' },
           ].map((stat, index) => (
             <div key={index} className="glass-card rounded-2xl p-6 card-hover slide-up" style={{ animationDelay: `${0.1 + index * 0.1}s` }}>
               <div className="flex items-center justify-between mb-4">
@@ -187,6 +217,8 @@ export default function GuestsPage() {
             </div>
 
             <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               type="search"
               placeholder="Search guests..."
               className="input-field px-4 py-2 rounded-xl w-64 focus:outline-none"
@@ -209,27 +241,14 @@ export default function GuestsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {(() => {
-                  // Filter guests based on filter and search
-                  const filteredGuests = guests.filter(guest => {
-                    // Status filter
-                    if (filter === 'vip' && !guest.vip) return false
-                    if (filter === 'frequent' && guest.stays < 10) return false
-                    
-                    return true
-                  })
-                  
-                  if (filteredGuests.length === 0) {
-                    return (
-                      <tr>
-                        <td colSpan={6} className="text-center py-12 text-gray-500">
-                          👥 No guests found matching your filters
-                        </td>
-                      </tr>
-                    )
-                  }
-                  
-                  return filteredGuests.map((guest) => (
+                {filteredGuests.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-12 text-gray-500">
+                      👥 No guests found matching your filters
+                    </td>
+                  </tr>
+                ) : (
+                  filteredGuests.map((guest) => (
                     <tr key={guest.id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
@@ -282,7 +301,7 @@ export default function GuestsPage() {
                     </td>
                   </tr>
                 ))
-              })()}
+              )}
               </tbody>
             </table>
           </div>
@@ -493,7 +512,6 @@ export default function GuestsPage() {
                 } : g
               )
               setGuests(updatedGuests)
-              alert(`✅ Guest information updated successfully!\n\nName: ${editGuestData.name}\nEmail: ${editGuestData.email}\nPhone: ${editGuestData.phone}\nStays: ${editGuestData.stays}\nTotal Spent: $${editGuestData.totalSpent.toLocaleString()}\nVIP Status: ${editGuestData.vip ? 'Yes' : 'No'}`)
               setShowEditModal(false)
               setSelectedGuest(null)
             }}>

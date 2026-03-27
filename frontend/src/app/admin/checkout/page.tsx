@@ -47,7 +47,7 @@ export default function CheckOutPage() {
   ]
 
   const handleCheckOut = (guest: string) => {
-    alert(`Checking out ${guest}...\n\n✓ Bill settled\n✓ Room key returned\n✓ Feedback collected\n\nCheckout complete!`)
+    // Checkout logic would go here
     router.push('/admin/bookings')
   }
 
@@ -107,7 +107,7 @@ export default function CheckOutPage() {
             onClick={() => {
               const confirmBulk = confirm('Process all pending checkouts?');
               if (confirmBulk) {
-                alert(`Processing ${todayCheckouts.filter(g => g.status === 'pending').length} checkouts...`);
+                // Bulk checkout processing logic would go here
               }
             }}
             className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
@@ -199,7 +199,7 @@ export default function CheckOutPage() {
               onClick={() => {
                 const enable = confirm('Enable automatic email invoice sending?');
                 if (enable) {
-                  alert('Auto-send email invoices enabled!');
+                  // Auto-send email invoices logic would go here
                 }
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
@@ -215,7 +215,7 @@ export default function CheckOutPage() {
               onClick={() => {
                 const enable = confirm('Enable automatic payment charging?');
                 if (enable) {
-                  alert('Auto-charge payments enabled!');
+                  // Auto-charge payments logic would go here
                 }
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
@@ -231,7 +231,7 @@ export default function CheckOutPage() {
               onClick={() => {
                 const enable = confirm('Enable automatic review requests?');
                 if (enable) {
-                  alert('Auto-request reviews enabled!');
+                  // Auto-request reviews logic would go here
                 }
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"

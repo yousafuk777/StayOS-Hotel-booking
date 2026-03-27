@@ -144,7 +144,7 @@ export default function HelpPage() {
             <p className="text-gray-600 mb-4">Get help via email</p>
             <button
               onClick={() => {
-                alert('Opening email client...\nSupport email: support@grandplaza.com');
+                // Opening email client
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
             >
@@ -159,7 +159,7 @@ export default function HelpPage() {
               onClick={() => {
                 const chatOpen = confirm('Start live chat with support team?');
                 if (chatOpen) {
-                  alert('Connecting to live chat...');
+                  // Connecting to live chat
                 }
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
@@ -173,7 +173,7 @@ export default function HelpPage() {
             <p className="text-gray-600 mb-4">Call us directly</p>
             <button
               onClick={() => {
-                alert('Dialing support number: +1 (555) 123-4567...');
+                // Dialing support number
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold w-full cursor-pointer"
             >
@@ -197,13 +197,13 @@ export default function HelpPage() {
               key={index}
               onClick={() => {
                 if (link.name === 'User Guide') {
-                  alert('Opening user guide PDF...');
+                  // Opening user guide PDF
                 } else if (link.name === 'Video Tutorials') {
-                  alert('Loading video tutorials...');
+                  // Loading video tutorials
                 } else if (link.name === 'System Status') {
-                  alert('✓ All systems operational');
+                  // All systems operational
                 } else if (link.name === 'Feature Requests') {
-                  alert('Opening feature request form...');
+                  // Opening feature request form
                 }
               }}
               className="glass p-6 rounded-xl hover:bg-gray-50 transition-all text-left cursor-pointer"

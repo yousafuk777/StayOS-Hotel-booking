@@ -36,81 +36,22 @@ export default function BookingsPage() {
 
   // Load bookings from localStorage on mount
   useEffect(() => {
-    console.log('Loading bookings from localStorage...')
-    const storedBookings = localStorage.getItem('bookings')
-    if (storedBookings) {
+    const stored = localStorage.getItem('bookings')
+    if (stored) {
       try {
-        const parsed: Booking[] = JSON.parse(storedBookings)
-        console.log('Loaded', parsed.length, 'bookings from localStorage')
+        const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Start with default bookings
-          const defaultBookings: Booking[] = [
-            { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'confirmed', guests: 2 },
-            { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
-            { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'checked_in', guests: 2 },
-            { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
-            { id: 5, guest: 'Lisa Anderson', room: 'Ocean View', checkin: '2026-03-20', checkout: '2026-03-25', nights: 5, amount: 1875, status: 'checked_out', guests: 2 },
-          ]
-          
-          // Merge: use stored versions for modified defaults, keep defaults for unmodified, add user-created
-          const mergedBookings = defaultBookings.map(defaultBooking => {
-            const stored = parsed.find(b => b.id === defaultBooking.id)
-            return stored || defaultBooking
-          }).concat(parsed.filter(b => b.id > 5))
-          
-          setBookings(mergedBookings)
-          console.log('Total bookings after merge:', mergedBookings.length)
+          setBookings(parsed)
         }
       } catch (e) {
-        console.error('Error loading bookings from localStorage:', e)
+        console.error('Error loading bookings:', e)
       }
-    } else {
-      console.log('No saved bookings found in localStorage, using defaults')
     }
   }, [])
 
-  // Helper function to save user-created bookings to localStorage
+  // Helper function to save bookings to localStorage
   const saveToLocalStorage = (currentBookings: Booking[]) => {
-    // Save ALL bookings except the hardcoded defaults (IDs 1-5)
-    // This includes:
-    // - User-created bookings (ID > 5 or timestamp-based)
-    // - Updated versions of default bookings (we need to track these separately)
-    const userCreatedBookings = currentBookings.filter(b => b.id > 5)
-    
-    // Also check if any default bookings have been modified
-    const defaultBookingsMap: { [key: number]: Booking } = {
-      1: { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'confirmed', guests: 2 },
-      2: { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
-      3: { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'checked_in', guests: 2 },
-      4: { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
-      5: { id: 5, guest: 'Lisa Anderson', room: 'Ocean View', checkin: '2026-03-20', checkout: '2026-03-25', nights: 5, amount: 1875, status: 'checked_out', guests: 2 },
-    }
-    
-    // Find modified default bookings
-    const modifiedDefaults = currentBookings.filter(b => {
-      if (b.id >= 1 && b.id <= 5) {
-        const original = defaultBookingsMap[b.id]
-        return original && (
-          b.guest !== original.guest ||
-          b.room !== original.room ||
-          b.checkin !== original.checkin ||
-          b.checkout !== original.checkout ||
-          b.nights !== original.nights ||
-          b.amount !== original.amount ||
-          b.status !== original.status ||
-          b.guests !== original.guests
-        )
-      }
-      return false
-    })
-    
-    // Combine user-created and modified default bookings
-    const allUserBookings = [...userCreatedBookings, ...modifiedDefaults]
-    
-    console.log('Saving to localStorage:', allUserBookings.length, 'bookings')
-    console.log('Modified defaults:', modifiedDefaults.length)
-    localStorage.setItem('bookings', JSON.stringify(allUserBookings))
-    console.log('Saved bookings JSON:', localStorage.getItem('bookings'))
+    localStorage.setItem('bookings', JSON.stringify(currentBookings))
   }
 
   const [newBooking, setNewBooking] = useState({
@@ -121,7 +62,8 @@ export default function BookingsPage() {
     checkin: '',
     checkout: '',
     guests: 1,
-    specialRequests: ''
+    specialRequests: '',
+    status: 'pending'
   })
 
   const totalBookings = bookings.length
@@ -170,7 +112,7 @@ export default function BookingsPage() {
       checkout: newBooking.checkout,
       nights: nights || 1,
       amount: Math.floor(Math.random() * 2000) + 500,
-      status: 'pending',
+      status: newBooking.status,
       guests: newBooking.guests
     }
   
@@ -188,10 +130,10 @@ export default function BookingsPage() {
       checkin: '',
       checkout: '',
       guests: 1,
-      specialRequests: ''
+      specialRequests: '',
+      status: 'pending'
     })
     setShowAddModal(false)
-    alert(`Booking for "${booking.guest}" created successfully!`)
   }
   
   const handleViewBooking = (booking: Booking) => {
@@ -218,7 +160,6 @@ export default function BookingsPage() {
       
     setShowEditModal(false)
     setSelectedBooking(null)
-    alert(`Booking for "${selectedBooking.guest}" updated successfully!`)
   }
   
   return (
@@ -252,7 +193,7 @@ export default function BookingsPage() {
                 onClick={() => {
                   const confirmExport = confirm('Export all bookings to CSV?');
                   if (confirmExport) {
-                    alert('Bookings exported successfully! Download starting...');
+                    // Export logic would go here
                   }
                 }}
                 className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 cursor-pointer"
@@ -583,6 +524,25 @@ export default function BookingsPage() {
                     <option>Ocean View</option>
                     <option>Presidential Suite</option>
                     <option>Business Suite</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Booking Status *
+                  </label>
+                  <select
+                    required
+                    value={newBooking.status}
+                    onChange={(e) => setNewBooking({...newBooking, status: e.target.value})}
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="checked_in">Checked In</option>
+                    <option value="checked_out">Checked Out</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="vip">VIP</option>
                   </select>
                 </div>
 

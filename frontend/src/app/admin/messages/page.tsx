@@ -112,7 +112,7 @@ export default function MessagesPage() {
               onClick={() => {
                 const subject = prompt('Enter message subject:');
                 if (subject) {
-                  alert(`Composing new message: "${subject}"...`);
+                  // Composing new message
                 }
               }}
               className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
@@ -162,7 +162,7 @@ export default function MessagesPage() {
                       e.stopPropagation()
                       const reply = prompt(`Reply to ${message.from}:`);
                       if (reply) {
-                        alert(`Reply sent to ${message.from}!`);
+                        // Reply sent successfully
                       }
                     }}
                     className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium cursor-pointer"
@@ -172,7 +172,7 @@ export default function MessagesPage() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()
-                      alert(`Message archived successfully!`);
+                      // Message archived successfully
                     }}
                     className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium cursor-pointer"
                   >
@@ -202,7 +202,7 @@ export default function MessagesPage() {
               onClick={() => {
                 const useTemplate = confirm(`Use "${template.name}" template?`);
                 if (useTemplate) {
-                  alert(`Loading template: ${template.name}...`);
+                  // Loading template
                 }
               }}
               className="glass p-4 rounded-xl hover:bg-gray-50 transition-all text-left cursor-pointer"
