@@ -70,24 +70,25 @@ body {
 /* Glass morphism effect */
 .glass {
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .glass-dark {
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  background: rgba(255, 255, 255, 0.85); /* Much lighter background - almost solid white */
+  backdrop-filter: none;           /* Removed blur */
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); /* Stronger shadow for depth */
+  
 }
 
 /* Gradient text */
@@ -151,9 +152,9 @@ body {
 
 /* Input field animations */
 .input-field {
-  transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  color: #111827; /* Dark text inside input for contrast */
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.95) !important;
 }
 
 .input-field:focus {
@@ -163,6 +164,26 @@ body {
   background: rgba(255, 255, 255, 1);
 }
 
+label {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Form label styling for better visibility */
+.form-label {
+  color: #000000 !important;         /* Pure BLACK text for maximum contrast on light background */
+  font-weight: 900 !important;       /* Maximum boldness */
+  font-size: 0.95rem !important;     /* Slightly larger for clarity */
+  margin-bottom: 0.5rem;
+  display: block;
+  text-transform: uppercase;         /* Capital letters zyada saaf nazar aate hain */
+  letter-spacing: 1.2px;             /* Increased spacing for readability */
+  /* No shadow needed on light background - clean and crisp */
+    
+  opacity: 1 !important;             /* Check karein ke kahin opacity kam toh nahi */
+  position: relative;
+  z-index: 10;                       /* Blur effect ke upar rakhne ke liye */
+}
 /* Fade in animation */
 @keyframes fadeIn {
   from {
