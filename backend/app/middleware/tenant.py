@@ -13,11 +13,7 @@ class TenantMiddleware(BaseHTTPMiddleware):
     """
 
     # Paths that don't require tenant resolution
-<<<<<<< HEAD
-    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/redoc", "/api/v1/super-admin", "/api/v1/auth"]
-=======
-    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/api/v1/super-admin", "/api/v1/bookings"]
->>>>>>> main
+    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/redoc", "/api/v1/super-admin", "/api/v1/auth", "/api/v1/bookings"]
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
