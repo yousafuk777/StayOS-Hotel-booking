@@ -10,7 +10,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 async def get_db() -> AsyncSession:
     """Dependency for getting async database sessions."""
-    async with get_db_session() as session:
+    async for session in get_db_session():
         yield session
 
 
@@ -34,8 +34,22 @@ async def get_current_user(
     return user
 
 
+from app.models.user import UserRole
+
+# ... existing code ...
+
 async def get_current_active_user(current_user=Depends(get_current_user)):
     """Get current active and verified user."""
     if not current_user.is_verified:
         raise HTTPException(status_code=403, detail="Email not verified")
-    return user
+    return current_user
+
+
+async def get_current_super_admin(current_user=Depends(get_current_active_user)):
+    """Verify that the current user is a super admin."""
+    if current_user.role != UserRole.super_admin:
+        raise HTTPException(
+            status_code=403, 
+            detail="The user does not have enough privileges"
+        )
+    return current_user

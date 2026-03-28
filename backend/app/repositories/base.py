@@ -38,6 +38,8 @@ class TenantScopedRepository(Generic[T]):
     @classmethod
     async def create(cls, db: AsyncSession, tenant_id: int, data: Dict[str, Any]) -> T:
         """Create new record with tenant_id."""
+        # Remove tenant_id from data if it exists to avoid duplicate keyword argument errors
+        data.pop('tenant_id', None)
         obj = cls.model(**data, tenant_id=tenant_id)
         db.add(obj)
         await db.commit()

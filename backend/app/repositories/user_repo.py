@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.models.user import User
 from app.repositories.base import TenantScopedRepository
 
@@ -18,8 +18,8 @@ class UserRepository(TenantScopedRepository):
         return result.scalar_one_or_none()
 
     @classmethod
-    async def get_by_email(cls, db: AsyncSession, tenant_id: int, email: str):
-        """Get user by email within tenant."""
+    async def get_by_email(cls, db: AsyncSession, tenant_id, email: str):
+        """Get user by email within tenant (tenant_id=None for super-admin)."""
         result = await db.execute(
             select(User).where(
                 User.email == email,
@@ -29,8 +29,10 @@ class UserRepository(TenantScopedRepository):
         return result.scalar_one_or_none()
 
     @classmethod
-    async def create(cls, db: AsyncSession, tenant_id: int, data: dict):
+    async def create(cls, db: AsyncSession, tenant_id, data: dict):
         """Create a new user."""
+        # Remove tenant_id from data if it exists to avoid duplicate keyword argument errors
+        data.pop('tenant_id', None)
         user = cls.model(**data, tenant_id=tenant_id)
         db.add(user)
         await db.commit()
@@ -38,7 +40,48 @@ class UserRepository(TenantScopedRepository):
         return user
 
     @classmethod
+    async def get_all(cls, db: AsyncSession, skip: int = 0, limit: int = 100):
+        """Get all users across all tenants (super-admin use)."""
+        result = await db.execute(
+            select(User)
+            .where(User.is_deleted == False)
+            .order_by(User.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    @classmethod
+    async def get_count(cls, db: AsyncSession):
+        """Get total user count across all tenants."""
+        result = await db.execute(
+            select(func.count()).select_from(User).where(User.is_deleted == False)
+        )
+        return result.scalar() or 0
+
+    @classmethod
+    async def update_global(cls, db: AsyncSession, user_id: int, data: dict):
+        """Update user record globally (Super Admin)."""
+        user = await cls.get_by_id(db, user_id)
+        if user:
+            for key, value in data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    @classmethod
+    async def delete_global(cls, db: AsyncSession, user_id: int):
+        """Soft delete user record globally (Super Admin)."""
+        user = await cls.get_by_id(db, user_id)
+        if user:
+            user.is_deleted = True
+            await db.commit()
+            return True
+        return False
+
+    @classmethod
     async def set_verification_token(cls, db: AsyncSession, user_id: int, token: str):
-        """Store email verification token (simplified - would use separate table in production)."""
-        # In production, create a separate verification_tokens table
+        """Store email verification token (simplified)."""
         pass

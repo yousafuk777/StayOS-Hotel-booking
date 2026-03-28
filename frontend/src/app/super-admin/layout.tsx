@@ -1,11 +1,62 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const [adminName, setAdminName] = useState('Super Admin')
+  const [authChecked, setAuthChecked] = useState(false)
+
+  // ── Auth guard ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    // Skip guard on the login page itself
+    if (pathname === '/super-admin/login') {
+      setAuthChecked(true)
+      return
+    }
+
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.replace('/super-admin/login')
+      return
+    }
+
+    // Populate admin name from stored user object if present
+    try {
+      const stored = localStorage.getItem('super_admin_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        if (user.first_name) setAdminName(`${user.first_name} ${user.last_name || ''}`.trim())
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    setAuthChecked(true)
+  }, [pathname, router])
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('super_admin_user')
+    router.replace('/super-admin/login')
+  }
+
+  // ── Don't render the shell on the login page ────────────────────────────
+  if (pathname === '/super-admin/login') {
+    return <>{children}</>
+  }
+
+  // Show nothing while checking auth (avoids flash of protected content)
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600" />
+      </div>
+    )
+  }
 
   const sidebarItems = [
     { id: 'overview', icon: '📊', label: 'Overview', href: '/super-admin' },
@@ -22,7 +73,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Sidebar - Fixed with independent scrolling */}
+      {/* Sidebar */}
       <aside className="w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40">
         <div className="px-4 py-6">
           <Link href="/super-admin" className="flex items-center gap-3 mb-6 px-4">
@@ -131,12 +182,24 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               </div>
             </div>
           </div>
+
+          {/* Logout */}
+          <div className="mt-6 px-4">
+            <button
+              id="sa-logout-btn"
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all font-medium text-sm"
+            >
+              <span>🚪</span>
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main Content Area - Independent scrolling */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col ml-72">
-        {/* Top Header Bar - Fixed */}
+        {/* Top Header Bar */}
         <header className="glass-card border-b border-gray-200 fixed top-0 right-0 left-72 z-30">
           <div className="max-w-[1800px] mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
@@ -146,24 +209,20 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                     <span className="text-sm text-gray-600">Platform Status:</span>
                     <span className="text-green-600 font-semibold ml-2">● Online</span>
                   </div>
-                  <div className="glass px-4 py-2 rounded-lg">
-                    <span className="text-sm text-gray-600">Tenants:</span>
-                    <span className="text-blue-600 font-semibold ml-2">142</span>
-                  </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <button className="glass p-3 rounded-xl hover:bg-gray-50 transition-all relative">
                   <span className="text-xl">🔔</span>
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 </button>
                 <div className="flex items-center gap-3 ml-2">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold">SA</span>
+                    <span className="text-white font-bold text-sm">SA</span>
                   </div>
                   <div className="hidden lg:block">
-                    <p className="text-sm font-semibold text-gray-900">System Admin</p>
+                    <p className="text-sm font-semibold text-gray-900">{adminName}</p>
                     <p className="text-xs text-gray-600">Super Administrator</p>
                   </div>
                 </div>
@@ -172,7 +231,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           </div>
         </header>
 
-        {/* Page Content - Independent scrolling */}
+        {/* Page Content */}
         <main className="flex-1 overflow-y-auto pt-32 p-8">
           <div className="max-w-[1800px] mx-auto">
             {children}
