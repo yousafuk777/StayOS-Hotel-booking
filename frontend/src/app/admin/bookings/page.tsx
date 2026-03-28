@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 interface Booking {
   id: number
@@ -17,6 +18,7 @@ interface Booking {
 
 export default function BookingsPage() {
   const [filter, setFilter] = useState('all')
+  const [bookingStatsFilter, setBookingStatsFilter] = useState<'all' | 'total' | 'pending' | 'checkedin' | 'revenue'>('all')
   const [viewMode, setViewMode] = useState('list')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
@@ -26,13 +28,89 @@ export default function BookingsPage() {
   const [selectedRoom, setSelectedRoom] = useState('all')
   const router = useRouter()
 
-  const [bookings, setBookings] = useState<Booking[]>([
-    { id: 1, guest: 'Sarah Johnson', room: 'Deluxe Suite', checkin: '2026-03-25', checkout: '2026-03-28', nights: 3, amount: 897, status: 'confirmed', guests: 2 },
-    { id: 2, guest: 'Michael Chen', room: 'Executive King', checkin: '2026-03-26', checkout: '2026-03-30', nights: 4, amount: 1240, status: 'pending', guests: 1 },
-    { id: 3, guest: 'Emma Williams', room: 'Standard Queen', checkin: '2026-03-27', checkout: '2026-03-29', nights: 2, amount: 458, status: 'checked_in', guests: 2 },
-    { id: 4, guest: 'James Brown', room: 'Presidential Suite', checkin: '2026-03-28', checkout: '2026-04-02', nights: 5, amount: 2495, status: 'vip', guests: 3 },
-    { id: 5, guest: 'Lisa Anderson', room: 'Ocean View', checkin: '2026-03-20', checkout: '2026-03-25', nights: 5, amount: 1875, status: 'checked_out', guests: 2 },
-  ])
+  const [bookings, setBookings] = useState<Booking[]>([])
+
+  const getSampleBookings = () => {
+    return [
+      {
+        id: 1,
+        guest: 'John Smith',
+        room: 'Deluxe Suite',
+        checkin: '2026-03-25',
+        checkout: '2026-03-29',
+        nights: 4,
+        amount: 1196,
+        status: 'checked_in',
+        guests: 2
+      },
+      {
+        id: 2,
+        guest: 'Sarah Johnson',
+        room: 'Ocean View',
+        checkin: '2026-03-27',
+        checkout: '2026-03-31',
+        nights: 4,
+        amount: 1596,
+        status: 'confirmed',
+        guests: 3
+      },
+      {
+        id: 3,
+        guest: 'Michael Chen',
+        room: 'Executive King',
+        checkin: '2026-03-26',
+        checkout: '2026-03-28',
+        nights: 2,
+        amount: 698,
+        status: 'checked_in',
+        guests: 1
+      },
+      {
+        id: 4,
+        guest: 'Emma Wilson',
+        room: 'Standard Queen',
+        checkin: '2026-03-27',
+        checkout: '2026-03-30',
+        nights: 3,
+        amount: 597,
+        status: 'confirmed',
+        guests: 2
+      },
+      {
+        id: 5,
+        guest: 'David Brown',
+        room: 'Presidential Suite',
+        checkin: '2026-03-24',
+        checkout: '2026-03-27',
+        nights: 3,
+        amount: 2697,
+        status: 'checked_in',
+        guests: 4
+      },
+      {
+        id: 6,
+        guest: 'Lisa Anderson',
+        room: 'Business Suite',
+        checkin: '2026-03-28',
+        checkout: '2026-04-01',
+        nights: 4,
+        amount: 1796,
+        status: 'pending',
+        guests: 2
+      },
+      {
+        id: 7,
+        guest: 'James Wilson',
+        room: 'Ocean View',
+        checkin: '2026-03-26',
+        checkout: '2026-03-27',
+        nights: 1,
+        amount: 399,
+        status: 'checked_in',
+        guests: 1
+      }
+    ]
+  }
 
   // Load bookings from localStorage on mount
   useEffect(() => {
@@ -42,16 +120,27 @@ export default function BookingsPage() {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
           setBookings(parsed)
+        } else {
+          setBookings(getSampleBookings())
         }
       } catch (e) {
         console.error('Error loading bookings:', e)
+        setBookings(getSampleBookings())
       }
+    } else {
+      setBookings(getSampleBookings())
     }
   }, [])
 
   // Helper function to save bookings to localStorage
   const saveToLocalStorage = (currentBookings: Booking[]) => {
     localStorage.setItem('bookings', JSON.stringify(currentBookings))
+  }
+
+  // Parse date string in format YYYY-MM-DD as local date
+  const parseLocalDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
   }
 
   const [newBooking, setNewBooking] = useState({
@@ -100,8 +189,8 @@ export default function BookingsPage() {
   const handleAddBooking = (e: React.FormEvent) => {
     e.preventDefault()
       
-    const checkinDate = new Date(newBooking.checkin)
-    const checkoutDate = new Date(newBooking.checkout)
+    const checkinDate = parseLocalDate(newBooking.checkin)
+    const checkoutDate = parseLocalDate(newBooking.checkout)
     const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
       
     const booking: Booking = {
@@ -254,26 +343,42 @@ export default function BookingsPage() {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 slide-up" style={{ animationDelay: '0.1s' }}>
-          <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
-            <p className="text-gray-600 font-medium mb-2">Total Bookings</p>
-            <p className="text-4xl font-bold gradient-text">{totalBookings}</p>
-            <p className="text-sm text-gray-600 mt-2">This month: {bookingsThisMonth}</p>
-          </div>
-          <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-yellow-500">
-            <p className="text-gray-600 font-medium mb-2">Pending</p>
-            <p className="text-4xl font-bold gradient-text">{pendingBookings}</p>
-            <p className="text-sm text-gray-600 mt-2">Awaiting confirmation</p>
-          </div>
-          <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
-            <p className="text-gray-600 font-medium mb-2">Checked In</p>
-            <p className="text-4xl font-bold gradient-text">{checkedInBookings}</p>
-            <p className="text-sm text-gray-600 mt-2">Currently staying</p>
-          </div>
-          <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-purple-500">
-            <p className="text-gray-600 font-medium mb-2">Revenue</p>
-            <p className="text-4xl font-bold gradient-text">${(revenueThisMonth / 1000).toFixed(1)}K</p>
-            <p className="text-sm text-gray-600 mt-2">Monthly total</p>
-          </div>
+          <StatCard
+            label="Total Bookings"
+            value={totalBookings}
+            icon="📖"
+            color="blue"
+            subtext={`This month: ${bookingsThisMonth}`}
+            onClick={() => setFilter('all')}
+            isActive={filter === 'all'}
+          />
+          <StatCard
+            label="Pending"
+            value={pendingBookings}
+            icon="⏳"
+            color="orange"
+            subtext="Awaiting confirmation"
+            onClick={() => setFilter('pending')}
+            isActive={filter === 'pending'}
+          />
+          <StatCard
+            label="Checked In"
+            value={checkedInBookings}
+            icon="✅"
+            color="green"
+            subtext="Currently staying"
+            onClick={() => setFilter('checked_in')}
+            isActive={filter === 'checked_in'}
+          />
+          <StatCard
+            label="Revenue"
+            value={`$${(revenueThisMonth / 1000).toFixed(1)}K`}
+            icon="💵"
+            color="purple"
+            subtext="Monthly total"
+            onClick={() => setBookingStatsFilter('revenue')}
+            isActive={bookingStatsFilter === 'revenue'}
+          />
         </div>
 
         {/* Bookings Table */}

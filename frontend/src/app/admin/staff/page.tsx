@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function StaffPage() {
   const [filter, setFilter] = useState('all')
+  const [staffFilter, setStaffFilter] = useState<'all' | 'active' | 'on_leave' | 'new_hires'>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -118,23 +120,42 @@ export default function StaffPage() {
       <div className="max-w-[1600px] mx-auto p-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            { label: 'Total Staff', value: stats.totalStaff.toString(), icon: '👥', change: 'Current headcount' },
-            { label: 'Active Now', value: stats.activeStaff.toString(), icon: '✓', change: 'Currently working' },
-            { label: 'On Leave', value: stats.onLeaveStaff.toString(), icon: '🏖️', change: 'Expected back soon' },
-            { label: 'New Hires', value: stats.newHires.toString(), icon: '🎉', change: 'Recent additions' },
-          ].map((stat, index) => (
-            <div key={index} className="glass-card rounded-2xl p-6 card-hover slide-up" style={{ animationDelay: `${0.1 + index * 0.1}s` }}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 font-medium mb-2">{stat.label}</p>
-                  <p className="text-4xl font-bold gradient-text">{stat.value}</p>
-                </div>
-                <div className="text-5xl float">{stat.icon}</div>
-              </div>
-              <p className="text-sm text-gray-600">{stat.change}</p>
-            </div>
-          ))}
+          <StatCard
+            label="Total Staff"
+            value={stats.totalStaff}
+            icon="👥"
+            color="blue"
+            subtext="Current headcount"
+            onClick={() => setStaffFilter('all')}
+            isActive={staffFilter === 'all'}
+          />
+          <StatCard
+            label="Active Now"
+            value={stats.activeStaff}
+            icon="✓"
+            color="green"
+            subtext="Currently working"
+            onClick={() => setStaffFilter('active')}
+            isActive={staffFilter === 'active'}
+          />
+          <StatCard
+            label="On Leave"
+            value={stats.onLeaveStaff}
+            icon="🏖️"
+            color="orange"
+            subtext="Expected back soon"
+            onClick={() => setStaffFilter('on_leave')}
+            isActive={staffFilter === 'on_leave'}
+          />
+          <StatCard
+            label="New Hires"
+            value={stats.newHires}
+            icon="🎉"
+            color="purple"
+            subtext="Recent additions"
+            onClick={() => setStaffFilter('new_hires')}
+            isActive={staffFilter === 'new_hires'}
+          />
         </div>
 
         {/* Filters */}
@@ -148,9 +169,9 @@ export default function StaffPage() {
               ].map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setFilter(item.id)}
+                  onClick={() => setStaffFilter(item.id as any)}
                   className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                    filter === item.id
+                    staffFilter === item.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
                       : 'glass hover:bg-gray-50 text-gray-700'
                   }`}
@@ -185,10 +206,12 @@ export default function StaffPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {(() => {
-                  // Filter staff based on filter and search
+                  // Filter staff based on staffFilter and search
                   const filteredStaff = staff.filter(member => {
-                    // Status filter
-                    if (filter !== 'all' && member.status !== filter) return false
+                    // Status filter from stat cards
+                    if (staffFilter === 'active' && member.status !== 'active') return false
+                    if (staffFilter === 'on_leave' && member.status !== 'on_leave') return false
+                    if (staffFilter === 'new_hires' && member.id <= 10) return false // New hires have IDs > 10
                     
                     // Search filter
                     if (searchQuery && !member.name.toLowerCase().includes(searchQuery.toLowerCase()) && 

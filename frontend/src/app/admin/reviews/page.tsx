@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function ReviewsPage() {
   const [filter, setFilter] = useState('all')
+  const [reviewsFilter, setReviewsFilter] = useState<'all' | 'rating' | 'total' | 'pending' | 'month'>('all')
   const router = useRouter()
 
   const reviews = [
@@ -40,23 +42,42 @@ export default function ReviewsPage() {
       <div className="max-w-[1600px] mx-auto p-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            { label: 'Average Rating', value: '4.6/5', icon: '⭐', change: 'Based on 1,247 reviews' },
-            { label: 'Total Reviews', value: '1,247', icon: '📝', change: 'All time' },
-            { label: 'Pending Response', value: '23', icon: '⏳', change: 'Need attention' },
-            { label: 'This Month', value: '89', icon: '📊', change: '+12 from last month' },
-          ].map((stat, index) => (
-            <div key={index} className="glass-card rounded-2xl p-6 card-hover slide-up" style={{ animationDelay: `${0.1 + index * 0.1}s` }}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 font-medium mb-2">{stat.label}</p>
-                  <p className="text-4xl font-bold gradient-text">{stat.value}</p>
-                </div>
-                <div className="text-5xl float">{stat.icon}</div>
-              </div>
-              <p className="text-sm text-gray-600">{stat.change}</p>
-            </div>
-          ))}
+          <StatCard
+            label="Average Rating"
+            value="4.6/5"
+            icon="⭐"
+            color="orange"
+            subtext="Based on 1,247 reviews"
+            onClick={() => setReviewsFilter('rating')}
+            isActive={reviewsFilter === 'rating'}
+          />
+          <StatCard
+            label="Total Reviews"
+            value="1,247"
+            icon="📝"
+            color="blue"
+            subtext="All time"
+            onClick={() => setReviewsFilter('total')}
+            isActive={reviewsFilter === 'total'}
+          />
+          <StatCard
+            label="Pending Response"
+            value="23"
+            icon="⏳"
+            color="red"
+            subtext="Need attention"
+            onClick={() => setReviewsFilter('pending')}
+            isActive={reviewsFilter === 'pending'}
+          />
+          <StatCard
+            label="This Month"
+            value="89"
+            icon="📊"
+            color="green"
+            subtext="+12 from last month"
+            onClick={() => setReviewsFilter('month')}
+            isActive={reviewsFilter === 'month'}
+          />
         </div>
 
         {/* Rating Breakdown */}

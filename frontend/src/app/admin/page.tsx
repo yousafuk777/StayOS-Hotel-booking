@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import api from '../../services/api'
+import StatCard from '../../components/StatCard'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -15,27 +17,38 @@ export default function AdminPage() {
 
   const [bookings, setBookings] = useState<any[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'revenue' | 'bookings' | 'checkins'>('all')
 
   const pendingBookings = bookings.filter((b) => b.status === 'pending' || b.status === 'vip')
 
   useEffect(() => {
-    const storedBookings = localStorage.getItem('bookings')
-    if (storedBookings) {
+    const fetchBookings = async () => {
       try {
-        const parsed = JSON.parse(storedBookings)
-        if (Array.isArray(parsed)) {
-          setBookings(parsed)
-        } else {
-          setBookings(defaultBookings)
-        }
-      } catch (e) {
-        console.error('Error loading bookings from localStorage:', e)
+        const response = await api.get('/api/v1/bookings/pending')
+        const bookingData = response.data.bookings.map((b: any) => ({
+          id: b.id,
+          guest: b.guest_name,
+          room: b.room_type,
+          checkin: b.check_in_date.split('T')[0], // Format date
+          checkout: b.check_out_date.split('T')[0],
+          nights: b.nights,
+          amount: parseFloat(b.total_amount),
+          status: b.status,
+          guests: b.num_guests
+        }))
+        setBookings(bookingData)
+      } catch (error) {
+        console.error('Error fetching bookings:', error)
+        // Fallback to default data if API fails
         setBookings(defaultBookings)
+      } finally {
+        setLoading(false)
+        setIsHydrated(true)
       }
-    } else {
-      setBookings(defaultBookings)
     }
-    setIsHydrated(true)
+
+    fetchBookings()
   }, [])
 
   const now = new Date()
@@ -51,7 +64,7 @@ export default function AdminPage() {
   const vipGuestCount = bookings.reduce((sum: number, b: any) => sum + (b.status === 'vip' ? (b.guests || 1) : 0), 0)
   const newBookingsCount = bookingsThisMonth + pendingCount
 
-  if (!isHydrated) {
+  if (!isHydrated || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         Loading dashboard...
@@ -59,27 +72,31 @@ export default function AdminPage() {
     )
   }
 
-  const handleConfirmBooking = (booking: any) => {
-    console.log('Confirming booking:', booking)
-
-    const updatedBookings = bookings.map((b) =>
-      b.id === booking.id ? { ...b, status: 'confirmed' } : b
-    )
-    setBookings(updatedBookings)
-
-    // Booking confirmed successfully
+  const handleConfirmBooking = async (booking: any) => {
+    try {
+      await api.put(`/api/v1/bookings/${booking.id}/confirm`)
+      // Remove from local state
+      setBookings(bookings.filter((b) => b.id !== booking.id))
+      alert('Booking confirmed successfully!')
+    } catch (error) {
+      console.error('Error confirming booking:', error)
+      alert('Failed to confirm booking. Please try again.')
+    }
   }
 
-  const handleDeclineBooking = (booking: any) => {
-    console.log('Declining booking:', booking)
-    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed from pending.`)
+  const handleDeclineBooking = async (booking: any) => {
+    const confirmDecline = confirm(`⚠️ Decline Booking\n\nAre you sure you want to decline the booking for ${booking.guest}?\n\nThis action cannot be undone and the booking will be permanently removed.`)
 
     if (confirmDecline) {
-      const updatedBookings = bookings.filter((b) => b.id !== booking.id)
-      setBookings(updatedBookings)
-      // Booking declined and removed
-    } else {
-      console.log('Decline cancelled')
+      try {
+        await api.delete(`/api/v1/bookings/${booking.id}`)
+        // Remove from local state
+        setBookings(bookings.filter((b) => b.id !== booking.id))
+        alert('Booking declined and removed successfully!')
+      } catch (error) {
+        console.error('Error declining booking:', error)
+        alert('Failed to decline booking. Please try again.')
+      }
     }
   }
 
@@ -97,63 +114,42 @@ export default function AdminPage() {
 
       {/* Today's Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 slide-up" style={{ animationDelay: '0.1s' }}>
-        {/* Revenue */}
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 font-medium mb-2">Today's Revenue</p>
-              <p className="text-4xl font-bold gradient-text">$12,450</p>
-            </div>
-            <div className="text-5xl float">💵</div>
-          </div>
-          <div className="flex items-center gap-2 text-green-600 bg-green-100/50 px-3 py-1.5 rounded-full">
-            <span>↑ 18%</span>
-            <span className="font-semibold text-sm">vs yesterday</span>
-          </div>
-        </div>
-
-        {/* Bookings */}
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 font-medium mb-2">New Bookings</p>
-              <p className="text-4xl font-bold gradient-text">{newBookingsCount}</p>
-            </div>
-            <div className="text-5xl float">📋</div>
-          </div>
-          <div className="flex items-center gap-2 text-blue-600 bg-blue-100/50 px-3 py-1.5 rounded-full">
-            <span>+{pendingCount}</span>
-            <span className="font-semibold text-sm">pending confirmation</span>
-          </div>
-        </div>
-
-        {/* Check-ins */}
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-purple-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 font-medium mb-2">Check-ins</p>
-              <p className="text-4xl font-bold gradient-text">{checkedInCount}</p>
-            </div>
-            <div className="text-5xl float">🎉</div>
-          </div>
-          <div className="flex items-center gap-2 text-purple-600 bg-purple-100/50 px-3 py-1.5 rounded-full">
-            <span className="font-semibold text-sm">{vipGuestCount} VIP guests</span>
-          </div>
-        </div>
-
-        {/* Occupancy */}
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-orange-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 font-medium mb-2">Occupancy Rate</p>
-              <p className="text-4xl font-bold gradient-text">78%</p>
-            </div>
-            <div className="text-5xl float">📊</div>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: '78%' }} />
-          </div>
-        </div>
+        <StatCard
+          label="Today's Revenue"
+          value="$12,450"
+          icon="💵"
+          color="green"
+          subtext="↑ 18% vs yesterday"
+          onClick={() => setDashboardFilter('revenue')}
+          isActive={dashboardFilter === 'revenue'}
+        />
+        <StatCard
+          label="New Bookings"
+          value={newBookingsCount}
+          icon="📋"
+          color="blue"
+          subtext={`+${pendingCount} pending confirmation`}
+          onClick={() => setDashboardFilter('bookings')}
+          isActive={dashboardFilter === 'bookings'}
+        />
+        <StatCard
+          label="Check-ins"
+          value={checkedInCount}
+          icon="🎉"
+          color="purple"
+          subtext={`${vipGuestCount} VIP guests`}
+          onClick={() => setDashboardFilter('checkins')}
+          isActive={dashboardFilter === 'checkins'}
+        />
+        <StatCard
+          label="Occupancy Rate"
+          value="78%"
+          icon="📊"
+          color="orange"
+          subtext="All rooms"
+          onClick={() => setDashboardFilter('all')}
+          isActive={dashboardFilter === 'all'}
+        />
       </div>
 
       {/* Quick Actions Grid */}

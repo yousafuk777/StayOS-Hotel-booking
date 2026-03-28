@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function HousekeepingPage() {
   const [filter, setFilter] = useState('all')
+  const [housekeepingFilter, setHousekeepingFilter] = useState<'all' | 'clean' | 'dirty' | 'cleaning' | 'inspection' | 'maintenance'>('all')
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -153,31 +155,29 @@ export default function HousekeepingPage() {
           {roomStats.map((stat, index) => {
             const totalRooms = rooms.length
             const progress = stat.count > 0 ? Math.round((stat.count / totalRooms) * 100) : 0
+            const statusKeys = ['clean', 'dirty', 'cleaning', 'inspection', 'maintenance'] as const
+            const statusKey = statusKeys[index] as typeof statusKeys[number]
+            const colorMap: Record<typeof statusKeys[number], 'blue' | 'red' | 'green' | 'purple' | 'orange' | 'teal'> = {
+              clean: 'green',
+              dirty: 'red', 
+              cleaning: 'blue',
+              inspection: 'orange',
+              maintenance: 'purple'
+            }
+            
             return (
-              <div 
+              <StatCard
                 key={index}
-                className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 text-white card-hover slide-up`}
-                style={{ animationDelay: `${0.1 + index * 0.1}s` }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-5xl">{stat.icon}</div>
-                  <div className="text-right">
-                    <p className="text-4xl font-bold mb-1">{stat.count}</p>
-                    <p className="text-sm opacity-90">of {totalRooms} rooms</p>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2">{stat.label}</h3>
-                  <p className="text-sm opacity-90 mb-3">{stat.note}</p>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                      className="bg-white h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs mt-1 opacity-75">{progress}%</p>
-                </div>
-              </div>
+                label={stat.label}
+                value={stat.count}
+                icon={stat.icon}
+                color={colorMap[statusKey]}
+                subtext={stat.note}
+                progress={progress}
+                total={totalRooms}
+                onClick={() => setHousekeepingFilter(statusKey)}
+                isActive={housekeepingFilter === statusKey}
+              />
             )
           })}
         </div>
@@ -194,9 +194,9 @@ export default function HousekeepingPage() {
               ].map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setFilter(item.id)}
+                  onClick={() => setHousekeepingFilter(item.id as any)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                    filter === item.id
+                    housekeepingFilter === item.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
                       : 'glass hover:bg-gray-50 text-gray-700'
                   }`}
@@ -232,8 +232,8 @@ export default function HousekeepingPage() {
         {/* See All Button */}
         {(() => {
           const filteredRooms = rooms.filter(room => {
-            // Status filter
-            if (filter !== 'all' && room.status !== filter) return false
+            // Status filter from stat cards
+            if (housekeepingFilter !== 'all' && room.status !== housekeepingFilter) return false
             
             // Staff filter
             if (selectedStaff !== 'all' && room.assignedTo !== selectedStaff) return false

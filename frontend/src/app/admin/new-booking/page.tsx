@@ -27,8 +27,10 @@ export default function NewBookingPage() {
   ]
 
   const calculateNights = (checkin: string, checkout: string) => {
-    const checkinDate = new Date(checkin)
-    const checkoutDate = new Date(checkout)
+    const [y1, m1, d1] = checkin.split('-').map(Number)
+    const [y2, m2, d2] = checkout.split('-').map(Number)
+    const checkinDate = new Date(y1, m1 - 1, d1)
+    const checkoutDate = new Date(y2, m2 - 1, d2)
     const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
     return nights || 1
   }
@@ -95,7 +97,7 @@ export default function NewBookingPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Full Name *
               </label>
               <input
@@ -108,7 +110,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Email Address *
               </label>
               <input
@@ -121,7 +123,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Phone Number *
               </label>
               <input
@@ -134,7 +136,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Number of Guests *
               </label>
               <input
@@ -157,7 +159,7 @@ export default function NewBookingPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Check-in Date *
               </label>
               <input
@@ -169,7 +171,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Check-out Date *
               </label>
               <input
@@ -181,7 +183,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Room Type *
               </label>
               <select
@@ -208,7 +210,7 @@ export default function NewBookingPage() {
               )}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-extrabold text-black mb-2">
                 Special Requests
               </label>
               <textarea
