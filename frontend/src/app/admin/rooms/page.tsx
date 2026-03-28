@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function RoomsPage() {
   const [activeTab, setActiveTab] = useState('all')
+  const [roomStatsFilter, setRoomStatsFilter] = useState<'all' | 'available' | 'occupied' | 'maintenance'>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showCalendarModal, setShowCalendarModal] = useState(false)
@@ -19,7 +21,8 @@ export default function RoomsPage() {
     floor: 1,
     price: 199,
     capacity: 2,
-    status: 'clean'
+    status: 'clean',
+    amenities: ['wifi', 'tv', 'ac', 'coffee']
   })
   
   // Initialize rooms from localStorage or use defaults
@@ -107,7 +110,8 @@ export default function RoomsPage() {
     floor: 1,
     price: 199,
     capacity: 2,
-    status: 'clean'
+    status: 'clean',
+    amenities: ['wifi', 'tv', 'ac', 'coffee']
   })
   
   const router = useRouter()
@@ -171,51 +175,42 @@ export default function RoomsPage() {
       <div className="max-w-[1600px] mx-auto p-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-up">
-          <div className="glass-card rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-600 font-medium mb-2">Total Rooms</p>
-                <p className="text-4xl font-bold gradient-text">{rooms.length}</p>
-              </div>
-              <div className="text-5xl float">🏨</div>
-            </div>
-            <p className="text-sm text-gray-600">Across {Math.max(...rooms.map(r => r.floor))} floors</p>
-          </div>
-
-          <div className="glass-card rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-600 font-medium mb-2">Available</p>
-                <p className="text-4xl font-bold gradient-text">{rooms.filter(r => r.status === 'clean').length}</p>
-              </div>
-              <div className="text-5xl float">✓</div>
-            </div>
-            <p className="text-sm text-green-600 font-semibold">
-              {Math.round((rooms.filter(r => r.status === 'clean').length / rooms.length) * 100)}% occupancy
-            </p>
-          </div>
-
-          <div className="glass-card rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-600 font-medium mb-2">Occupied</p>
-                <p className="text-4xl font-bold gradient-text">{rooms.filter(r => ['dirty', 'cleaning'].includes(r.status)).length}</p>
-              </div>
-              <div className="text-5xl float">👥</div>
-            </div>
-            <p className="text-sm text-blue-600 font-semibold">Currently staying</p>
-          </div>
-
-          <div className="glass-card rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-600 font-medium mb-2">Out of Service</p>
-                <p className="text-4xl font-bold gradient-text">{rooms.filter(r => ['maintenance', 'inspection'].includes(r.status)).length}</p>
-              </div>
-              <div className="text-5xl float">🔧</div>
-            </div>
-            <p className="text-sm text-orange-600 font-semibold">Maintenance/Cleaning</p>
-          </div>
+          <StatCard
+            label="Total Rooms"
+            value={rooms.length}
+            icon="🏨"
+            color="blue"
+            subtext={`Across ${Math.max(...rooms.map(r => r.floor))} floors`}
+            onClick={() => setActiveTab('all')}
+            isActive={activeTab === 'all'}
+          />
+          <StatCard
+            label="Available"
+            value={rooms.filter(r => r.status === 'clean').length}
+            icon="✓"
+            color="green"
+            subtext={`${Math.round((rooms.filter(r => r.status === 'clean').length / rooms.length) * 100)}% occupancy`}
+            onClick={() => setActiveTab('available')}
+            isActive={activeTab === 'available'}
+          />
+          <StatCard
+            label="Occupied"
+            value={rooms.filter(r => ['dirty', 'cleaning'].includes(r.status)).length}
+            icon="👥"
+            color="blue"
+            subtext="Currently staying"
+            onClick={() => setActiveTab('occupied')}
+            isActive={activeTab === 'occupied'}
+          />
+          <StatCard
+            label="Out of Service"
+            value={rooms.filter(r => ['maintenance', 'inspection'].includes(r.status)).length}
+            icon="🔧"
+            color="orange"
+            subtext="Maintenance/Cleaning"
+            onClick={() => setActiveTab('maintenance')}
+            isActive={activeTab === 'maintenance'}
+          />
         </div>
 
         {/* Tabs & Filters */}
@@ -387,10 +382,20 @@ export default function RoomsPage() {
 
                 {/* Amenities */}
                 <div className="flex flex-wrap gap-2">
-                  <span className="glass px-2 py-1 rounded-lg text-xs text-gray-700">📶 WiFi</span>
-                  <span className="glass px-2 py-1 rounded-lg text-xs text-gray-700">📺 TV</span>
-                  <span className="glass px-2 py-1 rounded-lg text-xs text-gray-700">❄️ AC</span>
-                  <span className="glass px-2 py-1 rounded-lg text-xs text-gray-700">☕ Coffee</span>
+                  {room.amenities && room.amenities.map((amenity: string) => {
+                    const amenityConfig: any = {
+                      wifi: { icon: '📶', label: 'WiFi' },
+                      tv: { icon: '📺', label: 'TV' },
+                      ac: { icon: '❄️', label: 'AC' },
+                      coffee: { icon: '☕', label: 'Coffee' }
+                    }
+                    const config = amenityConfig[amenity]
+                    return config ? (
+                      <span key={amenity} className="glass px-2 py-1 rounded-lg text-xs text-gray-700">
+                        {config.icon} {config.label}
+                      </span>
+                    ) : null
+                  })}
                 </div>
 
                 {/* Pricing */}
@@ -408,7 +413,8 @@ export default function RoomsPage() {
                         floor: room.floor,
                         price: room.price,
                         capacity: room.capacity,
-                        status: room.status
+                        status: room.status,
+                        amenities: room.amenities || ['wifi', 'tv', 'ac', 'coffee']
                       })
                       setShowEditModal(true)
                     }}>
@@ -498,11 +504,12 @@ export default function RoomsPage() {
                 floor: newRoom.floor,
                 status: 'clean',
                 price: newRoom.price,
-                capacity: newRoom.capacity
+                capacity: newRoom.capacity,
+                amenities: newRoom.amenities
               }
               setRooms([...rooms, room])
               setShowAddModal(false)
-              setNewRoom({ number: '', type: 'Standard Queen', floor: 1, price: 199, capacity: 2, status: 'clean' })
+              setNewRoom({ number: '', type: 'Standard Queen', floor: 1, price: 199, capacity: 2, status: 'clean', amenities: [] })
             }}>
               <div className="space-y-4">
                 <div>
@@ -592,6 +599,38 @@ export default function RoomsPage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Room Amenities</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: 'wifi', icon: '📶', label: 'WiFi' },
+                      { key: 'tv', icon: '📺', label: 'TV' },
+                      { key: 'ac', icon: '❄️', label: 'Air Conditioning' },
+                      { key: 'coffee', icon: '☕', label: 'Coffee Maker' }
+                    ].map((amenity) => (
+                      <label key={amenity.key} className="flex items-center gap-3 glass p-3 rounded-xl cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={newRoom.amenities.includes(amenity.key)}
+                          onChange={(e) => {
+                            const checked = e.target.checked
+                            setNewRoom({
+                              ...newRoom,
+                              amenities: checked
+                                ? [...newRoom.amenities, amenity.key]
+                                : newRoom.amenities.filter(a => a !== amenity.key)
+                            })
+                          }}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          {amenity.icon} {amenity.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="pt-4 flex gap-3">
                   <button
                     type="button"
@@ -629,19 +668,22 @@ export default function RoomsPage() {
 
             <form onSubmit={(e) => {
               e.preventDefault()
-              const updatedRooms = rooms.map(r => 
-                r.id === selectedRoom.id ? {
-                  ...r,
-                  number: editRoomData.number,
-                  type: editRoomData.type,
-                  floor: editRoomData.floor,
-                  price: editRoomData.price,
-                  capacity: editRoomData.capacity
-                } : r
-              )
-              setRooms(updatedRooms)
-              setShowEditModal(false)
-              setSelectedRoom(null)
+              if (window.confirm('Are you sure you want to update this room?')) {
+                const updatedRooms = rooms.map(r =>
+                  r.id === selectedRoom.id ? {
+                    ...r,
+                    number: editRoomData.number,
+                    type: editRoomData.type,
+                    floor: editRoomData.floor,
+                    price: editRoomData.price,
+                    capacity: editRoomData.capacity,
+                    amenities: editRoomData.amenities
+                  } : r
+                )
+                setRooms(updatedRooms)
+                setShowEditModal(false)
+                setSelectedRoom(null)
+              }
             }}>
               <div className="space-y-4">
                 <div>
@@ -725,6 +767,28 @@ export default function RoomsPage() {
                     max="10"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Amenities</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {['WiFi', 'TV', 'AC', 'Coffee'].map((amenity) => (
+                      <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editRoomData.amenities?.includes(amenity) || false}
+                          onChange={(e) => {
+                            const updatedAmenities = e.target.checked
+                              ? [...(editRoomData.amenities || []), amenity]
+                              : (editRoomData.amenities || []).filter(a => a !== amenity);
+                            setEditRoomData({ ...editRoomData, amenities: updatedAmenities });
+                          }}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <span className="text-sm text-gray-700">{amenity}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="pt-4 flex gap-3">

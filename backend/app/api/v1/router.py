@@ -1,11 +1,12 @@
 from fastapi import APIRouter
-from app.api.v1 import auth
+from app.api.v1 import auth, bookings
 
 # Create main API router
 api_router = APIRouter()
 
 # Include authentication routes
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 
 # More routes will be added here as we build out the platform:
 # - hotels.py (hotel search and details)
