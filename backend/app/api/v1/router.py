@@ -1,9 +1,6 @@
 from fastapi import APIRouter
-<<<<<<< HEAD
 from app.api.v1 import auth, super_admin
-=======
-from app.api.v1 import auth, bookings
->>>>>>> main
+from app.api.v1 import bookings
 
 # Create main API router
 api_router = APIRouter()
