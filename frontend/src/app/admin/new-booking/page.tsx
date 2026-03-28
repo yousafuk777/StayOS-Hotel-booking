@@ -89,15 +89,15 @@ export default function NewBookingPage() {
       </div>
 
       {/* Booking Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Guest Information */}
-        <div className="glass-card rounded-2xl p-8">
-          <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
+        <div className="glass-card rounded-2xl p-6 md:p-8">
+          <h2 className="text-2xl font-bold gradient-text mb-4 flex items-center gap-3">
             👤 Guest Information
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Full Name *
               </label>
               <input
@@ -110,7 +110,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Email Address *
               </label>
               <input
@@ -123,7 +123,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Phone Number *
               </label>
               <input
@@ -136,7 +136,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Number of Guests *
               </label>
               <input
@@ -153,13 +153,13 @@ export default function NewBookingPage() {
         </div>
 
         {/* Booking Details */}
-        <div className="glass-card rounded-2xl p-8">
-          <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
+        <div className="glass-card rounded-2xl p-6 md:p-8">
+          <h2 className="text-2xl font-bold gradient-text mb-4 flex items-center gap-3">
             📅 Booking Details
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Check-in Date *
               </label>
               <input
@@ -171,7 +171,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Check-out Date *
               </label>
               <input
@@ -183,7 +183,7 @@ export default function NewBookingPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Room Type *
               </label>
               <select
@@ -210,7 +210,7 @@ export default function NewBookingPage() {
               )}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-extrabold text-black mb-2">
+              <label className="form-label">
                 Special Requests
               </label>
               <textarea
