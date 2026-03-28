@@ -13,10 +13,15 @@ class TenantMiddleware(BaseHTTPMiddleware):
     """
 
     # Paths that don't require tenant resolution
-    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/api/v1/super-admin"]
+    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/redoc", "/api/v1/super-admin", "/api/v1/auth"]
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
+
+        # Set safe defaults so request.state.tenant_id always exists
+        request.state.tenant_id = None
+        request.state.tenant_slug = None
+        request.state.tenant = None
 
         # Skip tenant resolution for exempt paths
         if path == "/" or any(path.startswith(p) for p in self.EXEMPT_PATHS):

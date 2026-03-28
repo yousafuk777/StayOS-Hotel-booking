@@ -46,10 +46,11 @@ api.interceptors.response.use(
           return api(originalRequest)
         }
       } catch {
-        // Refresh failed - logout user
+        // Refresh failed — clear token and redirect to super-admin login
         if (typeof window !== 'undefined') {
           localStorage.removeItem('access_token')
-          window.location.href = '/login'
+          localStorage.removeItem('super_admin_user')
+          window.location.href = '/super-admin/login'
         }
       }
     }

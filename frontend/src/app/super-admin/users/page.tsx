@@ -1,18 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import api from '@/services/api'
+
+interface User {
+  id: number
+  email: string
+  first_name: string | null
+  last_name: string | null
+  role: string
+  tenant_id: number | null
+  is_active: boolean
+  is_verified: boolean
+  created_at: string
+}
+
+interface Stats {
+  total_tenants: number
+  total_users: number
+  role_counts: Record<string, number>
+  tenant_status: Record<string, number>
+}
 
 export default function UsersPage() {
   const [filter, setFilter] = useState('all')
+  const [users, setUsers] = useState<User[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
 
-  const users = [
-    { id: 1, name: 'John Smith', email: 'john@email.com', role: 'guest', bookings: 5, spent: 2450, joined: '2025-06-15', status: 'active' },
-    { id: 2, name: 'Sarah Johnson', email: 'sarah@grandplaza.com', role: 'hotel_admin', hotel: 'Grand Plaza Hotel', joined: '2025-01-20', status: 'active' },
-    { id: 3, name: 'Michael Chen', email: 'mike@email.com', role: 'guest', bookings: 12, spent: 8900, joined: '2025-03-10', status: 'vip' },
-    { id: 4, name: 'Emma Williams', email: 'emma@seaside.com', role: 'hotel_manager', hotel: 'Seaside Resort', joined: '2025-02-14', status: 'active' },
-    { id: 5, name: 'James Brown', email: 'james@email.com', role: 'guest', bookings: 2, spent: 890, joined: '2026-01-05', status: 'active' },
-    { id: 6, name: 'Lisa Anderson', email: 'lisa@urban.com', role: 'front_desk', hotel: 'Urban Boutique', joined: '2025-08-22', status: 'active' },
-  ]
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [usersRes, statsRes] = await Promise.all([
+        api.get('/api/v1/super-admin/users', { params: { limit: 100 } }),
+        api.get('/api/v1/super-admin/stats')
+      ])
+      setUsers(usersRes.data.users)
+      setTotalCount(usersRes.data.total)
+      setStats(statsRes.data)
+    } catch (error) {
+      console.error('Failed to fetch users or stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const ROLE_CONFIG: any = {
     all: { label: 'All Users', icon: '👥' },
@@ -22,6 +58,20 @@ export default function UsersPage() {
     front_desk: { label: 'Front Desk', icon: '🛎️' },
     housekeeping: { label: 'Housekeeping', icon: '🧹' },
   }
+
+  const filteredUsers = users.filter(user => 
+    filter === 'all' || user.role.includes(filter)
+  )
+
+  const guestCount = Object.entries(stats?.role_counts ?? {})
+    .filter(([role]) => role.includes('guest'))
+    .reduce((sum, [, count]) => sum + count, 0)
+
+  const staffCount = Object.entries(stats?.role_counts ?? {})
+    .filter(([role]) => !role.includes('guest') && !role.includes('super_admin'))
+    .reduce((sum, [, count]) => sum + count, 0)
+
+  const vipCount = 0 // Future: define VIP logic
 
   return (
     <div className="space-y-8">
@@ -42,10 +92,34 @@ export default function UsersPage() {
         {/* Platform Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-up">
           {[
-            { label: 'Total Users', value: '8,450', change: '+248 today', icon: '👥', color: 'from-blue-500 to-blue-600' },
-            { label: 'Active Guests', value: '7,892', change: '93.4% of total', icon: '✓', color: 'from-green-500 to-green-600' },
-            { label: 'Hotel Staff', value: '558', change: '6.6% of total', icon: '🏨', color: 'from-purple-500 to-purple-600' },
-            { label: 'VIP Members', value: '342', change: 'Gold & Platinum', icon: '⭐', color: 'from-yellow-500 to-orange-600' },
+            { 
+              label: 'Total Users', 
+              value: loading ? '...' : totalCount.toLocaleString(), 
+              change: 'Across all tenants', 
+              icon: '👥', 
+              color: 'from-blue-500 to-blue-600' 
+            },
+            { 
+              label: 'Active Guests', 
+              value: loading ? '...' : guestCount.toLocaleString(), 
+              change: stats ? `${((guestCount / stats.total_users) * 100).toFixed(1)}% of total` : '', 
+              icon: '✓', 
+              color: 'from-green-500 to-green-600' 
+            },
+            { 
+              label: 'Hotel Staff', 
+              value: loading ? '...' : staffCount.toLocaleString(), 
+              change: stats ? `${((staffCount / stats.total_users) * 100).toFixed(1)}% of total` : '', 
+              icon: '🏨', 
+              color: 'from-purple-500 to-purple-600' 
+            },
+            { 
+              label: 'Super Admins', 
+              value: loading ? '...' : (stats?.role_counts?.['super_admin'] || stats?.role_counts?.['UserRole.super_admin'] || 0).toLocaleString(), 
+              change: 'Platform Managers', 
+              icon: '🏛️', 
+              color: 'from-yellow-500 to-orange-600' 
+            },
           ].map((stat, index) => (
             <div 
               key={index}
@@ -85,12 +159,6 @@ export default function UsersPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <select className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none">
-                <option>All Statuses</option>
-                <option>Active</option>
-                <option>Suspended</option>
-                <option>Pending</option>
-              </select>
               <input
                 type="search"
                 placeholder="Search users..."
@@ -106,9 +174,6 @@ export default function UsersPage() {
             <h2 className="text-2xl font-bold gradient-text">
               {ROLE_CONFIG[filter]?.label || 'All Users'}
             </h2>
-            <button className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 text-gray-700">
-              📥 Export Data
-            </button>
           </div>
 
           <div className="overflow-x-auto">
@@ -117,92 +182,77 @@ export default function UsersPage() {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">User</th>
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Activity</th>
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Tenant ID</th>
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">Joined</th>
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {users.map((user, index) => (
-                  <tr 
-                    key={user.id} 
-                    className="hover:bg-gray-50 transition-colors slide-up"
-                    style={{ animationDelay: `${0.7 + index * 0.1}s` }}
-                  >
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div>
-                        <p className="font-medium text-gray-900 capitalize">{user.role.replace('_', ' ')}</p>
-                        {'hotel' in user && (
-                          <p className="text-sm text-gray-500">{user.hotel}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      {user.role === 'guest' ? (
-                        <div>
-                          <p className="text-gray-900 font-medium">{user.bookings} bookings</p>
-                          <p className="text-sm text-gray-500">${(user as any).spent?.toLocaleString() ?? 0} spent</p>
-                        </div>
-                      ) : (
-                        <p className="text-gray-600">Staff member</p>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-gray-600">{user.joined}</td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        user.status === 'vip' ? 'bg-yellow-100 text-yellow-700' :
-                        user.status === 'active' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <button className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-700">
-                          👁️ View
-                        </button>
-                        <button className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-700">
-                          ⚙️ Edit
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium">
+                      Loading user data...
                     </td>
                   </tr>
-                ))}
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium">
+                      No users found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user, index) => (
+                    <tr 
+                      key={user.id} 
+                      className="hover:bg-gray-50 transition-colors slide-up"
+                      style={{ animationDelay: `${0.1 + index * 0.05}s` }}
+                    >
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                            {(user.first_name || user.email).charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {user.first_name ? `${user.first_name} ${user.last_name || ''}` : 'No Name'}
+                            </h3>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="capitalize px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-semibold">
+                          {user.role.split('.').pop()?.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm text-gray-600 font-medium">
+                          {user.tenant_id ? `#${user.tenant_id}` : 'Platform'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {user.is_active ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-xs font-medium text-gray-700">
+                            ⚙️ Manage
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* User Growth Chart */}
-        <div className="glass-card rounded-2xl p-8 mt-8 slide-up border border-gray-200" style={{ animationDelay: '1.5s' }}>
-          <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
-            📈 User Growth Trend
-          </h2>
-          <div className="h-64 flex items-end justify-between gap-2 p-6 bg-gradient-to-t from-blue-500/5 to-purple-500/5 rounded-xl">
-            {[45, 52, 58, 68, 75, 82, 89, 95, 100].map((height, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <div 
-                  className="w-full bg-gradient-to-t from-blue-600 to-purple-600 rounded-t-lg transition-all duration-500 hover:from-blue-500 hover:to-purple-500 shadow-lg"
-                  style={{ height: `${height}%` }}
-                />
-                <span className="text-xs text-gray-500">
-                  {['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i]}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
