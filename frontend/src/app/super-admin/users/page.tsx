@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import api from '@/services/api'
+import UserFormModal from '@/components/super-admin/UserFormModal'
 
 interface User {
   id: number
@@ -28,8 +29,12 @@ export default function UsersPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
-  const fetchUsers = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const [usersRes, statsRes] = await Promise.all([
@@ -47,8 +52,32 @@ export default function UsersPage() {
   }, [])
 
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    fetchData()
+  }, [fetchData])
+
+  const handleToggleStatus = async (user: User) => {
+    try {
+      await api.post(`/api/v1/super-admin/users/${user.id}/toggle-status`)
+      fetchData() // Refresh list
+    } catch (err) {
+      alert('Failed to update status')
+    }
+  }
+
+  const handleDelete = async (user: User) => {
+    if (!window.confirm(`Are you sure you want to delete ${user.email}? This action cannot be easily undone.`)) return
+    try {
+      await api.delete(`/api/v1/super-admin/users/${user.id}`)
+      fetchData() // Refresh list
+    } catch (err) {
+      alert('Failed to delete user')
+    }
+  }
+
+  const openEditModal = (user: User) => {
+    setEditingUser(user)
+    setIsModalOpen(true)
+  }
 
   const ROLE_CONFIG: any = {
     all: { label: 'All Users', icon: '👥' },
@@ -71,18 +100,19 @@ export default function UsersPage() {
     .filter(([role]) => !role.includes('guest') && !role.includes('super_admin'))
     .reduce((sum, [, count]) => sum + count, 0)
 
-  const vipCount = 0 // Future: define VIP logic
-
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between fade-in">
         <div>
           <h1 className="text-4xl font-bold gradient-text">User Management</h1>
-          <p className="text-gray-600">Manage all platform users</p>
+          <p className="text-gray-600">Manage all platform users across all hotels</p>
         </div>
         
-        <button className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+        <button 
+          onClick={() => { setEditingUser(null); setIsModalOpen(true); }}
+          className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2"
+        >
           <span>➕</span>
           <span>Add User</span>
         </button>
@@ -95,28 +125,28 @@ export default function UsersPage() {
             { 
               label: 'Total Users', 
               value: loading ? '...' : totalCount.toLocaleString(), 
-              change: 'Across all tenants', 
+              change: 'Platform Total', 
               icon: '👥', 
               color: 'from-blue-500 to-blue-600' 
             },
             { 
-              label: 'Active Guests', 
+              label: 'Guests', 
               value: loading ? '...' : guestCount.toLocaleString(), 
-              change: stats ? `${((guestCount / stats.total_users) * 100).toFixed(1)}% of total` : '', 
+              change: stats ? `${((guestCount / (stats.total_users || 1)) * 100).toFixed(1)}% of total` : '', 
               icon: '✓', 
               color: 'from-green-500 to-green-600' 
             },
             { 
               label: 'Hotel Staff', 
               value: loading ? '...' : staffCount.toLocaleString(), 
-              change: stats ? `${((staffCount / stats.total_users) * 100).toFixed(1)}% of total` : '', 
+              change: stats ? `${((staffCount / (stats.total_users || 1)) * 100).toFixed(1)}% of total` : '', 
               icon: '🏨', 
               color: 'from-purple-500 to-purple-600' 
             },
             { 
               label: 'Super Admins', 
               value: loading ? '...' : (stats?.role_counts?.['super_admin'] || stats?.role_counts?.['UserRole.super_admin'] || 0).toLocaleString(), 
-              change: 'Platform Managers', 
+              change: 'System Management', 
               icon: '🏛️', 
               color: 'from-yellow-500 to-orange-600' 
             },
@@ -191,7 +221,7 @@ export default function UsersPage() {
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium">
+                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium italic animate-pulse">
                       Loading user data...
                     </td>
                   </tr>
@@ -215,7 +245,7 @@ export default function UsersPage() {
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900">
-                              {user.first_name ? `${user.first_name} ${user.last_name || ''}` : 'No Name'}
+                              {user.first_name ? `${user.first_name} ${user.last_name || ''}` : 'StayOS User'}
                             </h3>
                             <p className="text-xs text-gray-500">{user.email}</p>
                           </div>
@@ -228,23 +258,37 @@ export default function UsersPage() {
                       </td>
                       <td className="py-4 px-4">
                         <span className="text-sm text-gray-600 font-medium">
-                          {user.tenant_id ? `#${user.tenant_id}` : 'Platform'}
+                          {user.tenant_id ? `#${user.tenant_id}` : 'Platform Level'}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-600">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
+                        <button 
+                          onClick={() => handleToggleStatus(user)}
+                          className={`px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
+                            user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}
+                        >
                           {user.is_active ? 'ACTIVE' : 'INACTIVE'}
-                        </span>
+                        </button>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-xs font-medium text-gray-700">
-                            ⚙️ Manage
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => openEditModal(user)}
+                            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                            title="Edit User"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(user)}
+                            className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                            title="Delete User"
+                          >
+                            🗑️
                           </button>
                         </div>
                       </td>
@@ -256,6 +300,13 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+
+      <UserFormModal
+        isOpen={isModalOpen}
+        onClose={() => { setIsModalOpen(false); setEditingUser(null); }}
+        onSuccess={fetchData}
+        user={editingUser}
+      />
     </div>
   )
 }

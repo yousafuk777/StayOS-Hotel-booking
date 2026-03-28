@@ -3,9 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 from app.api.deps import get_db, get_current_super_admin
 from app.schemas.tenant import TenantCreate, TenantResponse, TenantListResponse
+from app.schemas.user import UserCreate, UserUpdate
 from app.repositories.tenant_repo import TenantRepository
 from app.repositories.user_repo import UserRepository
-from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.security import verify_password, create_access_token, create_refresh_token, hash_password
 from app.models.user import UserRole
 from typing import List
 
@@ -121,6 +122,72 @@ async def list_users(
         ],
         "total": total,
     }
+
+
+@router.post("/users", status_code=201)
+async def create_user(
+    data: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Create a new user globally."""
+    existing = await UserRepository.get_by_email(db, tenant_id=data.tenant_id, email=data.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+
+    user_data = data.model_dump()
+    user_data["hashed_password"] = hash_password(user_data.pop("password"))
+    
+    user = await UserRepository.create(db, tenant_id=data.tenant_id, data=user_data)
+    return user
+
+
+@router.patch("/users/{user_id}")
+async def update_user(
+    user_id: int,
+    data: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Update user details globally."""
+    user_data = data.model_dump(exclude_unset=True)
+    if "password" in user_data and user_data["password"]:
+        user_data["hashed_password"] = hash_password(user_data.pop("password"))
+    elif "password" in user_data:
+        user_data.pop("password")
+
+    user = await UserRepository.update_global(db, user_id, user_data)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@router.post("/users/{user_id}/toggle-status")
+async def toggle_user_status(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Toggle user active/inactive status."""
+    user = await UserRepository.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    updated_user = await UserRepository.update_global(db, user_id, {"is_active": not user.is_active})
+    return {"is_active": updated_user.is_active}
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Soft delete a user record."""
+    success = await UserRepository.delete_global(db, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}
 
 
 # ── Platform Stats ──────────────────────────────────────────────────────────

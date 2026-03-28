@@ -31,6 +31,8 @@ class UserRepository(TenantScopedRepository):
     @classmethod
     async def create(cls, db: AsyncSession, tenant_id, data: dict):
         """Create a new user."""
+        # Remove tenant_id from data if it exists to avoid duplicate keyword argument errors
+        data.pop('tenant_id', None)
         user = cls.model(**data, tenant_id=tenant_id)
         db.add(user)
         await db.commit()
@@ -56,6 +58,28 @@ class UserRepository(TenantScopedRepository):
             select(func.count()).select_from(User).where(User.is_deleted == False)
         )
         return result.scalar() or 0
+
+    @classmethod
+    async def update_global(cls, db: AsyncSession, user_id: int, data: dict):
+        """Update user record globally (Super Admin)."""
+        user = await cls.get_by_id(db, user_id)
+        if user:
+            for key, value in data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    @classmethod
+    async def delete_global(cls, db: AsyncSession, user_id: int):
+        """Soft delete user record globally (Super Admin)."""
+        user = await cls.get_by_id(db, user_id)
+        if user:
+            user.is_deleted = True
+            await db.commit()
+            return True
+        return False
 
     @classmethod
     async def set_verification_token(cls, db: AsyncSession, user_id: int, token: str):
