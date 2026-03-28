@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -11,11 +11,22 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Fixed with independent scrolling */}
-      <aside className="w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40">
+      <aside className={`w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40 transition-all duration-300 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
         <div className="px-4 py-6">
           <Link href="/admin" className="flex items-center gap-3 mb-6">
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
@@ -46,6 +57,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       key={item.id}
                       href={item.path}
+                      onClick={() => setSidebarOpen(false)}
                       className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
@@ -79,6 +91,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       key={item.id}
                       href={item.path}
+                      onClick={() => setSidebarOpen(false)}
                       className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
@@ -110,6 +123,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       key={item.id}
                       href={item.path}
+                      onClick={() => setSidebarOpen(false)}
                       className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
@@ -129,19 +143,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content Area - Independent scrolling */}
-      <div className="flex-1 flex flex-col ml-72">
+      <div className="flex-1 flex flex-col ml-0 md:ml-72">
         {/* Top Header Bar - Fixed */}
-        <header className="glass-card border-b border-gray-200 fixed top-0 right-0 left-72 z-30">
-          <div className="max-w-[1600px] mx-auto px-6 py-4">
+        <header className="glass-card border-b border-gray-200 fixed top-0 right-0 left-0 md:left-72 z-30">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
+                {/* Hamburger Menu - Mobile Only */}
+                <button 
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="md:hidden glass p-3 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  <span className="text-xl">☰</span>
+                </button>
                 <div>
-                  <h1 className="text-2xl font-bold gradient-text">Grand Plaza Hotel</h1>
-                  <p className="text-sm text-gray-600">Admin Dashboard</p>
+                  <h1 className="text-xl md:text-2xl font-bold gradient-text">Grand Plaza Hotel</h1>
+                  <p className="text-xs md:text-sm text-gray-600">Admin Dashboard</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 md:gap-4">
                 <div className="hidden md:flex items-center gap-3">
                   <button 
                     onClick={() => router.push('/admin/notifications')}
@@ -164,12 +185,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </button>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-lg">HA</span>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-sm md:text-lg">HA</span>
                   </div>
-                  <div className="hidden lg:block">
-                    <p className="font-semibold text-gray-900">John Smith</p>
+                  <div className="hidden md:block">
+                    <p className="font-semibold text-gray-900 text-sm">John Smith</p>
                     <p className="text-xs text-gray-600">Hotel Administrator</p>
                   </div>
                 </div>
@@ -179,7 +200,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Content - Independent scrolling */}
-        <main className="flex-1 overflow-y-auto pt-28 p-8">
+        <main className="flex-1 overflow-y-auto pt-24 md:pt-28 px-4 md:px-8 py-8">
           <div className="max-w-[1600px] mx-auto">
             {children}
           </div>

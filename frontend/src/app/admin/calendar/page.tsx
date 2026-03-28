@@ -29,28 +29,132 @@ export default function CalendarPage() {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
           setBookings(parsed)
+        } else {
+          // Use sample bookings if localStorage is empty
+          setBookings(getSampleBookings())
         }
       } catch (e) {
         console.error('Error loading bookings:', e)
+        setBookings(getSampleBookings())
       }
+    } else {
+      // Use sample bookings if no data in localStorage
+      setBookings(getSampleBookings())
     }
   }, [])
+
+  const getSampleBookings = () => {
+    return [
+      {
+        id: 1,
+        guest: 'John Smith',
+        room: 'Deluxe Suite',
+        checkin: '2026-03-25',
+        checkout: '2026-03-29',
+        nights: 4,
+        amount: 1196,
+        status: 'checked_in',
+        guests: 2
+      },
+      {
+        id: 2,
+        guest: 'Sarah Johnson',
+        room: 'Ocean View',
+        checkin: '2026-03-27',
+        checkout: '2026-03-31',
+        nights: 4,
+        amount: 1596,
+        status: 'confirmed',
+        guests: 3
+      },
+      {
+        id: 3,
+        guest: 'Michael Chen',
+        room: 'Executive King',
+        checkin: '2026-03-26',
+        checkout: '2026-03-28',
+        nights: 2,
+        amount: 698,
+        status: 'checked_in',
+        guests: 1
+      },
+      {
+        id: 4,
+        guest: 'Emma Wilson',
+        room: 'Standard Queen',
+        checkin: '2026-03-27',
+        checkout: '2026-03-30',
+        nights: 3,
+        amount: 597,
+        status: 'confirmed',
+        guests: 2
+      },
+      {
+        id: 5,
+        guest: 'David Brown',
+        room: 'Presidential Suite',
+        checkin: '2026-03-24',
+        checkout: '2026-03-27',
+        nights: 3,
+        amount: 2697,
+        status: 'checked_in',
+        guests: 4
+      },
+      {
+        id: 6,
+        guest: 'Lisa Anderson',
+        room: 'Business Suite',
+        checkin: '2026-03-28',
+        checkout: '2026-04-01',
+        nights: 4,
+        amount: 1796,
+        status: 'pending',
+        guests: 2
+      },
+      {
+        id: 7,
+        guest: 'James Wilson',
+        room: 'Ocean View',
+        checkin: '2026-03-26',
+        checkout: '2026-03-27',
+        nights: 1,
+        amount: 399,
+        status: 'checked_in',
+        guests: 1
+      }
+    ]
+  }
+
+  const formatDate = (date: Date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  // Parse date string in format YYYY-MM-DD as local date
+  const parseLocalDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
 
   // Process bookings for calendar display
   const getBookingsForDay = (day: number) => {
     const currentMonth = currentDate.getMonth()
     const currentYear = currentDate.getFullYear()
     const targetDate = new Date(currentYear, currentMonth, day)
-    const targetDateStr = targetDate.toISOString().split('T')[0]
+    const targetDateStr = formatDate(targetDate)
 
     const dayBookings: any[] = []
 
     bookings.forEach(booking => {
-      const checkinDate = new Date(booking.checkin)
-      const checkoutDate = new Date(booking.checkout)
+      const checkinDate = parseLocalDate(booking.checkin)
+      const checkoutDate = parseLocalDate(booking.checkout)
+      const checkinStr = formatDate(checkinDate)
+      const checkoutStr = formatDate(checkoutDate)
 
       // Check if this day is check-in
-      if (booking.checkin === targetDateStr) {
+      if (checkinStr === targetDateStr) {
         dayBookings.push({
           ...booking,
           type: 'check-in'
@@ -64,7 +168,7 @@ export default function CalendarPage() {
         })
       }
       // Check if this day is check-out
-      else if (booking.checkout === targetDateStr) {
+      else if (checkoutStr === targetDateStr) {
         dayBookings.push({
           ...booking,
           type: 'check-out'
@@ -87,14 +191,18 @@ export default function CalendarPage() {
     const totalRooms = 120
 
     // Count today's check-ins and check-outs
-    bookings.forEach(booking => {
-      const checkinDate = new Date(booking.checkin)
-      const checkoutDate = new Date(booking.checkout)
+    const todayStr = formatDate(today)
 
-      if (checkinDate.toDateString() === today.toDateString()) {
+    bookings.forEach(booking => {
+      const checkinDate = parseLocalDate(booking.checkin)
+      const checkoutDate = parseLocalDate(booking.checkout)
+      const checkinStr = formatDate(checkinDate)
+      const checkoutStr = formatDate(checkoutDate)
+
+      if (checkinStr === todayStr) {
         checkinsToday++
       }
-      if (checkoutDate.toDateString() === today.toDateString()) {
+      if (checkoutStr === todayStr) {
         checkoutsToday++
       }
 

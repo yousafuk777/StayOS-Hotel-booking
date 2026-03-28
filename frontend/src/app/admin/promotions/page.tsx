@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function PromotionsPage() {
   const [filter, setFilter] = useState('all')
+  const [promotionsFilter, setPromotionsFilter] = useState<'all' | 'active' | 'redemptions' | 'revenue' | 'discount'>('all')
   const router = useRouter()
 
   const promotions = [
@@ -52,23 +54,42 @@ export default function PromotionsPage() {
       <div className="max-w-[1600px] mx-auto p-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            { label: 'Active Promos', value: '12', icon: '🏷️', change: 'Currently running' },
-            { label: 'Total Redemptions', value: '535', icon: '✓', change: 'All time' },
-            { label: 'Revenue Impact', value: '$45.2K', icon: '💰', change: 'Generated from promos' },
-            { label: 'Avg. Discount', value: '18%', icon: '📊', change: 'Per booking' },
-          ].map((stat, index) => (
-            <div key={index} className="glass-card rounded-2xl p-6 card-hover slide-up" style={{ animationDelay: `${0.1 + index * 0.1}s` }}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 font-medium mb-2">{stat.label}</p>
-                  <p className="text-4xl font-bold gradient-text">{stat.value}</p>
-                </div>
-                <div className="text-5xl float">{stat.icon}</div>
-              </div>
-              <p className="text-sm text-gray-600">{stat.change}</p>
-            </div>
-          ))}
+          <StatCard
+            label="Active Promos"
+            value="12"
+            icon="🏷️"
+            color="green"
+            subtext="Currently running"
+            onClick={() => setPromotionsFilter('active')}
+            isActive={promotionsFilter === 'active'}
+          />
+          <StatCard
+            label="Total Redemptions"
+            value="535"
+            icon="✓"
+            color="blue"
+            subtext="All time"
+            onClick={() => setPromotionsFilter('redemptions')}
+            isActive={promotionsFilter === 'redemptions'}
+          />
+          <StatCard
+            label="Revenue Impact"
+            value="$45.2K"
+            icon="💰"
+            color="purple"
+            subtext="Generated from promos"
+            onClick={() => setPromotionsFilter('revenue')}
+            isActive={promotionsFilter === 'revenue'}
+          />
+          <StatCard
+            label="Avg. Discount"
+            value="18%"
+            icon="📊"
+            color="orange"
+            subtext="Per booking"
+            onClick={() => setPromotionsFilter('discount')}
+            isActive={promotionsFilter === 'discount'}
+          />
         </div>
 
         {/* Promotions Grid */}

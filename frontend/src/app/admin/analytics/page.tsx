@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import StatCard from '../../../components/StatCard'
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState('month')
+  const [analyticsFilter, setAnalyticsFilter] = useState<'all' | 'revenue' | 'occupancy' | 'adr' | 'revpar'>('all')
   const router = useRouter()
 
   return (
@@ -43,33 +45,42 @@ export default function AnalyticsPage() {
       <div className="max-w-[1600px] mx-auto p-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-up">
-          {[
-            { label: 'Total Revenue', value: '$42,850', change: '+18.5%', icon: '💰', positive: true },
-            { label: 'Occupancy Rate', value: '78%', change: '+5.2%', icon: '📊', positive: true },
-            { label: 'ADR (Avg Daily Rate)', value: '$289', change: '+12.3%', icon: '💵', positive: true },
-            { label: 'RevPAR', value: '$225', change: '-2.1%', icon: '📈', positive: false },
-          ].map((metric, index) => (
-            <div 
-              key={index}
-              className="glass-card rounded-2xl p-6 card-hover slide-up"
-              style={{ animationDelay: `${0.1 + index * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 font-medium mb-2">{metric.label}</p>
-                  <p className="text-4xl font-bold gradient-text">{metric.value}</p>
-                </div>
-                <div className="text-5xl float">{metric.icon}</div>
-              </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full inline-block ${
-                metric.positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-              }`}>
-                <span>{metric.positive ? '↑' : '↓'}</span>
-                <span className="font-semibold text-sm">{metric.change}</span>
-                <span className="text-sm">vs last period</span>
-              </div>
-            </div>
-          ))}
+          <StatCard
+            label="Total Revenue"
+            value="$42,850"
+            icon="💰"
+            color="green"
+            subtext="↑ +18.5% vs last period"
+            onClick={() => setAnalyticsFilter('revenue')}
+            isActive={analyticsFilter === 'revenue'}
+          />
+          <StatCard
+            label="Occupancy Rate"
+            value="78%"
+            icon="📊"
+            color="blue"
+            subtext="↑ +5.2% vs last period"
+            onClick={() => setAnalyticsFilter('occupancy')}
+            isActive={analyticsFilter === 'occupancy'}
+          />
+          <StatCard
+            label="ADR (Avg Daily Rate)"
+            value="$289"
+            icon="💵"
+            color="purple"
+            subtext="↑ +12.3% vs last period"
+            onClick={() => setAnalyticsFilter('adr')}
+            isActive={analyticsFilter === 'adr'}
+          />
+          <StatCard
+            label="RevPAR"
+            value="$225"
+            icon="📈"
+            color="orange"
+            subtext="↓ -2.1% vs last period"
+            onClick={() => setAnalyticsFilter('revpar')}
+            isActive={analyticsFilter === 'revpar'}
+          />
         </div>
 
         {/* Revenue Chart */}
