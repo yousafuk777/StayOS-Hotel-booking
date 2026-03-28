@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.middleware.tenant import TenantMiddleware
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, async_session_maker
+from app.seed_db import seed_super_admin
 
 
 app = FastAPI(
@@ -30,10 +31,13 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_db_client():
-    """Create database tables on startup (for development only)."""
-    if settings.APP_DEBUG:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    """Create database tables and seed initial data on startup."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Create super-admin if they don't exist
+    async with async_session_maker() as session:
+        await seed_super_admin(session)
 
 
 from fastapi.responses import RedirectResponse
