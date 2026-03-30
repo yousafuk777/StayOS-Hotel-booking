@@ -46,8 +46,11 @@ async def get_current_active_user(current_user=Depends(get_current_user)):
 
 
 async def get_current_super_admin(current_user=Depends(get_current_active_user)):
-    """Verify that the current user is a super admin."""
-    if current_user.role != UserRole.super_admin:
+    """Verify that the current user is a super admin with robust string comparison."""
+    # Ensure role is compared as a string to avoid Enum vs Raw String issues
+    user_role = str(current_user.role.value) if hasattr(current_user.role, 'value') else str(current_user.role)
+    
+    if user_role != "super_admin":
         raise HTTPException(
             status_code=403, 
             detail="The user does not have enough privileges"

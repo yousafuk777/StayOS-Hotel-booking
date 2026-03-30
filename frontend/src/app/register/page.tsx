@@ -82,120 +82,145 @@ export default function RegisterPage() {
     }
   }
 
-  // Show loading state during the entire process
-  if (loading) {
+  // Show loading/success states during the process
+  if (loading || success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Creating Your Account...</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {loginStep ? 'Logging you in...' : 'Registering your account...'}
-            </p>
-            <div className="mt-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto" />
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative glass-card p-12 rounded-3xl shadow-2xl border border-white/60 flex flex-col items-center max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg mb-8 animate-pulse">
+             <span className="text-4xl text-white">🚀</span>
           </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Account Created!</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {loginStep ? 'Logging you in...' : 'Redirecting you to your dashboard...'}
-            </p>
-            {loading && (
-              <div className="mt-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto" />
-              </div>
-            )}
-          </div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            {loginStep ? 'Signing you in...' : 'Setting up your desk...'}
+          </h2>
+          <p className="text-gray-600 mb-8 font-medium">
+            Join the premium property management ecosystem.
+          </p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 shadow-sm" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-center">{error}</div>}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                type="text"
-                name="firstName"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-              />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      {/* Background blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative w-full max-w-md">
+        {/* Card */}
+        <div
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-10"
+          style={{ boxShadow: '0 25px 60px rgba(99,102,241,0.12)' }}
+        >
+          {/* Logo / Brand */}
+          <div className="flex flex-col items-center mb-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg mb-4">
+              <span className="text-3xl">🔑</span>
             </div>
-            <div>
-              <input
-                type="text"
-                name="lastName"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              StayOS
+            </h1>
+            <p className="text-gray-500 text-sm mt-1 text-center px-4">Start your premium management journey</p>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-600 font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
             </div>
-            <div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {/* First Name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-gray-700 ml-1">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="John"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
+              {/* Last Name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-gray-700 ml-1">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Doe"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-gray-700 ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="you@yourhotel.com"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
             </div>
-            <div>
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-gray-700 ml-1">Password</label>
               <input
                 type="password"
                 name="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min 8 characters)"
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="••••••••••••"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
             </div>
-          </div>
 
-          <div>
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-95"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Creating Desk...
+                </span>
+              ) : (
+                '✨ Join the Platform'
+              )}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center">
+          <div className="mt-8 text-center pt-6 border-t border-gray-50">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
+              <Link href="/login" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+                Sign In Instead
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
-}
+}
