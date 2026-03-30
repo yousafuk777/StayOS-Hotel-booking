@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import api from '../../../services/api'
 
 export default function NewBookingPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function NewBookingPage() {
     specialRequests: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const roomTypes = [
     'Standard Queen',
@@ -27,6 +29,7 @@ export default function NewBookingPage() {
   ]
 
   const calculateNights = (checkin: string, checkout: string) => {
+    if (!checkin || !checkout) return 1
     const [y1, m1, d1] = checkin.split('-').map(Number)
     const [y2, m2, d2] = checkout.split('-').map(Number)
     const checkinDate = new Date(y1, m1 - 1, d1)
@@ -47,38 +50,50 @@ export default function NewBookingPage() {
     return (basePrices[roomType] || 250) * nights
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
     
-    const nights = calculateNights(formData.checkIn, formData.checkOut)
-    const amount = calculateAmount(formData.roomType, nights)
-    
-    const newBooking = {
-      id: Date.now(), // Use timestamp for unique ID
-      guest: formData.guestName,
-      room: formData.roomType,
-      checkin: formData.checkIn,
-      checkout: formData.checkOut,
-      nights: nights,
-      amount: amount,
-      status: 'pending',
-      guests: formData.guests
-    }
-    
-    // Save to localStorage - merge with existing bookings
-    const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]')
-    existingBookings.push(newBooking)
-    localStorage.setItem('bookings', JSON.stringify(existingBookings))
-    
-    // Show success message
-    // Booking created successfully
-    
-    // Redirect to bookings page
-    setTimeout(() => {
+    try {
+      const nights = calculateNights(formData.checkIn, formData.checkOut)
+      const amount = calculateAmount(formData.roomType, nights)
+      
+      const bookingData = {
+        guest_id: 1, // Mock guest ID for now
+        hotel_id: 1, // Mock hotel ID for now
+        room_id: 1,  // Added mock room ID
+        check_in_date: formData.checkIn,
+        check_out_date: formData.checkOut,
+        nights: nights,
+        num_guests: formData.guests,
+        room_total: amount,
+        addon_total: 0,
+        discount_amount: 0,
+        tax_amount: 0,
+        total_amount: amount,
+        status: 'pending',
+        special_requests: formData.specialRequests
+      }
+
+      await api.post('/api/v1/bookings', bookingData)
+      
+      // Redirect to bookings page on success
       router.push('/admin/bookings')
-    }, 1000)
+    } catch (err: any) {
+      console.error('Failed to create booking:', err)
+      const errorDetail = err.response?.data?.detail
+      if (Array.isArray(errorDetail)) {
+        const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
+        setError(`Validation Error: ${messages}`)
+      } else {
+        setError(errorDetail || 'Failed to create booking. Please check your data.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -87,6 +102,14 @@ export default function NewBookingPage() {
         <h1 className="text-4xl font-bold gradient-text mb-2">Create New Booking</h1>
         <p className="text-gray-600">Add a new reservation for a guest</p>
       </div>
+      
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 px-6 py-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 font-medium flex items-center gap-3">
+          <span className="text-xl">⚠️</span>
+          <p>{error}</p>
+        </div>
+      )}
 
       {/* Booking Form */}
       <form onSubmit={handleSubmit} className="space-y-4">

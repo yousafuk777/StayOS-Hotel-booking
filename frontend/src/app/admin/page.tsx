@@ -16,39 +16,47 @@ export default function AdminPage() {
   ]
 
   const [bookings, setBookings] = useState<any[]>([])
+  const [stats, setStats] = useState<any>(null)
   const [isHydrated, setIsHydrated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [statsLoading, setStatsLoading] = useState(true)
   const [dashboardFilter, setDashboardFilter] = useState<'all' | 'revenue' | 'bookings' | 'checkins'>('all')
 
   const pendingBookings = bookings.filter((b) => b.status === 'pending' || b.status === 'vip')
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/api/v1/bookings/pending')
-        const bookingData = response.data.bookings.map((b: any) => ({
+        const [bookingsRes, statsRes] = await Promise.all([
+          api.get('/api/v1/bookings/pending'),
+          api.get('/api/v1/bookings/stats')
+        ])
+
+        const bookingData = bookingsRes.data.bookings.map((b: any) => ({
           id: b.id,
           guest: b.guest_name,
           room: b.room_type,
-          checkin: b.check_in_date.split('T')[0], // Format date
+          checkin: b.check_in_date.split('T')[0],
           checkout: b.check_out_date.split('T')[0],
           nights: b.nights,
           amount: parseFloat(b.total_amount),
           status: b.status,
           guests: b.num_guests
         }))
+        
         setBookings(bookingData)
+        setStats(statsRes.data)
       } catch (error) {
-        console.error('Error fetching bookings:', error)
-        // Fallback to default data if API fails
+        console.error('Error fetching dashboard data:', error)
         setBookings(defaultBookings)
       } finally {
         setLoading(false)
+        setStatsLoading(false)
         setIsHydrated(true)
       }
     }
 
-    fetchBookings()
+    fetchData()
   }, [])
 
   const now = new Date()
@@ -116,34 +124,34 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 slide-up" style={{ animationDelay: '0.1s' }}>
         <StatCard
           label="Today's Revenue"
-          value="$12,450"
+          value={statsLoading ? '...' : `$${stats?.revenue_this_month?.toLocaleString() || '0'}`}
           icon="💵"
           color="green"
-          subtext="↑ 18% vs yesterday"
+          subtext="This month total"
           onClick={() => setDashboardFilter('revenue')}
           isActive={dashboardFilter === 'revenue'}
         />
         <StatCard
           label="New Bookings"
-          value={newBookingsCount}
+          value={statsLoading ? '...' : (stats?.bookings_this_month || 0)}
           icon="📋"
           color="blue"
-          subtext={`+${pendingCount} pending confirmation`}
+          subtext={`${stats?.pending_count || 0} pending confirmation`}
           onClick={() => setDashboardFilter('bookings')}
           isActive={dashboardFilter === 'bookings'}
         />
         <StatCard
           label="Check-ins"
-          value={checkedInCount}
+          value={statsLoading ? '...' : (stats?.checked_in_count || 0)}
           icon="🎉"
           color="purple"
-          subtext={`${vipGuestCount} VIP guests`}
+          subtext="Currently staying"
           onClick={() => setDashboardFilter('checkins')}
           isActive={dashboardFilter === 'checkins'}
         />
         <StatCard
           label="Occupancy Rate"
-          value="78%"
+          value={statsLoading ? '...' : `${stats?.occupancy_rate || 0}%`}
           icon="📊"
           color="orange"
           subtext="All rooms"

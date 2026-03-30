@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import StatCard from '../../../components/StatCard'
+import api from '../../../services/api'
 
 interface Booking {
   id: number
@@ -26,116 +27,49 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRoom, setSelectedRoom] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any>(null)
   const router = useRouter()
 
   const [bookings, setBookings] = useState<Booking[]>([])
 
-  const getSampleBookings = () => {
-    return [
-      {
-        id: 1,
-        guest: 'John Smith',
-        room: 'Deluxe Suite',
-        checkin: '2026-03-25',
-        checkout: '2026-03-29',
-        nights: 4,
-        amount: 1196,
-        status: 'checked_in',
-        guests: 2
-      },
-      {
-        id: 2,
-        guest: 'Sarah Johnson',
-        room: 'Ocean View',
-        checkin: '2026-03-27',
-        checkout: '2026-03-31',
-        nights: 4,
-        amount: 1596,
-        status: 'confirmed',
-        guests: 3
-      },
-      {
-        id: 3,
-        guest: 'Michael Chen',
-        room: 'Executive King',
-        checkin: '2026-03-26',
-        checkout: '2026-03-28',
-        nights: 2,
-        amount: 698,
-        status: 'checked_in',
-        guests: 1
-      },
-      {
-        id: 4,
-        guest: 'Emma Wilson',
-        room: 'Standard Queen',
-        checkin: '2026-03-27',
-        checkout: '2026-03-30',
-        nights: 3,
-        amount: 597,
-        status: 'confirmed',
-        guests: 2
-      },
-      {
-        id: 5,
-        guest: 'David Brown',
-        room: 'Presidential Suite',
-        checkin: '2026-03-24',
-        checkout: '2026-03-27',
-        nights: 3,
-        amount: 2697,
-        status: 'checked_in',
-        guests: 4
-      },
-      {
-        id: 6,
-        guest: 'Lisa Anderson',
-        room: 'Business Suite',
-        checkin: '2026-03-28',
-        checkout: '2026-04-01',
-        nights: 4,
-        amount: 1796,
-        status: 'pending',
-        guests: 2
-      },
-      {
-        id: 7,
-        guest: 'James Wilson',
-        room: 'Ocean View',
-        checkin: '2026-03-26',
-        checkout: '2026-03-27',
-        nights: 1,
-        amount: 399,
-        status: 'checked_in',
-        guests: 1
-      }
-    ]
-  }
-
-  // Load bookings from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('bookings')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBookings(parsed)
-        } else {
-          setBookings(getSampleBookings())
-        }
-      } catch (e) {
-        console.error('Error loading bookings:', e)
-        setBookings(getSampleBookings())
-      }
-    } else {
-      setBookings(getSampleBookings())
+  const fetchBookings = async () => {
+    setLoading(true)
+    try {
+      const [bookingsRes, statsRes] = await Promise.all([
+        api.get('/api/v1/bookings', {
+          params: {
+            status: filter !== 'all' ? filter : undefined,
+            search: searchQuery || undefined
+          }
+        }),
+        api.get('/api/v1/bookings/stats')
+      ])
+      
+      const bookingData = bookingsRes.data.bookings.map((b: any) => ({
+        id: b.id,
+        guest: b.guest_name,
+        room: b.room_type,
+        checkin: b.check_in_date.split('T')[0],
+        checkout: b.check_out_date.split('T')[0],
+        nights: b.nights,
+        amount: parseFloat(b.total_amount),
+        status: b.status,
+        guests: b.num_guests
+      }))
+      
+      setBookings(bookingData)
+      setStats(statsRes.data)
+    } catch (error) {
+      console.error('Error fetching bookings:', error)
+    } finally {
+      setLoading(false)
     }
-  }, [])
-
-  // Helper function to save bookings to localStorage
-  const saveToLocalStorage = (currentBookings: Booking[]) => {
-    localStorage.setItem('bookings', JSON.stringify(currentBookings))
   }
+
+  useEffect(() => {
+    fetchBookings()
+  }, [filter, searchQuery])
 
   // Parse date string in format YYYY-MM-DD as local date
   const parseLocalDate = (dateString: string) => {
@@ -186,43 +120,53 @@ export default function BookingsPage() {
     'vip': { label: 'VIP', color: 'bg-purple-100 text-purple-700' },
   }
   
-  const handleAddBooking = (e: React.FormEvent) => {
+  const handleAddBooking = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    try {
+      const checkinDate = parseLocalDate(newBooking.checkin)
+      const checkoutDate = parseLocalDate(newBooking.checkout)
+      const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
       
-    const checkinDate = parseLocalDate(newBooking.checkin)
-    const checkoutDate = parseLocalDate(newBooking.checkout)
-    const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
+      const bookingData = {
+        guest_id: 1, // This would ideally be selected or created
+        hotel_id: 1, // This should come from user context
+        check_in_date: newBooking.checkin,
+        check_out_date: newBooking.checkout,
+        nights: nights || 1,
+        num_guests: newBooking.guests,
+        room_total: 500, // This would be calculated from room selection
+        total_amount: 500,
+        status: newBooking.status,
+        special_requests: newBooking.specialRequests,
+        room_id: 1 // Added mock room ID
+      }
+
+      await api.post('/api/v1/bookings', bookingData)
+      setShowAddModal(false)
+      fetchBookings() // Refresh list
       
-    const booking: Booking = {
-      id: Date.now(), // Use timestamp for unique ID
-      guest: newBooking.guest,
-      room: newBooking.room,
-      checkin: newBooking.checkin,
-      checkout: newBooking.checkout,
-      nights: nights || 1,
-      amount: Math.floor(Math.random() * 2000) + 500,
-      status: newBooking.status,
-      guests: newBooking.guests
+      setNewBooking({
+        guest: '',
+        email: '',
+        phone: '',
+        room: '',
+        checkin: '',
+        checkout: '',
+        guests: 1,
+        specialRequests: '',
+        status: 'pending'
+      })
+    } catch (err: any) {
+      console.error('Error creating booking:', err)
+      const errorDetail = err.response?.data?.detail
+      if (Array.isArray(errorDetail)) {
+        const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
+        alert(`Validation Error: ${messages}`)
+      } else {
+        alert(errorDetail || 'Failed to create booking')
+      }
     }
-  
-    const updatedBookings = [...bookings, booking]
-    setBookings(updatedBookings)
-      
-    // Save only user-created bookings to localStorage
-    saveToLocalStorage(updatedBookings)
-      
-    setNewBooking({
-      guest: '',
-      email: '',
-      phone: '',
-      room: '',
-      checkin: '',
-      checkout: '',
-      guests: 1,
-      specialRequests: '',
-      status: 'pending'
-    })
-    setShowAddModal(false)
   }
   
   const handleViewBooking = (booking: Booking) => {
@@ -235,20 +179,27 @@ export default function BookingsPage() {
     setShowEditModal(true)
   }
   
-  const handleUpdateBooking = (e: React.FormEvent) => {
+  const handleUpdateBooking = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedBooking) return
   
-    const updatedBookings = bookings.map(b => 
-      b.id === selectedBooking.id ? selectedBooking : b
-    )
-    setBookings(updatedBookings)
-      
-    // Save all user-created bookings to localStorage (including updates)
-    saveToLocalStorage(updatedBookings)
-      
-    setShowEditModal(false)
-    setSelectedBooking(null)
+    try {
+      const response = await api.put(`/api/v1/bookings/${selectedBooking.id}`, {
+        status: selectedBooking.status,
+        // other fields if needed
+      })
+      setShowEditModal(false)
+      fetchBookings()
+    } catch (err: any) {
+      console.error('Error updating booking:', err)
+      const errorDetail = err.response?.data?.detail
+      if (Array.isArray(errorDetail)) {
+        const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
+        alert(`Validation Error: ${messages}`)
+      } else {
+        alert(errorDetail || 'Failed to update booking')
+      }
+    }
   }
   
   return (
@@ -345,16 +296,16 @@ export default function BookingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 slide-up" style={{ animationDelay: '0.1s' }}>
           <StatCard
             label="Total Bookings"
-            value={totalBookings}
+            value={loading ? '...' : (stats?.bookings_this_month || 0)}
             icon="📖"
             color="blue"
-            subtext={`This month: ${bookingsThisMonth}`}
+            subtext="This month"
             onClick={() => setFilter('all')}
             isActive={filter === 'all'}
           />
           <StatCard
             label="Pending"
-            value={pendingBookings}
+            value={loading ? '...' : (stats?.pending_count || 0)}
             icon="⏳"
             color="orange"
             subtext="Awaiting confirmation"
@@ -363,7 +314,7 @@ export default function BookingsPage() {
           />
           <StatCard
             label="Checked In"
-            value={checkedInBookings}
+            value={loading ? '...' : (stats?.checked_in_count || 0)}
             icon="✅"
             color="green"
             subtext="Currently staying"
@@ -372,7 +323,7 @@ export default function BookingsPage() {
           />
           <StatCard
             label="Revenue"
-            value={`$${(revenueThisMonth / 1000).toFixed(1)}K`}
+            value={loading ? '...' : `$${stats?.revenue_this_month?.toLocaleString() || '0'}`}
             icon="💵"
             color="purple"
             subtext="Monthly total"
@@ -427,79 +378,68 @@ export default function BookingsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {/* Filter bookings based on filter, search, and room selection */}
-                  {(() => {
-                    const filteredBookings = bookings.filter(booking => {
-                      // Status filter
-                      if (filter !== 'all' && booking.status !== filter) return false
-                      
-                      // Search filter
-                      if (searchQuery && !booking.guest.toLowerCase().includes(searchQuery.toLowerCase())) return false
-                      
-                      // Room filter
-                      if (selectedRoom !== 'all' && booking.room !== selectedRoom) return false
-                      
-                      return true
-                    })
-                    
-                    if (filteredBookings.length === 0) {
-                      return (
-                        <tr>
-                          <td colSpan={8} className="text-center py-12 text-gray-500">
-                            📭 No bookings found
-                          </td>
-                        </tr>
-                      )
-                    }
-                    
-                    return filteredBookings.map((booking, index) => (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-12 text-gray-500 italic animate-pulse">
+                        Loading bookings...
+                      </td>
+                    </tr>
+                  ) : bookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-12 text-gray-500">
+                        📭 No bookings found
+                      </td>
+                    </tr>
+                  ) : (
+                    bookings.map((booking, idx) => (
                       <tr 
                         key={booking.id} 
                         className="hover:bg-gray-50 transition-colors slide-up"
-                        style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                        style={{ animationDelay: `${0.3 + idx * 0.1}s` }}
                       >
                         <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
-                            {booking.guest.charAt(0)}
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+                              {booking.guest.charAt(0)}
+                            </div>
+                            <span className="font-medium text-gray-900">{booking.guest}</span>
                           </div>
-                          <span className="font-medium text-gray-900">{booking.guest}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-700">{booking.room}</td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm">
-                          <div className="font-medium">{booking.checkin}</div>
-                          <div className="text-gray-500">→ {booking.checkout}</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-700">{booking.nights}</td>
-                      <td className="py-4 px-4 text-gray-700">{booking.guests}</td>
-                      <td className="py-4 px-4 font-semibold text-gray-900">${booking.amount}</td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          booking.status === 'vip' ? 'bg-purple-100 text-purple-700' :
-                          booking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                          booking.status === 'checked_in' ? 'bg-green-100 text-green-700' :
-                          booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {booking.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => handleViewBooking(booking)}>
-                            👁️ View
-                          </button>
-                          <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => handleEditBooking(booking)}>
-                            ✏️ Edit
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                })()}
+                        </td>
+                        <td className="py-4 px-4 text-gray-700">{booking.room}</td>
+                        <td className="py-4 px-4">
+                          <div className="text-sm">
+                            <div className="font-medium">{booking.checkin}</div>
+                            <div className="text-gray-500">→ {booking.checkout}</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-gray-700">{booking.nights}</td>
+                        <td className="py-4 px-4 text-gray-700">{booking.guests}</td>
+                        <td className="py-4 px-4 font-semibold text-gray-900">${booking.amount}</td>
+                        <td className="py-4 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            booking.status === 'vip' ? 'bg-purple-100 text-purple-700' :
+                            booking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                            booking.status === 'checked_in' ? 'bg-green-100 text-green-700' :
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {booking.status.replace('_', ' ').toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => handleViewBooking(booking)}>
+                              👁️ View
+                            </button>
+                            <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => handleEditBooking(booking)}>
+                              ✏️ Edit
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+
                 </tbody>
               </table>
             </div>

@@ -1,39 +1,23 @@
 import axios from 'axios'
+import apiClient from './apiClient'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+/**
+ * Legacy API Export
+ * Re-exports the central apiClient with additional token refresh logic.
+ */
+const api = apiClient
 
-// Create axios instance
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  withCredentials: true, // send httpOnly cookies
-})
-
-// Request interceptor - attach access token to every request
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-// Response interceptor - handle token refresh on 401
+// Adding the complex refresh logic to the central client
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
-        // Try to refresh the token
         const { data } = await axios.post(
           `${API_BASE_URL}/api/v1/auth/refresh`,
           {},
@@ -46,7 +30,6 @@ api.interceptors.response.use(
           return api(originalRequest)
         }
       } catch {
-        // Refresh failed — clear token and redirect to super-admin login
         if (typeof window !== 'undefined') {
           localStorage.removeItem('access_token')
           localStorage.removeItem('super_admin_user')
@@ -54,7 +37,6 @@ api.interceptors.response.use(
         }
       }
     }
-
     return Promise.reject(error)
   }
 )
