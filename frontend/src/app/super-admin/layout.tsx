@@ -10,9 +10,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   const [adminName, setAdminName] = useState('Super Admin')
   const [userRole, setUserRole] = useState('Super Administrator')
   const [authChecked, setAuthChecked] = useState(false)
+  const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+  const [userId, setUserId] = useState('')
 
   // ── Auth guard ──────────────────────────────────────────────────────────
-  useEffect(() => {
+  useEffect(() => {http://localhost:3000/super-admin
     // Skip guard on the login page itself
     if (pathname === '/super-admin/login') {
       setAuthChecked(true)
@@ -37,6 +42,20 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         if (user.role) {
           setUserRole(user.role)
         }
+        // Load email and ID
+        if (user.email) {
+          setUserEmail(user.email)
+        }
+        if (user.id) {
+          setUserId(`USR-${user.id}`)
+        } else {
+          setUserId('USR-000')
+        }
+        // Load profile picture if exists
+        const savedPic = localStorage.getItem('profile_picture')
+        if (savedPic) {
+          setProfilePic(savedPic)
+        }
       }
     } catch {
       // ignore parse errors
@@ -49,6 +68,54 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     localStorage.removeItem('access_token')
     localStorage.removeItem('super_admin_user')
     router.replace('/super-admin/login')
+  }
+
+  const handleProfilePicClick = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement
+      const file = target.files?.[0]
+      if (file) {
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB')
+          return
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file')
+          return
+        }
+        
+        setUploading(true)
+        
+        // Convert to base64 and store
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const base64 = reader.result as string
+          setProfilePic(base64)
+          localStorage.setItem('profile_picture', base64)
+          setUploading(false)
+          alert('Profile picture updated successfully!')
+        }
+        reader.onerror = () => {
+          alert('Error reading file')
+          setUploading(false)
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    input.click()
+  }
+
+  const removeProfilePic = () => {
+    if (confirm('Are you sure you want to remove your profile picture?')) {
+      setProfilePic(null)
+      localStorage.removeItem('profile_picture')
+    }
   }
 
   // ── Don't render the shell on the login page ────────────────────────────
@@ -224,20 +291,172 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                   <span className="text-lg md:text-xl">🔔</span>
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 </button>
-                <div className="flex items-center gap-2 md:gap-3 ml-2">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                    <span className="text-white font-bold text-xs md:text-sm">
-                      {adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                
+                {/* User Profile - Clickable */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                    className="flex items-center gap-2 md:gap-3 ml-2 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-2 hover:bg-gray-50 transition-all"
+                  >
+                    {profilePic ? (
+                      <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden shadow-lg ring-2 ring-white flex-shrink-0">
+                        <img
+                          src={profilePic}
+                          alt="Profile"
+                          className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+                        />
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <span className="text-white font-bold text-xs md:text-sm">
+                          {adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="hidden sm:block text-left">
+                      <p className="text-xs md:text-sm font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">{adminName}</p>
+                      <p className="text-[10px] md:text-xs text-gray-600 hidden md:block">
+                        {userRole === 'super_admin' ? 'Super Administrator' : 
+                         userRole === 'admin' ? 'Hotel Administrator' : 
+                         userRole === 'staff' ? 'Staff Member' : 'User'}
+                      </p>
+                    </div>
+                    <span className={`ml-1 transition-transform ${accountDropdownOpen ? 'rotate-180' : ''}`}>
+                      ▼
                     </span>
-                  </div>
-                  <div className="hidden sm:block">
-                    <p className="text-xs md:text-sm font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">{adminName}</p>
-                    <p className="text-[10px] md:text-xs text-gray-600 hidden md:block">
-                      {userRole === 'super_admin' ? 'Super Administrator' : 
-                       userRole === 'admin' ? 'Hotel Administrator' : 
-                       userRole === 'staff' ? 'Staff Member' : 'User'}
-                    </p>
-                  </div>
+                  </button>
+
+                  {/* Account Dropdown */}
+                  {accountDropdownOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div 
+                        className="fixed inset-0 z-20"
+                        onClick={() => setAccountDropdownOpen(false)}
+                      />
+                      
+                      {/* Dropdown Menu */}
+                      <div className="fixed md:absolute right-4 left-4 md:right-0 md:left-auto top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 mt-0 md:mt-2 w-auto md:w-80 glass-card rounded-2xl shadow-xl border border-gray-200 z-30 max-h-[80vh] overflow-y-auto slide-down" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-4 md:p-6">
+                          {/* Profile Header */}
+                          <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-4 border-b border-gray-200">
+                            <div className="relative group cursor-pointer" onClick={handleProfilePicClick}>
+                              {profilePic ? (
+                                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden shadow-lg ring-2 ring-white">
+                                  <img
+                                    src={profilePic}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-white text-sm font-semibold drop-shadow-lg">📷 Change</span>
+                                  </div>
+                                  {uploading && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform cursor-pointer">
+                                  <span className="text-white font-bold text-lg md:text-xl">
+                                    {adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                  </span>
+                                </div>
+                              )}
+                              {!profilePic && (
+                                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-1 rounded-full shadow-lg">
+                                  <span className="text-xs">📷</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-base md:text-lg text-gray-900 truncate">{adminName}</h3>
+                              <p className="text-xs md:text-sm text-gray-600 truncate">
+                                {userRole === 'super_admin' ? 'Super Administrator' : 
+                                 userRole === 'admin' ? 'Hotel Administrator' : 
+                                 userRole === 'staff' ? 'Staff Member' : 'Guest'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">ID: {userId}</p>
+                            </div>
+                            {profilePic && (
+                              <button
+                                onClick={removeProfilePic}
+                                className="text-red-500 hover:text-red-700 transition-colors"
+                                title="Remove photo"
+                              >
+                                <span className="text-sm">✕</span>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Account Details */}
+                          <div className="space-y-3 mb-6">
+                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
+                              <span className="text-lg">📧</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-900">Email</p>
+                                <p className="text-xs text-gray-600 truncate">{userEmail}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
+                              <span className="text-lg">🏨</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-900">Platform</p>
+                                <p className="text-xs text-gray-600 truncate">StayOS Platform</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
+                              <span className="text-lg">📅</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-900">Member Since</p>
+                                <p className="text-xs text-gray-600">March 2026</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="space-y-2">
+                            <button 
+                              onClick={() => router.push('/super-admin/settings')}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
+                            >
+                              <span className="text-lg">⚙️</span>
+                              <span>Account Settings</span>
+                            </button>
+                            <button 
+                              onClick={() => router.push('/super-admin/profile')}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
+                            >
+                              <span className="text-lg">👤</span>
+                              <span>Edit Profile</span>
+                            </button>
+                            <button 
+                              onClick={() => router.push('/super-admin/analytics')}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
+                            >
+                              <span className="text-lg">📊</span>
+                              <span>Activity Log</span>
+                            </button>
+                            <div className="border-t border-gray-200 pt-2 mt-2">
+                              <button 
+                                onClick={handleLogout}
+                                className="w-full bg-red-50 text-red-600 px-4 py-3 rounded-xl font-semibold text-sm hover:bg-red-100 transition-all cursor-pointer flex items-center gap-2"
+                              >
+                                <span className="text-lg">🚪</span>
+                                <span>Sign Out</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
