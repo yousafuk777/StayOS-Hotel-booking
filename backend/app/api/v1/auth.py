@@ -16,17 +16,23 @@ async def register(
     db: AsyncSession = Depends(get_db)
 ):
     """Register a new user."""
-    tenant_id = request.state.tenant_id
-    user = await AuthService.register(db, tenant_id, body)
-    return {
-        "message": "Registration successful. Please check your email to verify your account.",
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
+    # For public registration, use tenant_id from request state if available
+    # Otherwise, use a default tenant (e.g., 1 for the main platform)
+    tenant_id = getattr(request.state, 'tenant_id', None) or 1
+    
+    try:
+        user = await AuthService.register(db, tenant_id, body)
+        return {
+            "message": "Registration successful. Please check your email to verify your account.",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+            }
         }
-    }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -37,7 +43,22 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """Login and get access token."""
-    tenant_id = request.state.tenant_id
+    # For login, first find the user without tenant constraint
+    from app.repositories.user_repo import UserRepository
+    from sqlalchemy import select
+    from app.models.user import User
+    
+    # First try to find user by email (without tenant filter)
+    result = await db.execute(
+        select(User).where(User.email == form_data.username)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Use the user's tenant_id for authentication
+    tenant_id = user.tenant_id
     tokens, user = await AuthService.authenticate(
         db, tenant_id, form_data.username, form_data.password
     )
