@@ -34,7 +34,12 @@ class AuthService:
     @staticmethod
     async def authenticate(db, tenant_id, email, password):
         """Authenticate user and return tokens."""
-        user = await UserRepository.get_by_email(db, tenant_id, email)
+        # 1. Look up user. If tenant_id is None, search globally.
+        if tenant_id is None:
+            user = await UserRepository.get_by_email_global(db, email)
+        else:
+            user = await UserRepository.get_by_email(db, tenant_id, email)
+
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         if not verify_password(password, user.hashed_password):

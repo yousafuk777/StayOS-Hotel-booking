@@ -29,6 +29,17 @@ class UserRepository(TenantScopedRepository):
         return result.scalar_one_or_none()
 
     @classmethod
+    async def get_by_email_global(cls, db: AsyncSession, email: str):
+        """Get user by email across all tenants (Central Login)."""
+        # Prioritize Super Admins (tenant_id IS NULL)
+        result = await db.execute(
+            select(User)
+            .where(User.email == email, User.is_deleted == False)
+            .order_by(User.tenant_id.is_not(None)) # NULLs first (False < True)
+        )
+        return result.scalars().first()
+
+    @classmethod
     async def create(cls, db: AsyncSession, tenant_id, data: dict):
         """Create a new user."""
         # Remove tenant_id from data if it exists to avoid duplicate keyword argument errors

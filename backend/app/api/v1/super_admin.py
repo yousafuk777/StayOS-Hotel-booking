@@ -130,13 +130,23 @@ async def create_user(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_super_admin),
 ):
-    """Create a new user globally."""
+    """Create a new user globally with auto-verification."""
+    # 1. Validation: Non-SuperAdmins MUST have a tenant_id
+    if data.role != UserRole.super_admin and data.tenant_id is None:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Tenant ID is required for role: {data.role}"
+        )
+
     existing = await UserRepository.get_by_email(db, tenant_id=data.tenant_id, email=data.email)
     if existing:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
     user_data = data.model_dump()
     user_data["hashed_password"] = hash_password(user_data.pop("password"))
+    
+    # 2. Auto-verify all users created by Super Admin
+    user_data["is_verified"] = True
     
     user = await UserRepository.create(db, tenant_id=data.tenant_id, data=user_data)
     return user
