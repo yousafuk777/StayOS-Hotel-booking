@@ -8,6 +8,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   const pathname = usePathname()
   const router = useRouter()
   const [adminName, setAdminName] = useState('Super Admin')
+  const [userRole, setUserRole] = useState('Super Administrator')
   const [authChecked, setAuthChecked] = useState(false)
 
   // ── Auth guard ──────────────────────────────────────────────────────────
@@ -26,10 +27,16 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
     // Populate admin name from stored user object if present
     try {
-      const stored = localStorage.getItem('super_admin_user')
+      const stored = localStorage.getItem('super_admin_user') || localStorage.getItem('user')
       if (stored) {
         const user = JSON.parse(stored)
-        if (user.first_name) setAdminName(`${user.first_name} ${user.last_name || ''}`.trim())
+        if (user.first_name) {
+          setAdminName(`${user.first_name} ${user.last_name || ''}`.trim())
+        }
+        // Also store role for display
+        if (user.role) {
+          setUserRole(user.role)
+        }
       }
     } catch {
       // ignore parse errors
@@ -201,29 +208,35 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <div className="flex-1 flex flex-col ml-72">
         {/* Top Header Bar */}
         <header className="glass-card border-b border-gray-200 fixed top-0 right-0 left-72 z-30">
-          <div className="max-w-[1800px] mx-auto px-6 py-4">
+          <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-3 md:py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="hidden md:flex items-center gap-4">
-                  <div className="glass px-4 py-2 rounded-lg">
-                    <span className="text-sm text-gray-600">Platform Status:</span>
-                    <span className="text-green-600 font-semibold ml-2">● Online</span>
+              <div className="flex items-center gap-2 md:gap-6">
+                <div className="hidden lg:flex items-center gap-4">
+                  <div className="glass px-3 md:px-4 py-2 rounded-lg">
+                    <span className="text-xs md:text-sm text-gray-600">Platform Status:</span>
+                    <span className="text-green-600 font-semibold ml-2 text-xs md:text-sm">● Online</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <button className="glass p-3 rounded-xl hover:bg-gray-50 transition-all relative">
-                  <span className="text-xl">🔔</span>
+              <div className="flex items-center gap-2 md:gap-4">
+                <button className="glass p-2 md:p-3 rounded-xl hover:bg-gray-50 transition-all relative">
+                  <span className="text-lg md:text-xl">🔔</span>
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 </button>
-                <div className="flex items-center gap-3 ml-2">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm">SA</span>
+                <div className="flex items-center gap-2 md:gap-3 ml-2">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span className="text-white font-bold text-xs md:text-sm">
+                      {adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </span>
                   </div>
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-semibold text-gray-900">{adminName}</p>
-                    <p className="text-xs text-gray-600">Super Administrator</p>
+                  <div className="hidden sm:block">
+                    <p className="text-xs md:text-sm font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">{adminName}</p>
+                    <p className="text-[10px] md:text-xs text-gray-600 hidden md:block">
+                      {userRole === 'super_admin' ? 'Super Administrator' : 
+                       userRole === 'admin' ? 'Hotel Administrator' : 
+                       userRole === 'staff' ? 'Staff Member' : 'User'}
+                    </p>
                   </div>
                 </div>
               </div>
