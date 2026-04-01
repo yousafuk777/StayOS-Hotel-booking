@@ -26,7 +26,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
     const token = localStorage.getItem('access_token')
     if (!token) {
-      router.replace('/super-admin/login')
+      router.replace('/login')
       return
     }
 
@@ -34,7 +34,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     try {
       const stored = localStorage.getItem('user')
       if (!stored) {
-        router.replace('/super-admin/login')
+        router.replace('/login')
         return
       }
 
@@ -75,7 +75,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       }
     } catch (err) {
       console.error('Auth error:', err)
-      router.replace('/super-admin/login')
+      router.replace('/login')
       return
     }
 
@@ -88,7 +88,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     localStorage.removeItem('super_admin_user')
     localStorage.removeItem('tenant_id')
     localStorage.removeItem('profile_picture')
-    router.replace('/super-admin/login')
+    router.replace('/login')
   }
 
   const handleProfilePicClick = () => {
@@ -396,15 +396,6 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                               <span className="text-lg">📊</span>
                               <span>Activity Log</span>
                             </button>
-                            <div className="border-t border-gray-200 pt-2 mt-2">
-                              <button 
-                                onClick={handleLogout}
-                                className="w-full bg-red-50 text-red-600 px-4 py-3 rounded-xl font-semibold text-sm hover:bg-red-100 transition-all cursor-pointer flex items-center gap-2"
-                              >
-                                <span className="text-lg">🚪</span>
-                                <span>Sign Out</span>
-                              </button>
-                            </div>
                           </div>
                         </div>
                       </div>

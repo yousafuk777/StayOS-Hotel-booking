@@ -54,7 +54,7 @@ export default function OnboardTenantModal({ isOpen, onClose, onSuccess }: Onboa
         if (typeof window !== 'undefined') {
           localStorage.removeItem('access_token')
           localStorage.removeItem('super_admin_user')
-          window.location.href = '/super-admin/login'
+          window.location.href = '/login'
         }
         return
       }

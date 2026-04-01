@@ -33,7 +33,7 @@ api.interceptors.response.use(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('access_token')
           localStorage.removeItem('super_admin_user')
-          window.location.href = '/super-admin/login'
+          window.location.href = '/login'
         }
       }
     }
