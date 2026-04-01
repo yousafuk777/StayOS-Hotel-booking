@@ -396,15 +396,6 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                               <span className="text-lg">📊</span>
                               <span>Activity Log</span>
                             </button>
-                            <div className="border-t border-gray-200 pt-2 mt-2">
-                              <button 
-                                onClick={handleLogout}
-                                className="w-full bg-red-50 text-red-600 px-4 py-3 rounded-xl font-semibold text-sm hover:bg-red-100 transition-all cursor-pointer flex items-center gap-2"
-                              >
-                                <span className="text-lg">🚪</span>
-                                <span>Sign Out</span>
-                              </button>
-                            </div>
                           </div>
                         </div>
                       </div>
