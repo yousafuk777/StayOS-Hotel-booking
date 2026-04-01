@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 from app.api.deps import get_db, get_current_super_admin
-from app.schemas.tenant import TenantCreate, TenantResponse, TenantListResponse
+from app.schemas.tenant import TenantCreate, TenantResponse, TenantListResponse, TenantUpdate
 from app.schemas.user import UserCreate, UserUpdate
 from app.repositories.tenant_repo import TenantRepository
 from app.repositories.user_repo import UserRepository
@@ -79,6 +79,46 @@ async def create_tenant(
 
     tenant = await TenantRepository.create(db, data.model_dump())
     return tenant
+
+
+@router.get("/tenants/{tenant_id}", response_model=TenantResponse)
+async def get_tenant(
+    tenant_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Get tenant details."""
+    tenant = await TenantRepository.get_by_id(db, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return tenant
+
+
+@router.patch("/tenants/{tenant_id}", response_model=TenantResponse)
+async def update_tenant(
+    tenant_id: int,
+    data: TenantUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Update tenant detail."""
+    tenant = await TenantRepository.update(db, tenant_id, data.model_dump(exclude_unset=True))
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return tenant
+
+
+@router.delete("/tenants/{tenant_id}")
+async def delete_tenant(
+    tenant_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Soft delete a tenant."""
+    success = await TenantRepository.delete(db, tenant_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {"message": "Tenant deleted successfully"}
 
 
 @router.get("/tenants", response_model=TenantListResponse)

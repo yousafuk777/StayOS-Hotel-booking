@@ -10,6 +10,8 @@ export default function TenantsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
+  const [processingId, setProcessingId] = useState<number | null>(null)
 
   const fetchTenants = useCallback(async () => {
     setLoading(true)
@@ -29,6 +31,38 @@ export default function TenantsPage() {
   useEffect(() => {
     fetchTenants()
   }, [fetchTenants])
+
+  const handleDeleteTenant = async (id: number, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}"? This action is irreversible.`)) return
+    
+    setProcessingId(id)
+    try {
+      await api.delete(`/api/v1/super-admin/tenants/${id}`)
+      setTenants(prev => prev.filter(t => t.id !== id))
+      setTotalCount(prev => prev - 1)
+    } catch (error) {
+      console.error('Delete failed:', error)
+      alert('Failed to delete tenant. Please try again.')
+    } finally {
+      setProcessingId(null)
+      setActiveDropdown(null)
+    }
+  }
+
+  const handleToggleStatus = async (tenant: any) => {
+    const newStatus = tenant.status === 'active' ? 'suspended' : 'active'
+    setProcessingId(tenant.id)
+    try {
+      await api.patch(`/api/v1/super-admin/tenants/${tenant.id}`, { status: newStatus })
+      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
+    } catch (error) {
+      console.error('Status update failed:', error)
+      alert('Failed to update tenant status.')
+    } finally {
+      setProcessingId(null)
+      setActiveDropdown(null)
+    }
+  }
 
   const STATUS_CONFIG: any = {
     all: { label: 'All Tenants', color: 'bg-gray-100 text-gray-700' },
@@ -209,11 +243,72 @@ export default function TenantsPage() {
                           {tenant.status.toUpperCase()}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 relative">
                         <div className="flex items-center gap-2">
-                          <button className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-700">
-                            ⚙️ Details
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdown(activeDropdown === tenant.id ? null : tenant.id);
+                            }}
+                            className={`glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium flex items-center gap-2 ${
+                              activeDropdown === tenant.id ? 'bg-gray-100 ring-2 ring-blue-500/20' : 'text-gray-700'
+                            }`}
+                          >
+                            <span>{activeDropdown === tenant.id ? '✕' : '⚙️'}</span>
+                            <span>Actions</span>
                           </button>
+
+                          {/* Action Dropdown */}
+                          {activeDropdown === tenant.id && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setActiveDropdown(null)}
+                              ></div>
+                              <div className="absolute right-4 top-full mt-2 w-48 glass-card border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                <div className="p-1">
+                                  <button 
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-3 transition-colors"
+                                    onClick={() => alert('Editing details coming soon')}
+                                  >
+                                    <span>📝</span> Edit Details
+                                  </button>
+                                  
+                                  <button 
+                                    className={`w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg flex items-center gap-3 transition-colors ${
+                                      tenant.status === 'active' 
+                                        ? 'text-amber-600 hover:bg-amber-50' 
+                                        : 'text-emerald-600 hover:bg-emerald-50'
+                                    }`}
+                                    onClick={() => handleToggleStatus(tenant)}
+                                    disabled={processingId === tenant.id}
+                                  >
+                                    {processingId === tenant.id ? (
+                                      <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
+                                    ) : (
+                                      <span>{tenant.status === 'active' ? '⏸' : '▶️'}</span>
+                                    )}
+                                    {tenant.status === 'active' ? 'Suspend Hotel' : 'Activate Hotel'}
+                                  </button>
+
+                                  <div className="h-px bg-gray-100 my-1"></div>
+
+                                  <button 
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-3 transition-colors"
+                                    onClick={() => handleDeleteTenant(tenant.id, tenant.name)}
+                                    disabled={processingId === tenant.id}
+                                  >
+                                    {processingId === tenant.id ? (
+                                      <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full"></div>
+                                    ) : (
+                                      <span>🗑️</span>
+                                    )}
+                                    Delete Hotel
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

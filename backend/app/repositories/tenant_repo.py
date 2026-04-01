@@ -44,3 +44,30 @@ class TenantRepository:
         query = select(Tenant).where(Tenant.id == tenant_id, Tenant.is_deleted == False)
         result = await db.execute(query)
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def update(db: AsyncSession, tenant_id: int, data: dict) -> Optional[Tenant]:
+        """Update tenant by ID."""
+        tenant = await TenantRepository.get_by_id(db, tenant_id)
+        if not tenant:
+            return None
+        
+        for key, value in data.items():
+            setattr(tenant, key, value)
+        
+        db.add(tenant)
+        await db.commit()
+        await db.refresh(tenant)
+        return tenant
+
+    @staticmethod
+    async def delete(db: AsyncSession, tenant_id: int) -> bool:
+        """Soft delete tenant by ID."""
+        tenant = await TenantRepository.get_by_id(db, tenant_id)
+        if not tenant:
+            return False
+            
+        tenant.is_deleted = True
+        db.add(tenant)
+        await db.commit()
+        return True
