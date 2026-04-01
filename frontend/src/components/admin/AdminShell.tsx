@@ -336,119 +336,46 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       />
                       
                       {/* Dropdown Menu */}
-                      <div className="fixed md:absolute right-4 left-4 md:right-0 md:left-auto top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 mt-0 md:mt-2 w-auto md:w-80 glass-card rounded-2xl shadow-xl border border-gray-200 z-30 max-h-[80vh] overflow-y-auto slide-down" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-3 sm:p-4 md:p-6">
-                          {/* Profile Header */}
-                          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6 pb-3 sm:pb-4 md:pb-4 border-b border-gray-200">
-                            <div className="relative group cursor-pointer" onClick={handleProfilePicClick}>
-                              {profilePic ? (
-                                <div className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full overflow-hidden shadow-lg ring-2 ring-white">
-                                  <img
-                                    src={profilePic}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
-                                  />
-                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-white text-xs sm:text-sm font-semibold drop-shadow-lg">📷 Change</span>
-                                  </div>
-                                  {uploading && (
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
-                                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform cursor-pointer">
-                                  <span className="text-white font-bold text-sm sm:text-lg md:text-xl">
-                                    {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                                  </span>
-                                </div>
-                              )}
-                              {!profilePic && (
-                                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-1 rounded-full shadow-lg">
-                                  <span className="text-xs">📷</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 truncate">{userName}</h3>
-                              <p className="text-xs sm:text-xs md:text-sm text-gray-600 truncate">{userRole}</p>
-                              <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">ID: {userId}</p>
-                            </div>
-                            {profilePic && (
-                              <button
-                                onClick={removeProfilePic}
-                                className="text-red-500 hover:text-red-700 transition-colors"
-                                title="Remove photo"
-                              >
-                                <span className="text-sm">✕</span>
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Account Details */}
-                          <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-3 sm:mb-4 md:mb-6">
-                            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2 md:p-3 glass rounded-lg sm:rounded-xl">
-                              <span className="text-sm sm:text-lg md:text-xl">📧</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-xs md:text-sm font-medium text-gray-900">Email</p>
-                                <p className="text-xs text-gray-600 truncate">{userEmail}</p>
-                              </div>
-                            </div>
-                            {userPhone && (
-                              <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2 md:p-3 glass rounded-lg sm:rounded-xl">
-                                <span className="text-sm sm:text-lg md:text-xl">📱</span>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs sm:text-xs md:text-sm font-medium text-gray-900">Phone</p>
-                                  <p className="text-xs text-gray-600 truncate">{userPhone}</p>
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2 md:p-3 glass rounded-lg sm:rounded-xl">
-                              <span className="text-sm sm:text-lg md:text-xl">🏨</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-xs md:text-sm font-medium text-gray-900">Hotel</p>
-                                <p className="text-xs text-gray-600 truncate">Grand Plaza Hotel</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2 md:p-3 glass rounded-lg sm:rounded-xl">
-                              <span className="text-sm sm:text-lg md:text-xl">📅</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-xs md:text-sm font-medium text-gray-900">Member Since</p>
-                                <p className="text-xs text-gray-600">March 2026</p>
-                              </div>
-                            </div>
-                          </div>
-
+                      <div className="fixed md:absolute right-4 left-4 md:right-0 md:left-auto top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 mt-0 md:mt-2 w-auto md:w-64 glass-card rounded-2xl shadow-xl border border-gray-200 z-30 overflow-hidden slide-down" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-4">
                           {/* Action Buttons */}
-                          <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
+                          <div className="space-y-2">
                             <button 
-                              onClick={() => router.push('/admin/settings')}
-                              className="w-full glass px-2 sm:px-3 md:px-4 py-2 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 md:gap-3"
+                              onClick={() => {
+                                router.push('/admin/settings')
+                                setAccountDropdownOpen(false)
+                              }}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
-                              <span className="text-sm sm:text-lg md:text-xl">⚙️</span>
+                              <span className="text-lg">⚙️</span>
                               <span>Account Settings</span>
                             </button>
                             <button 
-                              onClick={() => router.push('/admin/profile')}
-                              className="w-full glass px-2 sm:px-3 md:px-4 py-2 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 md:gap-3"
+                              onClick={() => {
+                                router.push('/admin/profile')
+                                setAccountDropdownOpen(false)
+                              }}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
-                              <span className="text-sm sm:text-lg md:text-xl">👤</span>
+                              <span className="text-lg">👤</span>
                               <span>Edit Profile</span>
                             </button>
                             <button 
-                              onClick={() => router.push('/admin/analytics')}
-                              className="w-full glass px-2 sm:px-3 md:px-4 py-2 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 md:gap-3"
+                              onClick={() => {
+                                router.push('/admin/analytics')
+                                setAccountDropdownOpen(false)
+                              }}
+                              className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
-                              <span className="text-sm sm:text-lg md:text-xl">📊</span>
+                              <span className="text-lg">📊</span>
                               <span>Activity Log</span>
                             </button>
-                            <div className="border-t border-gray-200 pt-1.5 sm:pt-2 md:pt-3 mt-2">
+                            <div className="border-t border-gray-200 pt-2 mt-2">
                               <button 
                                 onClick={handleLogout}
-                                className="w-full bg-red-50 text-red-600 px-2 sm:px-3 md:px-4 py-2 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base hover:bg-red-100 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 md:gap-3"
+                                className="w-full bg-red-50 text-red-600 px-4 py-3 rounded-xl font-semibold text-sm hover:bg-red-100 transition-all cursor-pointer flex items-center gap-2"
                               >
-                                <span className="text-sm sm:text-lg md:text-xl">🚪</span>
+                                <span className="text-lg">🚪</span>
                                 <span>Sign Out</span>
                               </button>
                             </div>

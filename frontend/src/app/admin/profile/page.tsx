@@ -8,6 +8,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false)
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
@@ -38,7 +39,20 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Error loading user data:', error)
     }
-  }, [])
+
+    // Close photo menu when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (showPhotoMenu && !target.closest('.relative.inline-block')) {
+        setShowPhotoMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showPhotoMenu])
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -82,6 +96,41 @@ export default function ProfilePage() {
   const removeProfilePic = () => {
     setProfilePic(null)
     localStorage.removeItem('profile_picture')
+    setShowPhotoMenu(false)
+  }
+
+  const handleProfilePicClick = () => {
+    // Open file selector directly
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB')
+          return
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file')
+          return
+        }
+        
+        // Convert to base64 and store
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setProfilePic(reader.result as string)
+          localStorage.setItem('profile_picture', reader.result as string)
+          setShowPhotoMenu(false)
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    input.click()
+    setShowPhotoMenu(false)
   }
 
   const getRoleDisplay = (role: string) => {
@@ -108,24 +157,39 @@ export default function ProfilePage() {
           <div className="glass-card rounded-2xl p-6 text-center slide-up">
             <div className="relative w-32 h-32 mx-auto mb-4">
               {profilePic ? (
-                <div className="relative">
+                <div className="relative inline-block">
                   <img
                     src={profilePic}
                     alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover shadow-xl border-4 border-white"
+                    onClick={() => setShowPhotoMenu(!showPhotoMenu)}
+                    className="w-32 h-32 rounded-full object-cover shadow-xl border-4 border-white cursor-pointer hover:opacity-90 transition-all"
                   />
-                  {isEditing && (
-                    <button
-                      onClick={removeProfilePic}
-                      className="absolute top-0 right-0 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-all shadow-lg"
-                      title="Remove photo"
-                    >
-                      ✕
-                    </button>
+                  {/* Photo Menu */}
+                  {showPhotoMenu && (
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+                      <button
+                        onClick={handleProfilePicClick}
+                        className="w-full px-6 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-all cursor-pointer"
+                      >
+                        <span className="text-xl">📷</span>
+                        <span className="font-medium">Change Photo</span>
+                      </button>
+                      <button
+                        onClick={removeProfilePic}
+                        className="w-full px-6 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3 transition-all cursor-pointer border-t border-gray-100"
+                      >
+                        <span className="text-xl">🗑️</span>
+                        <span className="font-medium">Remove Photo</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-xl">
+                <div 
+                  onClick={handleProfilePicClick}
+                  className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-xl cursor-pointer hover:scale-105 transition-all"
+                  title="Click to add profile photo"
+                >
                   <span className="text-white font-bold text-4xl">
                     {user.firstName && user.lastName 
                       ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
@@ -142,17 +206,8 @@ export default function ProfilePage() {
             <p className="text-xs text-gray-500 mt-2">{user.email}</p>
 
             {isEditing && (
-              <div className="mt-4">
-                <label className="btn-primary px-6 py-2 rounded-xl font-semibold cursor-pointer w-full inline-block">
-                  📷 {profilePic ? 'Change Photo' : 'Upload Photo'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-xs text-gray-500 mt-2">Max 5MB • JPG, PNG, GIF</p>
+              <div className="mt-4 text-sm text-gray-600">
+                <p>💡 Click on your profile picture to change or remove it</p>
               </div>
             )}
 

@@ -128,21 +128,33 @@ export default function BookingsPage() {
       const checkoutDate = parseLocalDate(newBooking.checkout)
       const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
       
+      console.log('Submitting booking:', newBooking)
+      console.log('Nights calculated:', nights)
+      
+      // For now, use mock IDs - in production these would come from selection
       const bookingData = {
-        guest_id: 1, // This would ideally be selected or created
-        hotel_id: 1, // This should come from user context
+        guest_id: 1, // TODO: Create guest first or select from dropdown
+        hotel_id: 1,
+        room_id: 1, // TODO: Select from available rooms
         check_in_date: newBooking.checkin,
         check_out_date: newBooking.checkout,
         nights: nights || 1,
         num_guests: newBooking.guests,
-        room_total: 500, // This would be calculated from room selection
-        total_amount: 500,
+        room_total: 500,
+        addon_total: 0,
+        discount_amount: 0,
+        tax_amount: 0,
+        total_amount: 500 * (nights || 1),
         status: newBooking.status,
-        special_requests: newBooking.specialRequests,
-        room_id: 1 // Added mock room ID
+        special_requests: newBooking.specialRequests
       }
 
-      await api.post('/api/v1/bookings', bookingData)
+      console.log('Sending to API:', bookingData)
+      
+      const response = await api.post('/api/v1/bookings/', bookingData)
+      console.log('Success:', response.data)
+      
+      alert('✅ Booking created successfully!')
       setShowAddModal(false)
       fetchBookings() // Refresh list
       
@@ -159,12 +171,31 @@ export default function BookingsPage() {
       })
     } catch (err: any) {
       console.error('Error creating booking:', err)
+      console.error('Error response:', err.response?.data)
+      console.error('Error status:', err.response?.status)
+      console.error('Error code:', err.code)
+      
+      // Check if it's an authentication issue
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('❌ You are not logged in! Please login first.')
+        router.push('/login')
+        return
+      }
+      
       const errorDetail = err.response?.data?.detail
       if (Array.isArray(errorDetail)) {
         const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
-        alert(`Validation Error: ${messages}`)
+        alert(`❌ Validation Error: ${messages}`)
       } else {
-        alert(errorDetail || 'Failed to create booking')
+        const errorMsg = errorDetail || err.message || 'Unknown error'
+        if (errorMsg.includes('Network Error') || err.code === 'ERR_NETWORK') {
+          alert('❌ Network Error - Please check:\n1. Backend is running (port 8000)\n2. You are logged in\n3. Check browser console (F12) for details')
+        } else if (errorMsg.includes('Tenant')) {
+          alert('❌ Tenant Configuration Error: Your user account does not have a tenant associated. Please contact support.')
+        } else {
+          alert(`❌ Failed to create booking: ${errorMsg}`)
+        }
       }
     }
   }
@@ -455,8 +486,14 @@ export default function BookingsPage() {
 
       {/* Add Booking Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div 
+            className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold gradient-text">Create New Booking</h2>
               <button 
@@ -627,8 +664,14 @@ export default function BookingsPage() {
 
       {/* View Booking Modal */}
       {showViewModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowViewModal(false)}
+        >
+          <div 
+            className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold gradient-text">Booking Details</h2>
               <button 
@@ -710,8 +753,14 @@ export default function BookingsPage() {
 
       {/* Edit Booking Modal */}
       {showEditModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div 
+            className="glass-card rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold gradient-text">Edit Booking</h2>
               <button 

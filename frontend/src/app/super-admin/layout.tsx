@@ -341,103 +341,35 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                       />
                       
                       {/* Dropdown Menu */}
-                      <div className="fixed md:absolute right-4 left-4 md:right-0 md:left-auto top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 mt-0 md:mt-2 w-auto md:w-80 glass-card rounded-2xl shadow-xl border border-gray-200 z-30 max-h-[80vh] overflow-y-auto slide-down" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-4 md:p-6">
-                          {/* Profile Header */}
-                          <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-4 border-b border-gray-200">
-                            <div className="relative group cursor-pointer" onClick={handleProfilePicClick}>
-                              {profilePic ? (
-                                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden shadow-lg ring-2 ring-white">
-                                  <img
-                                    src={profilePic}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
-                                  />
-                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-white text-sm font-semibold drop-shadow-lg">📷 Change</span>
-                                  </div>
-                                  {uploading && (
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
-                                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform cursor-pointer">
-                                  <span className="text-white font-bold text-lg md:text-xl">
-                                    {adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                                  </span>
-                                </div>
-                              )}
-                              {!profilePic && (
-                                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-1 rounded-full shadow-lg">
-                                  <span className="text-xs">📷</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-base md:text-lg text-gray-900 truncate">{adminName}</h3>
-                              <p className="text-xs md:text-sm text-gray-600 truncate">
-                                {userRole === 'super_admin' ? 'Super Administrator' : 
-                                 userRole === 'admin' ? 'Hotel Administrator' : 
-                                 userRole === 'staff' ? 'Staff Member' : 'Guest'}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">ID: {userId}</p>
-                            </div>
-                            {profilePic && (
-                              <button
-                                onClick={removeProfilePic}
-                                className="text-red-500 hover:text-red-700 transition-colors"
-                                title="Remove photo"
-                              >
-                                <span className="text-sm">✕</span>
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Account Details */}
-                          <div className="space-y-3 mb-6">
-                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
-                              <span className="text-lg">📧</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-900">Email</p>
-                                <p className="text-xs text-gray-600 truncate">{userEmail}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
-                              <span className="text-lg">🏨</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-900">Platform</p>
-                                <p className="text-xs text-gray-600 truncate">StayOS Platform</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 glass rounded-xl">
-                              <span className="text-lg">📅</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-900">Member Since</p>
-                                <p className="text-xs text-gray-600">March 2026</p>
-                              </div>
-                            </div>
-                          </div>
-
+                      <div className="fixed md:absolute right-4 left-4 md:right-0 md:left-auto top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 mt-0 md:mt-2 w-auto md:w-64 glass-card rounded-2xl shadow-xl border border-gray-200 z-30 overflow-hidden slide-down" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-4">
                           {/* Action Buttons */}
                           <div className="space-y-2">
                             <button 
-                              onClick={() => router.push('/super-admin/settings')}
+                              onClick={() => {
+                                router.push('/super-admin/settings')
+                                setAccountDropdownOpen(false)
+                              }}
                               className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
                               <span className="text-lg">⚙️</span>
                               <span>Account Settings</span>
                             </button>
                             <button 
-                              onClick={() => router.push('/super-admin/profile')}
+                              onClick={() => {
+                                router.push('/super-admin/profile')
+                                setAccountDropdownOpen(false)
+                              }}
                               className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
                               <span className="text-lg">👤</span>
                               <span>Edit Profile</span>
                             </button>
                             <button 
-                              onClick={() => router.push('/super-admin/analytics')}
+                              onClick={() => {
+                                router.push('/super-admin/analytics')
+                                setAccountDropdownOpen(false)
+                              }}
                               className="w-full glass px-4 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                             >
                               <span className="text-lg">📊</span>
