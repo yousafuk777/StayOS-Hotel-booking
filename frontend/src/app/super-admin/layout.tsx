@@ -26,7 +26,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
     const token = localStorage.getItem('access_token')
     if (!token) {
-      router.replace('/super-admin/login')
+      router.replace('/login')
       return
     }
 
@@ -34,7 +34,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     try {
       const stored = localStorage.getItem('user')
       if (!stored) {
-        router.replace('/super-admin/login')
+        router.replace('/login')
         return
       }
 
@@ -75,7 +75,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       }
     } catch (err) {
       console.error('Auth error:', err)
-      router.replace('/super-admin/login')
+      router.replace('/login')
       return
     }
 
@@ -88,7 +88,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     localStorage.removeItem('super_admin_user')
     localStorage.removeItem('tenant_id')
     localStorage.removeItem('profile_picture')
-    router.replace('/super-admin/login')
+    router.replace('/login')
   }
 
   const handleProfilePicClick = () => {

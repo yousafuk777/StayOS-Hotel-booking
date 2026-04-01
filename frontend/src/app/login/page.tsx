@@ -112,24 +112,24 @@ export default function LoginPage() {
             </div>
 
             {/* Password */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative">
               <label className="block text-sm font-semibold text-gray-700 ml-1">
                 Password
               </label>
               <input
                 id="login-password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
+                className="absolute right-4 top-[38px] text-gray-400 hover:text-gray-600 focus:outline-none z-10"
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,7 +162,17 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center space-y-4">
+          {/* Forgot Password & Register Links */}
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <Link 
+                href="/forgot-password" 
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
+              >
+                🔑 Forgot Password?
+              </Link>
+            </div>
+            
             <div className="border-t border-gray-100 pt-6">
               <p className="text-sm text-gray-600">
                 Don&apos;t have an account?{' '}
@@ -171,6 +181,7 @@ export default function LoginPage() {
                 </Link>
               </p>
             </div>
+            
             <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
               Premium Property Management
             </p>
