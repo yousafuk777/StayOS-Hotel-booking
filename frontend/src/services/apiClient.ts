@@ -40,6 +40,13 @@ apiClient.interceptors.request.use(
           }
         }
       }
+      
+      // 3. Ensure Content-Type is set for POST/PUT requests
+      if (['POST', 'PUT', 'PATCH'].includes(config.method?.toUpperCase() || '')) {
+        if (!config.headers['Content-Type']) {
+          config.headers['Content-Type'] = 'application/json'
+        }
+      }
     }
     return config
   },

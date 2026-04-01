@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import apiClient from '../../../services/apiClient'
 
 interface Booking {
   id: number
@@ -19,110 +20,45 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 15)) // March 2026
   const [viewMode, setViewMode] = useState('month')
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Load bookings from localStorage
+  // Fetch real bookings from API
   useEffect(() => {
-    const stored = localStorage.getItem('bookings')
-    if (stored) {
+    const fetchBookings = async () => {
       try {
-        const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBookings(parsed)
-        } else {
-          // Use sample bookings if localStorage is empty
-          setBookings(getSampleBookings())
-        }
-      } catch (e) {
-        console.error('Error loading bookings:', e)
-        setBookings(getSampleBookings())
+        setLoading(true)
+        const response = await apiClient.get('/api/v1/bookings/')
+        
+        // Map API response to our Booking interface
+        const bookingData = response.data.bookings.map((b: any) => ({
+          id: b.id,
+          guest: b.guest_name || `${b.guest?.first_name || 'Unknown'} ${b.guest?.last_name || ''}`.trim(),
+          room: b.room_type || b.rooms?.[0]?.room?.room_type || 'Unknown',
+          checkin: b.check_in_date.split('T')[0],
+          checkout: b.check_out_date.split('T')[0],
+          nights: b.nights,
+          amount: parseFloat(b.total_amount || 0),
+          status: b.status,
+          guests: b.num_guests
+        }))
+        
+        setBookings(bookingData)
+        console.log('Calendar bookings loaded:', bookingData.length)
+      } catch (error) {
+        console.error('Error fetching bookings for calendar:', error)
+        // Only show empty state - no mock data
+        setBookings([])
+      } finally {
+        setLoading(false)
       }
-    } else {
-      // Use sample bookings if no data in localStorage
-      setBookings(getSampleBookings())
     }
+
+    fetchBookings()
   }, [])
 
   const getSampleBookings = () => {
-    return [
-      {
-        id: 1,
-        guest: 'John Smith',
-        room: 'Deluxe Suite',
-        checkin: '2026-03-25',
-        checkout: '2026-03-29',
-        nights: 4,
-        amount: 1196,
-        status: 'checked_in',
-        guests: 2
-      },
-      {
-        id: 2,
-        guest: 'Sarah Johnson',
-        room: 'Ocean View',
-        checkin: '2026-03-27',
-        checkout: '2026-03-31',
-        nights: 4,
-        amount: 1596,
-        status: 'confirmed',
-        guests: 3
-      },
-      {
-        id: 3,
-        guest: 'Michael Chen',
-        room: 'Executive King',
-        checkin: '2026-03-26',
-        checkout: '2026-03-28',
-        nights: 2,
-        amount: 698,
-        status: 'checked_in',
-        guests: 1
-      },
-      {
-        id: 4,
-        guest: 'Emma Wilson',
-        room: 'Standard Queen',
-        checkin: '2026-03-27',
-        checkout: '2026-03-30',
-        nights: 3,
-        amount: 597,
-        status: 'confirmed',
-        guests: 2
-      },
-      {
-        id: 5,
-        guest: 'David Brown',
-        room: 'Presidential Suite',
-        checkin: '2026-03-24',
-        checkout: '2026-03-27',
-        nights: 3,
-        amount: 2697,
-        status: 'checked_in',
-        guests: 4
-      },
-      {
-        id: 6,
-        guest: 'Lisa Anderson',
-        room: 'Business Suite',
-        checkin: '2026-03-28',
-        checkout: '2026-04-01',
-        nights: 4,
-        amount: 1796,
-        status: 'pending',
-        guests: 2
-      },
-      {
-        id: 7,
-        guest: 'James Wilson',
-        room: 'Ocean View',
-        checkin: '2026-03-26',
-        checkout: '2026-03-27',
-        nights: 1,
-        amount: 399,
-        status: 'checked_in',
-        guests: 1
-      }
-    ]
+    return [] // No more mock data - only show real bookings from API
   }
 
   const formatDate = (date: Date) => {
@@ -378,58 +314,79 @@ export default function CalendarPage() {
 
           {/* Calendar Days */}
           <div className="grid grid-cols-7 gap-2">
-            {/* Empty cells for days before month starts */}
-            {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-              <div key={`empty-${i}`} className="aspect-square"></div>
-            ))}
-
-            {/* Days of the month */}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1
-              const dayBookings = getBookingsForDay(day)
-              const hasBookings = dayBookings.length > 0
-              
-              return (
-                <div
-                  key={day}
-                  className={`aspect-square border-2 rounded-xl p-2 transition-all hover:shadow-lg card-hover cursor-pointer ${
-                    day === 15 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 bg-white hover:border-blue-300'
-                  }`}
+            {loading ? (
+              <div className="col-span-7 text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
+                <p className="text-gray-600 mt-4">Loading bookings...</p>
+              </div>
+            ) : bookings.length === 0 ? (
+              <div className="col-span-7 text-center py-20">
+                <div className="text-6xl mb-4">📅</div>
+                <h3 className="text-2xl font-bold gradient-text mb-2">No Bookings Yet</h3>
+                <p className="text-gray-600 mb-6">The calendar is empty. Create your first booking!</p>
+                <button
+                  onClick={() => router.push('/admin/bookings')}
+                  className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer inline-flex items-center gap-2"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-bold ${day === 15 ? 'text-blue-600' : 'text-gray-900'}`}>
-                      {day}
-                    </span>
-                    {hasBookings && (
-                      <span className="text-xs text-gray-500">
-                        {dayBookings.length} booking{dayBookings.length > 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
+                  <span>➕</span>
+                  <span>Create Booking</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Empty cells for days before month starts */}
+                {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                  <div key={`empty-${i}`} className="aspect-square"></div>
+                ))}
 
-                  {/* Booking Indicators */}
-                  {hasBookings && (
-                    <div className="space-y-1 overflow-y-auto max-h-24">
-                      {dayBookings.map((booking: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className={`${TYPE_COLORS[booking.type]} text-white text-xs px-2 py-1 rounded truncate`}
-                          title={`${booking.guest} - ${booking.room}`}
-                        >
-                          {booking.type === 'check-in' && '✓ '}
-                          {booking.type === 'check-out' && '✕ '}
-                          {booking.guest}
+                {/* Days of the month */}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1
+                  const dayBookings = getBookingsForDay(day)
+                  const hasBookings = dayBookings.length > 0
+                  
+                  return (
+                    <div
+                      key={day}
+                      className={`aspect-square border-2 rounded-xl p-2 transition-all hover:shadow-lg card-hover cursor-pointer ${
+                        day === 15 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 bg-white hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`font-bold ${day === 15 ? 'text-blue-600' : 'text-gray-900'}`}>
+                          {day}
+                        </span>
+                        {hasBookings && (
+                          <span className="text-xs text-gray-500">
+                            {dayBookings.length} booking{dayBookings.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Booking Indicators */}
+                      {hasBookings && (
+                        <div className="space-y-1 overflow-y-auto max-h-24">
+                          {dayBookings.map((booking: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className={`${TYPE_COLORS[booking.type]} text-white text-xs px-2 py-1 rounded truncate`}
+                              title={`${booking.guest} - ${booking.room}`}
+                            >
+                              {booking.type === 'check-in' && '✓ '}
+                              {booking.type === 'check-out' && '✕ '}
+                              {booking.guest}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              )
-            })}
+                  )
+                })}
+              </>
+            )}
           </div>
-        </div>
 
         {/* Today's Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
