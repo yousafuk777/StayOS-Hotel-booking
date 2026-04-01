@@ -26,6 +26,43 @@ class SuperAdminLoginResponse(BaseModel):
     user: dict
 
 
+# ── Analytics Schemas ────────────────────────────────────────────────────────
+
+class AnalyticsKPI(BaseModel):
+    label: str
+    value: str
+    change: str
+    trend: str
+    icon: str
+
+
+class TimeSeriesPoint(BaseModel):
+    date: str
+    revenue: float
+    bookings: int
+
+
+class RevenueBreakdown(BaseModel):
+    category: str
+    amount: float
+    percentage: int
+
+
+class TopPerformer(BaseModel):
+    rank: int
+    hotel: str
+    revenue: float
+    occupancy: float
+    rating: float
+
+
+class AnalyticsResponse(BaseModel):
+    kpis: List[AnalyticsKPI]
+    revenue_trend: List[TimeSeriesPoint]
+    breakdown: List[RevenueBreakdown]
+    performers: List[TopPerformer]
+
+
 @router.post("/login", response_model=SuperAdminLoginResponse, tags=["Super Admin Auth"])
 async def super_admin_login(
     body: SuperAdminLoginRequest,
@@ -242,6 +279,33 @@ async def delete_user(
 
 
 # ── Platform Stats ──────────────────────────────────────────────────────────
+
+@router.get("/analytics", response_model=AnalyticsResponse)
+async def get_platform_analytics(
+    days: int = Query(30, ge=7, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Get comprehensive platform analytics with time-series trends."""
+    from app.services.analytics_service import AnalyticsService
+    
+    summary = await AnalyticsService.get_summary(db, days)
+    trends = await AnalyticsService.get_trends(db, days)
+    performers = await AnalyticsService.get_top_performers(db)
+    
+    # Mocking breakdown for now (will be implemented as actual revenue by room category in future)
+    breakdown = [
+        {"category": "Room Bookings", "amount": sum(t["revenue"] for t in trends) * 0.75, "percentage": 75},
+        {"category": "Services", "amount": sum(t["revenue"] for t in trends) * 0.25, "percentage": 25},
+    ]
+
+    return {
+        "kpis": summary["kpis"],
+        "revenue_trend": trends,
+        "breakdown": breakdown,
+        "performers": performers,
+    }
+
 
 @router.get("/stats")
 async def platform_stats(
