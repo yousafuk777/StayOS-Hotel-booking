@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
+from sqlalchemy.orm import selectinload
 from app.models.user import User
 from app.repositories.base import TenantScopedRepository
 
@@ -17,14 +18,13 @@ class UserRepository(TenantScopedRepository):
         )
         return result.scalar_one_or_none()
 
-    @classmethod
-    async def get_by_email(cls, db: AsyncSession, tenant_id, email: str):
-        """Get user by email within tenant (tenant_id=None for super-admin)."""
+    @staticmethod
+    async def get_by_email(db: AsyncSession, tenant_id: int, email: str):
+        """Get user by email within a tenant, with tenant details."""
         result = await db.execute(
-            select(User).where(
-                User.email == email,
-                User.tenant_id == tenant_id
-            )
+            select(User)
+            .options(selectinload(User.tenant))
+            .where(and_(User.tenant_id == tenant_id, User.email == email))
         )
         return result.scalar_one_or_none()
 

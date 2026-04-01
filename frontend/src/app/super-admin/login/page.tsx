@@ -33,8 +33,15 @@ export default function SuperAdminLoginPage() {
         { headers: { 'Content-Type': 'application/json' } }
       )
 
+      // Full Wipe of previous session data to prevent identity collisions
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('super_admin_user')
+      localStorage.removeItem('tenant_id')
+      localStorage.removeItem('profile_picture')
+
       localStorage.setItem('access_token', data.access_token)
-      localStorage.setItem('super_admin_user', JSON.stringify(data.user))
+      localStorage.setItem('user', JSON.stringify(data.user))
 
       router.replace('/super-admin')
     } catch (err: any) {

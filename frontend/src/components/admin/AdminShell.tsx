@@ -21,38 +21,68 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [userPhone, setUserPhone] = useState('')
   const [profilePic, setProfilePic] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [hotelName, setHotelName] = useState('StayOS Hotel')
 
-  // Load user data from localStorage on mount
+  // Load user data and enforce Auth Guard on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
-      if (stored) {
-        const user = JSON.parse(stored)
-        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
-        setUserName(fullName)
-        setUserEmail(user.email || '')
-        setUserId(`USR-${user.id || '000'}`)
-        setUserPhone(user.phone || '')
-        
-        // Load profile picture if exists
-        const savedPic = localStorage.getItem('profile_picture')
-        if (savedPic) {
-          setProfilePic(savedPic)
-        }
-        
-        // Set role display name
-        const roleMap: Record<string, string> = {
-          'super_admin': 'Super Administrator',
-          'admin': 'Hotel Administrator',
-          'staff': 'Staff Member',
-          'guest': 'Guest'
-        }
-        setUserRole(roleMap[user.role] || 'User')
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        router.replace('/login')
+        return
       }
+
+      const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+      if (!stored) {
+        router.replace('/login')
+        return
+      }
+
+      const user = JSON.parse(stored)
+
+      // RBAC: Reject guest or unassigned roles
+      const ALLOWED_ROLES = ['super_admin', 'admin', 'hotel_admin', 'hotel_manager', 'staff']
+      if (!ALLOWED_ROLES.includes(user.role)) {
+        console.warn('Access denied: Unauthorized role inside Hotel Admin dashboard')
+        // Redirect guests to their own dashboard instead of a loop
+        if (user.role === 'guest') {
+          router.replace('/dashboard')
+        } else {
+          router.replace('/login')
+        }
+        return
+      }
+
+      // Populate UI fields
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
+      setUserName(fullName)
+      setUserEmail(user.email || '')
+      setUserId(`USR-${user.id || '000'}`)
+      setUserPhone(user.phone || '')
+      setHotelName(user.tenant_name || 'StayOS Hotel')
+      
+      // Load profile picture if exists
+      const savedPic = localStorage.getItem('profile_picture')
+      if (savedPic) {
+        setProfilePic(savedPic)
+      }
+      
+      // Set role display name
+      const roleMap: Record<string, string> = {
+        'super_admin': 'Super Administrator',
+        'admin': 'Hotel Administrator',
+        'hotel_admin': 'Hotel Administrator',
+        'hotel_manager': 'Hotel Manager',
+        'staff': 'Staff Member',
+        'guest': 'Guest'
+      }
+      setUserRole(roleMap[user.role] || 'User')
+      
     } catch (error) {
-      console.error('Error loading user data:', error)
+      console.error('Auth error in AdminShell:', error)
+      router.replace('/login')
     }
-  }, [])
+  }, [router])
 
   const handleLogout = async () => {
     try {
@@ -60,11 +90,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      // Clear local storage
       localStorage.removeItem('access_token')
+      localStorage.removeItem('user')
       localStorage.removeItem('super_admin_user')
-      // Redirect to login
-      router.push('/login')
+      localStorage.removeItem('tenant_id')
+      localStorage.removeItem('profile_picture')
+      router.replace('/login')
     }
   }
 
@@ -136,7 +167,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <span className="text-2xl">🏨</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold gradient-text">Grand Plaza</h1>
+              <h1 className="text-xl font-bold gradient-text">{hotelName}</h1>
               <p className="text-xs text-gray-600">Admin Panel</p>
             </div>
           </Link>
@@ -260,7 +291,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <span className="text-xl">☰</span>
                 </button>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold gradient-text">Grand Plaza Hotel</h1>
+                  <h1 className="text-xl md:text-2xl font-bold gradient-text">{hotelName}</h1>
                   <p className="text-xs md:text-sm text-gray-600">Admin Dashboard</p>
                 </div>
               </div>

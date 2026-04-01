@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -15,7 +15,6 @@ export default function RegisterPage() {
     firstName: '',
     lastName: ''
   })
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -34,8 +33,6 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      console.log('Starting registration with:', { email: formData.email, firstName: formData.firstName, lastName: formData.lastName })
-      
       // Step 1: Register the user
       const { data } = await axios.post(
         `${API_BASE_URL}/api/v1/auth/register`,
@@ -51,15 +48,12 @@ export default function RegisterPage() {
         }
       )
 
-      console.log('Registration successful:', data)
-
       // Step 2: Automatically log in the user after successful registration
       setLoginStep(true)
       const params = new URLSearchParams()
       params.append('username', formData.email)
       params.append('password', formData.password)
 
-      console.log('Attempting login...')
       const loginResponse = await axios.post(
         `${API_BASE_URL}/api/v1/auth/login`,
         params,
@@ -69,7 +63,6 @@ export default function RegisterPage() {
         }
       )
 
-      console.log('Login response:', loginResponse.data)
       localStorage.setItem('access_token', loginResponse.data.access_token)
       localStorage.setItem('user', JSON.stringify(loginResponse.data.user))
 
@@ -81,29 +74,7 @@ export default function RegisterPage() {
       }
     } catch (err: any) {
       setSuccess(false)
-      console.error('❌ Registration error:', err)
-      console.error('Error response:', err.response?.data)
-      console.error('Error status:', err.response?.status)
-      console.error('Error code:', err.code)
-      
-      let errorMessage = 'Registration failed. Please try again.'
-      
-      if (err.response) {
-        // Backend returned an error response
-        const detail = err.response.data?.detail || err.response.data?.message
-        if (detail) {
-          errorMessage = detail
-        } else if (err.response.status === 400) {
-          errorMessage = 'Invalid registration data. Please check your information.'
-        } else if (err.response.status === 500) {
-          errorMessage = 'Server error. Please try again later.'
-        }
-      } else if (err.code === 'ERR_NETWORK') {
-        errorMessage = 'Network error. Please check if the backend is running on port 8001.'
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-      
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || 'Registration failed. Please try again.'
       setError(errorMessage.includes('already registered') 
         ? 'This email is already registered. Please login instead.' 
         : errorMessage)
@@ -111,135 +82,144 @@ export default function RegisterPage() {
     }
   }
 
-  // Show loading state during the entire process
-  if (loading) {
+  // Show loading/success states during the process
+  if (loading || success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Creating Your Account...</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {loginStep ? 'Logging you in...' : 'Registering your account...'}
-            </p>
-            <div className="mt-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto" />
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative glass-card p-12 rounded-3xl shadow-2xl border border-white/60 flex flex-col items-center max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg mb-8 animate-pulse">
+             <span className="text-4xl text-white">🚀</span>
           </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Account Created!</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {loginStep ? 'Logging you in...' : 'Redirecting you to your dashboard...'}
-            </p>
-            {loading && (
-              <div className="mt-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto" />
-              </div>
-            )}
-          </div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            {loginStep ? 'Signing you in...' : 'Setting up your desk...'}
+          </h2>
+          <p className="text-gray-600 mb-8 font-medium">
+            Join the premium property management ecosystem.
+          </p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 shadow-sm" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-center">{error}</div>}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                type="text"
-                name="firstName"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-              />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      {/* Background blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative w-full max-w-md">
+        {/* Card */}
+        <div
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-10"
+          style={{ boxShadow: '0 25px 60px rgba(99,102,241,0.12)' }}
+        >
+          {/* Logo / Brand */}
+          <div className="flex flex-col items-center mb-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg mb-4">
+              <span className="text-3xl">🔑</span>
             </div>
-            <div>
-              <input
-                type="text"
-                name="lastName"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              StayOS
+            </h1>
+            <p className="text-gray-500 text-sm mt-1 text-center px-4">Start your premium management journey</p>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-600 font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
             </div>
-            <div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {/* First Name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-gray-700 ml-1">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="John"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
+              {/* Last Name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-gray-700 ml-1">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Doe"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-gray-700 ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="you@yourhotel.com"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
             </div>
-            <div className="relative">
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-gray-700 ml-1">Password</label>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type="password"
                 name="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min 8 characters)"
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="••••••••••••"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
-              >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
-              </button>
             </div>
-          </div>
 
-          <div>
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-95"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Creating Desk...
+                </span>
+              ) : (
+                '✨ Join the Platform'
+              )}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center">
+          <div className="mt-8 text-center pt-6 border-t border-gray-50">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
+              <Link href="/login" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+                Sign In Instead
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )

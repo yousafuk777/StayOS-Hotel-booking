@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from app.api.deps import get_db
 from app.schemas.auth import RegisterRequest, LoginResponse, RefreshResponse, ForgotPasswordRequest, ResetPasswordRequest
 from app.services.auth_service import AuthService
@@ -48,9 +49,11 @@ async def login(
     from sqlalchemy import select
     from app.models.user import User
     
-    # First try to find user by email (without tenant filter)
+    # First try to find user by email (without tenant filter), including tenant details
     result = await db.execute(
-        select(User).where(User.email == form_data.username)
+        select(User)
+        .options(selectinload(User.tenant))
+        .where(User.email == form_data.username)
     )
     user = result.scalar_one_or_none()
     
@@ -83,6 +86,7 @@ async def login(
             "last_name": user.last_name,
             "role": user.role,
             "tenant_id": user.tenant_id,
+            "tenant_name": user.tenant.name if user.tenant else None,
         }
     }
 

@@ -30,35 +30,53 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       return
     }
 
-    // Populate admin name from stored user object if present
+    // Role-Based Access Control (RBAC)
     try {
-      const stored = localStorage.getItem('super_admin_user') || localStorage.getItem('user')
-      if (stored) {
-        const user = JSON.parse(stored)
-        if (user.first_name) {
-          setAdminName(`${user.first_name} ${user.last_name || ''}`.trim())
-        }
-        // Also store role for display
-        if (user.role) {
-          setUserRole(user.role)
-        }
-        // Load email and ID
-        if (user.email) {
-          setUserEmail(user.email)
-        }
-        if (user.id) {
-          setUserId(`USR-${user.id}`)
-        } else {
-          setUserId('USR-000')
-        }
-        // Load profile picture if exists
-        const savedPic = localStorage.getItem('profile_picture')
-        if (savedPic) {
-          setProfilePic(savedPic)
-        }
+      const stored = localStorage.getItem('user')
+      if (!stored) {
+        router.replace('/super-admin/login')
+        return
       }
-    } catch {
-      // ignore parse errors
+
+      const user = JSON.parse(stored)
+      
+      // RESTRICTION: Only super_admin can enter this layout
+      if (user.role !== 'super_admin') {
+        console.warn('Access denied: Unauthorized role inside Super Admin portal')
+        // Redirect regular admins to their hotel dashboard
+        if (['admin', 'hotel_admin', 'hotel_manager'].includes(user.role)) {
+          router.replace('/admin')
+        } else {
+          router.replace('/login')
+        }
+        return
+      }
+
+      // Populate admin name and other fields
+      if (user.first_name) {
+        setAdminName(`${user.first_name} ${user.last_name || ''}`.trim())
+      }
+      if (user.role) {
+        setUserRole(user.role)
+      }
+      if (user.email) {
+        setUserEmail(user.email)
+      }
+      if (user.id) {
+        setUserId(`USR-${user.id}`)
+      } else {
+        setUserId('USR-000')
+      }
+      
+      // Load profile picture if exists
+      const savedPic = localStorage.getItem('profile_picture')
+      if (savedPic) {
+        setProfilePic(savedPic)
+      }
+    } catch (err) {
+      console.error('Auth error:', err)
+      router.replace('/super-admin/login')
+      return
     }
 
     setAuthChecked(true)
@@ -66,7 +84,10 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
     localStorage.removeItem('super_admin_user')
+    localStorage.removeItem('tenant_id')
+    localStorage.removeItem('profile_picture')
     router.replace('/super-admin/login')
   }
 
