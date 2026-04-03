@@ -22,6 +22,11 @@ class BookingBase(BaseModel):
 
 class BookingCreate(BookingBase):
     room_id: Optional[int] = None
+    guest_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    room_type: Optional[str] = None
+    guest_id: Optional[int] = None
 
 
 class BookingUpdate(BaseModel):

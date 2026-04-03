@@ -20,9 +20,11 @@ from app.models.room import Room
 from datetime import datetime, timedelta
 import random
 
+from app.core.config import settings
+
 async def add_test_data():
     # Create engine and session
-    engine = create_async_engine("sqlite+aiosqlite:///./stayos.db", echo=False)
+    engine = create_async_engine(settings.DATABASE_URL, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with async_session() as session:

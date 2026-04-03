@@ -166,6 +166,39 @@ class BookingRepository(TenantScopedRepository):
         # Extract room_id from data if present
         room_id = booking_data.pop("room_id", None)
         
+        # Extract dynamic guest data
+        guest_name = booking_data.pop("guest_name", None)
+        email = booking_data.pop("email", None)
+        phone = booking_data.pop("phone", None)
+        room_type = booking_data.pop("room_type", None)
+        
+        # If guest_id is missing but we have a name, create a dummy guest account
+        if not booking_data.get("guest_id") and guest_name:
+            from app.models.user import User, UserRole
+            from app.core.security import hash_password
+            
+            parts = guest_name.strip().split(" ", 1)
+            first_name = parts[0]
+            last_name = parts[1] if len(parts) > 1 else ""
+            
+            guest = User(
+                tenant_id=tenant_id,
+                first_name=first_name,
+                last_name=last_name,
+                email=email or f"guest_{uuid.uuid4().hex[:6]}@example.com",
+                phone=phone or "",
+                hashed_password=hash_password("guest_auto_pass_123"),
+                role=UserRole.guest,
+                is_active=True,
+                is_verified=True
+            )
+            db.add(guest)
+            await db.flush()
+            booking_data["guest_id"] = guest.id
+        elif not booking_data.get("guest_id"):
+            # Fallback for completely empty guest
+            booking_data["guest_id"] = 1
+        
         booking = Booking(
             tenant_id=tenant_id,
             reference_number=ref,

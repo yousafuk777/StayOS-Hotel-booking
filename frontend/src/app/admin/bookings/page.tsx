@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import StatCard from '../../../components/StatCard'
 import api from '../../../services/api'
+import NewBookingForm from '../../../components/admin/NewBookingForm'
 
 interface Booking {
   id: number
@@ -77,17 +78,6 @@ export default function BookingsPage() {
     return new Date(year, month - 1, day)
   }
 
-  const [newBooking, setNewBooking] = useState({
-    guest: '',
-    email: '',
-    phone: '',
-    room: '',
-    checkin: '',
-    checkout: '',
-    guests: 1,
-    specialRequests: '',
-    status: 'pending'
-  })
 
   const totalBookings = bookings.length
   const now = new Date()
@@ -120,86 +110,7 @@ export default function BookingsPage() {
     'vip': { label: 'VIP', color: 'bg-purple-100 text-purple-700' },
   }
   
-  const handleAddBooking = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const checkinDate = parseLocalDate(newBooking.checkin)
-      const checkoutDate = parseLocalDate(newBooking.checkout)
-      const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
-      
-      console.log('Submitting booking:', newBooking)
-      console.log('Nights calculated:', nights)
-      
-      // For now, use mock IDs - in production these would come from selection
-      const bookingData = {
-        guest_id: 1, // TODO: Create guest first or select from dropdown
-        hotel_id: 1,
-        room_id: 1, // TODO: Select from available rooms
-        check_in_date: newBooking.checkin,
-        check_out_date: newBooking.checkout,
-        nights: nights || 1,
-        num_guests: newBooking.guests,
-        room_total: 500,
-        addon_total: 0,
-        discount_amount: 0,
-        tax_amount: 0,
-        total_amount: 500 * (nights || 1),
-        status: newBooking.status,
-        special_requests: newBooking.specialRequests
-      }
 
-      console.log('Sending to API:', bookingData)
-      
-      const response = await api.post('/api/v1/bookings/', bookingData)
-      console.log('Success:', response.data)
-      
-      alert('✅ Booking created successfully!')
-      setShowAddModal(false)
-      fetchBookings() // Refresh list
-      
-      setNewBooking({
-        guest: '',
-        email: '',
-        phone: '',
-        room: '',
-        checkin: '',
-        checkout: '',
-        guests: 1,
-        specialRequests: '',
-        status: 'pending'
-      })
-    } catch (err: any) {
-      console.error('Error creating booking:', err)
-      console.error('Error response:', err.response?.data)
-      console.error('Error status:', err.response?.status)
-      console.error('Error code:', err.code)
-      
-      // Check if it's an authentication issue
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        alert('❌ You are not logged in! Please login first.')
-        router.push('/login')
-        return
-      }
-      
-      const errorDetail = err.response?.data?.detail
-      if (Array.isArray(errorDetail)) {
-        const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
-        alert(`❌ Validation Error: ${messages}`)
-      } else {
-        const errorMsg = errorDetail || err.message || 'Unknown error'
-        if (errorMsg.includes('Network Error') || err.code === 'ERR_NETWORK') {
-          alert('❌ Network Error - Please check:\n1. Backend is running (port 8000)\n2. You are logged in\n3. Check browser console (F12) for details')
-        } else if (errorMsg.includes('Tenant')) {
-          alert('❌ Tenant Configuration Error: Your user account does not have a tenant associated. Please contact support.')
-        } else {
-          alert(`❌ Failed to create booking: ${errorMsg}`)
-        }
-      }
-    }
-  }
-  
   const handleViewBooking = (booking: Booking) => {
     setSelectedBooking(booking)
     setShowViewModal(true)
@@ -504,160 +415,13 @@ export default function BookingsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddBooking} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Guest Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newBooking.guest}
-                    onChange={(e) => setNewBooking({...newBooking, guest: e.target.value})}
-                    placeholder="John Doe"
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={newBooking.email}
-                    onChange={(e) => setNewBooking({...newBooking, email: e.target.value})}
-                    placeholder="john@example.com"
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={newBooking.phone}
-                    onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
-                    placeholder="+1 555 123 4567"
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Number of Guests *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    required
-                    value={newBooking.guests}
-                    onChange={(e) => setNewBooking({...newBooking, guests: parseInt(e.target.value)})}
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Check-in Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={newBooking.checkin}
-                    onChange={(e) => setNewBooking({...newBooking, checkin: e.target.value})}
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Check-out Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={newBooking.checkout}
-                    onChange={(e) => setNewBooking({...newBooking, checkout: e.target.value})}
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Room Type *
-                  </label>
-                  <select
-                    required
-                    value={newBooking.room}
-                    onChange={(e) => setNewBooking({...newBooking, room: e.target.value})}
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a room type</option>
-                    <option>Standard Queen</option>
-                    <option>Deluxe Suite</option>
-                    <option>Executive King</option>
-                    <option>Ocean View</option>
-                    <option>Presidential Suite</option>
-                    <option>Business Suite</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Booking Status *
-                  </label>
-                  <select
-                    required
-                    value={newBooking.status}
-                    onChange={(e) => setNewBooking({...newBooking, status: e.target.value})}
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="checked_in">Checked In</option>
-                    <option value="checked_out">Checked Out</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="vip">VIP</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
-                    Special Requests
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newBooking.specialRequests}
-                    onChange={(e) => setNewBooking({...newBooking, specialRequests: e.target.value})}
-                    placeholder="Any special requirements..."
-                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
-                <button
-                  type="submit"
-                  className="btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer hover:scale-105 transition-transform"
-                >
-                  ✓ Create Booking
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="glass px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <NewBookingForm 
+              onSuccess={() => {
+                setShowAddModal(false);
+                fetchBookings();
+              }}
+              onCancel={() => setShowAddModal(false)}
+            />
           </div>
         </div>
       )}
