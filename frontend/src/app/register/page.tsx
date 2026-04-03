@@ -119,8 +119,12 @@ export default function RegisterPage() {
         >
           {/* Logo / Brand */}
           <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg mb-4">
-              <span className="text-3xl">🔑</span>
+            <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-xl mb-4 bg-white flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="StayOS Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               StayOS
