@@ -114,7 +114,7 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
             <h2 className="text-3xl font-bold gradient-text">
               {user ? 'Edit User' : 'Add New User'}
             </h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100/50 rounded-full transition-colors font-bold text-gray-500 text-xl">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100/50 rounded-full transition-colors font-bold text-[#2D4A42] text-xl">
               ✕
             </button>
           </div>
@@ -128,26 +128,26 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">First Name</label>
+                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">First Name</label>
                 <input {...register('first_name')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200" />
                 {errors.first_name && <p className="text-xs text-red-500 ml-1">{errors.first_name.message}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">Last Name</label>
+                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Last Name</label>
                 <input {...register('last_name')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200" />
                 {errors.last_name && <p className="text-xs text-red-500 ml-1">{errors.last_name.message}</p>}
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1">Email Address</label>
+              <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Email Address</label>
               <input {...register('email')} type="email" className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200" />
               {errors.email && <p className="text-xs text-red-500 ml-1">{errors.email.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">Role</label>
+                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Role</label>
                 <select {...register('role')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
                   <option value="super_admin">Super Admin</option>
                   <option value="hotel_admin">Hotel Admin</option>
@@ -158,7 +158,7 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">Assign to Hotel (Tenant)</label>
+                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Assign to Hotel (Tenant)</label>
                 <select {...register('tenant_id')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
                   <option value="">Platform (No Tenant)</option>
                   {tenants.map(t => (
@@ -169,7 +169,7 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1">
+              <label className="text-sm font-semibold text-[#1A2E2B] ml-1">
                 {user ? 'New Password (leave blank to keep current)' : 'Password'}
               </label>
               <input {...register('password')} type="password" placeholder="••••••••" className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200" />
@@ -177,7 +177,7 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
             </div>
 
             <div className="pt-4 flex items-center gap-4">
-              <button type="button" onClick={onClose} className="flex-1 glass px-6 py-4 rounded-2xl font-bold text-gray-700">
+              <button type="button" onClick={onClose} className="flex-1 glass px-6 py-4 rounded-2xl font-bold text-[#1A2E2B]">
                 Cancel
               </button>
               <button type="submit" disabled={isSubmitting} className="flex-[2] btn-primary px-6 py-4 rounded-2xl font-bold shadow-xl shadow-blue-600/20">

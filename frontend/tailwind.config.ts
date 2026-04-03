@@ -10,29 +10,60 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: 'rgb(var(--color-primary-50) / <alpha-value>)',
-          100: 'rgb(var(--color-primary-100) / <alpha-value>)',
-          200: 'rgb(var(--color-primary-200) / <alpha-value>)',
-          300: 'rgb(var(--color-primary-300) / <alpha-value>)',
-          400: 'rgb(var(--color-primary-400) / <alpha-value>)',
-          500: 'rgb(var(--color-primary-500) / <alpha-value>)',
-          600: 'rgb(var(--color-primary-600) / <alpha-value>)',
-          700: 'rgb(var(--color-primary-700) / <alpha-value>)',
-          800: 'rgb(var(--color-primary-800) / <alpha-value>)',
-          900: 'rgb(var(--color-primary-900) / <alpha-value>)',
+        // Redefining legacy colors to new Primary to automatically port hundreds of old classes
+        blue: {
+          50: '#E1F5EE', // Light Tint for badges
+          100: '#C2EADF',
+          200: '#FFF8F0', // Light BG used in gradients locally
+          300: '#85D5C0',
+          400: '#66CBB0',
+          500: '#0F6E56', // Base Primary
+          600: '#1D9E75', // Primary Hover
+          700: '#157557',
+          800: '#1A2E2B', // Dark Text mapped to deep legacy colors
+          900: '#073024',
         },
+        indigo: {
+          50: '#E1F5EE', 100: '#C2EADF', 200: '#A3E0CF', 300: '#85D5C0', 400: '#66CBB0',
+          500: '#0F6E56', 600: '#1D9E75', 700: '#157557', 800: '#1A2E2B', 900: '#073024',
+        },
+        purple: {
+          50: '#E1F5EE', 100: '#C2EADF', 200: '#A3E0CF', 300: '#85D5C0', 400: '#66CBB0',
+          500: '#0F6E56', 600: '#1D9E75', 700: '#157557', 800: '#1A2E2B', 900: '#073024',
+        },
+        primary: {
+          50: '#E1F5EE',
+          100: '#C2EADF',
+          200: '#FFF8F0', // Light BG
+          300: '#85D5C0',
+          400: '#66CBB0',
+          500: '#0F6E56', // Base Primary
+          600: '#1D9E75', // Primary Hover
+          700: '#157557',
+          800: '#1A2E2B', // Dark Text
+          900: '#073024',
+        },
+        accent: {
+          DEFAULT: '#C8941A',
+          hover: '#A67A14',
+        },
+        lightBg: '#FFF8F0',
+        darkText: '#1A2E2B',
+        mutedText: '#4A6B63',
+        brandBorder: '#D6EAE4',
         surface: {
-          DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
-          secondary: 'rgb(var(--color-surface-secondary) / <alpha-value>)',
+          DEFAULT: '#FFFFFF',
+          secondary: '#F9FAFB',
         },
         text: {
-          primary: 'rgb(var(--color-text-primary) / <alpha-value>)',
-          secondary: 'rgb(var(--color-text-secondary) / <alpha-value>)',
+          primary: '#1A2E2B',
+          secondary: '#4A6B63',
         },
       },
       fontFamily: {
-        sans: ['var(--font-family)', 'Inter', 'sans-serif'],
+        heading: ['Syne', 'sans-serif'],
+        body: ['Outfit', 'sans-serif'],
+        sans: ['Outfit', 'sans-serif'],
       },
     },
   },

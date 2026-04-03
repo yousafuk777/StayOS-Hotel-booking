@@ -26,7 +26,7 @@ class UserRepository(TenantScopedRepository):
             .options(selectinload(User.tenant))
             .where(and_(User.tenant_id == tenant_id, User.email == email))
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     @classmethod
     async def get_by_email_global(cls, db: AsyncSession, email: str):

@@ -55,7 +55,7 @@ export default function CMSPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">📝 Content Management System</h1>
-            <p className="text-gray-600">Manage your website content, media, and SEO</p>
+            <p className="text-[#2D4A42]">Manage your website content, media, and SEO</p>
           </div>
           <button
             onClick={handleSave}
@@ -77,7 +77,7 @@ export default function CMSPage() {
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                  : 'glass hover:bg-gray-50 text-gray-700'
+                  : 'glass hover:bg-gray-50 text-[#1A2E2B]'
               }`}
             >
               <span>{tab.icon}</span>
@@ -104,21 +104,21 @@ export default function CMSPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Title</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Slug</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Last Modified</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Views</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Title</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Slug</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Last Modified</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Views</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pages.map((page) => (
                     <tr key={page.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
-                        <span className="font-medium text-gray-900">{page.title}</span>
+                        <span className="font-medium text-[#1A2E2B]">{page.title}</span>
                       </td>
-                      <td className="py-4 px-4 text-gray-600 font-mono text-sm">{page.slug}</td>
+                      <td className="py-4 px-4 text-[#2D4A42] font-mono text-sm">{page.slug}</td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           page.status === 'published'
@@ -128,8 +128,8 @@ export default function CMSPage() {
                           {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">{page.lastModified}</td>
-                      <td className="py-4 px-4 text-gray-600">{page.views.toLocaleString()}</td>
+                      <td className="py-4 px-4 text-[#2D4A42]">{page.lastModified}</td>
+                      <td className="py-4 px-4 text-[#2D4A42]">{page.views.toLocaleString()}</td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <button className="glass px-3 py-1 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer">
@@ -169,11 +169,11 @@ export default function CMSPage() {
                     }`}>
                       {post.status}
                     </span>
-                    <span className="text-xs text-gray-500">{post.category}</span>
+                    <span className="text-xs text-[#2D4A42]">{post.category}</span>
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-                  <p className="text-sm text-gray-600 mb-4">📅 {post.date} • 👁️ {post.views.toLocaleString()} views</p>
+                  <h3 className="text-xl font-bold text-[#1A2E2B] mb-2">{post.title}</h3>
+                  <p className="text-sm text-[#2D4A42] mb-4">📅 {post.date} • 👁️ {post.views.toLocaleString()} views</p>
 
                   <div className="flex gap-2">
                     <button className="flex-1 glass px-4 py-2 rounded-xl hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer">
@@ -202,8 +202,8 @@ export default function CMSPage() {
             {/* Upload Area */}
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
               <div className="text-4xl mb-2">☁️</div>
-              <p className="text-gray-700 font-semibold mb-2">Drag & drop files here</p>
-              <p className="text-sm text-gray-500 mb-4">or click to browse (Images, Videos, Documents)</p>
+              <p className="text-[#1A2E2B] font-semibold mb-2">Drag & drop files here</p>
+              <p className="text-sm text-[#2D4A42] mb-4">or click to browse (Images, Videos, Documents)</p>
               <button className="btn-primary px-6 py-2 rounded-xl font-semibold cursor-pointer">
                 Select Files
               </button>
@@ -222,8 +222,8 @@ export default function CMSPage() {
                     </div>
                   </div>
                   <div className="p-3">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{item.size} • {item.uploaded}</p>
+                    <p className="text-sm font-semibold text-[#1A2E2B] truncate">{item.name}</p>
+                    <p className="text-xs text-[#2D4A42] mt-1">{item.size} • {item.uploaded}</p>
                   </div>
                 </div>
               ))}
@@ -254,7 +254,7 @@ export default function CMSPage() {
                   defaultValue="Grand Plaza Hotel - Luxury & Comfort Redefined"
                   className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">45/60 characters</p>
+                <p className="text-xs text-[#2D4A42] mt-1">45/60 characters</p>
               </div>
 
               <div>
@@ -264,7 +264,7 @@ export default function CMSPage() {
                   defaultValue="Experience world-class hospitality at Grand Plaza Hotel. Book your stay today for premium accommodations and exceptional service."
                   className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1">128/160 characters</p>
+                <p className="text-xs text-[#2D4A42] mt-1">128/160 characters</p>
               </div>
 
               <div>

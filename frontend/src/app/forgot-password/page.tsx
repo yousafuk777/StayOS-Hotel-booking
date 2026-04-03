@@ -49,10 +49,10 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <div className="text-6xl mb-4">✅</div>
             <h2 className="text-3xl font-extrabold gradient-text">Check Your Email!</h2>
-            <p className="mt-2 text-gray-600">
-              We've sent a password reset link to <strong className="text-gray-900">{email}</strong>
+            <p className="mt-2 text-[#2D4A42]">
+              We've sent a password reset link to <strong className="text-[#1A2E2B]">{email}</strong>
             </p>
-            <p className="mt-4 text-sm text-gray-600">
+            <p className="mt-4 text-sm text-[#2D4A42]">
               Didn't receive the email? Check your spam folder or try again.
             </p>
             <div className="mt-6 space-y-3">
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <div className="text-6xl mb-4">🔐</div>
             <h2 className="mt-4 text-3xl font-extrabold gradient-text">Forgot Password?</h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-[#2D4A42]">
               No worries! Enter your email and we'll send you reset instructions.
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
           )}
           
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-[#1A2E2B] mb-2">
               Email Address
             </label>
             <input
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
               type="email"
               autoComplete="email"
               required
-              className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-all"
+              className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-[#1A2E2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-all"
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

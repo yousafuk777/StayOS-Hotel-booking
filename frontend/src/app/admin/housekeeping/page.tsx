@@ -103,7 +103,7 @@ export default function HousekeepingPage() {
   const roomStats = calculateRoomStats()
 
   const PRIORITY_CONFIG: any = {
-    normal: { label: 'Normal', color: 'bg-gray-100 text-gray-700' },
+    normal: { label: 'Normal', color: 'bg-gray-100 text-[#1A2E2B]' },
     high: { label: 'High Priority', color: 'bg-yellow-100 text-yellow-700' },
     vip: { label: 'VIP', color: 'bg-purple-100 text-purple-700' },
   }
@@ -134,7 +134,7 @@ export default function HousekeepingPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Housekeeping Board</h1>
-                <p className="text-sm text-gray-600">Real-time room status tracking</p>
+                <p className="text-sm text-[#2D4A42]">Real-time room status tracking</p>
               </div>
             </div>
             
@@ -198,7 +198,7 @@ export default function HousekeepingPage() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                     housekeepingFilter === item.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-gray-700'
+                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                   }`}
                 >
                   <span>{item.icon}</span>
@@ -211,7 +211,7 @@ export default function HousekeepingPage() {
               <select 
                 value={selectedStaff}
                 onChange={(e) => setSelectedStaff(e.target.value)}
-                className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+                className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Staff</option>
                 <option value="Maria Garcia">Maria Garcia</option>
@@ -264,7 +264,7 @@ export default function HousekeepingPage() {
         <div className="glass-card rounded-2xl overflow-hidden slide-up" style={{ animationDelay: '0.7s' }}>
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold gradient-text">Room Status Overview</h2>
-            <p className="text-gray-600">All 50 rooms organized by current status</p>
+            <p className="text-[#2D4A42]">All 50 rooms organized by current status</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -291,26 +291,26 @@ export default function HousekeepingPage() {
                       <table className="w-full">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Room</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Floor</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assigned To</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Progress</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Room</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Floor</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Priority</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Assigned To</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Progress</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-[#2D4A42] uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {statusRooms.map((room, index) => (
                             <tr key={room.id} className="hover:bg-gray-50 transition-colors">
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-bold text-gray-900">Room {room.number}</div>
+                                <div className="text-sm font-bold text-[#1A2E2B]">Room {room.number}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{room.type}</div>
+                                <div className="text-sm text-[#1A2E2B]">{room.type}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">Floor {room.floor}</div>
+                                <div className="text-sm text-[#1A2E2B]">Floor {room.floor}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`${PRIORITY_CONFIG[room.priority].color} px-2 py-1 text-xs font-semibold rounded-full`}>
@@ -322,7 +322,7 @@ export default function HousekeepingPage() {
                                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
                                     {room.assignedTo ? room.assignedTo.charAt(0) : '?'}
                                   </div>
-                                  <div className="text-sm text-gray-900">{room.assignedTo || 'Unassigned'}</div>
+                                  <div className="text-sm text-[#1A2E2B]">{room.assignedTo || 'Unassigned'}</div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -337,7 +337,7 @@ export default function HousekeepingPage() {
                                       style={{ width: `${room.progress}%` }}
                                     />
                                   </div>
-                                  <span className="text-sm font-medium text-gray-900">{room.progress}%</span>
+                                  <span className="text-sm font-medium text-[#1A2E2B]">{room.progress}%</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -376,7 +376,7 @@ export default function HousekeepingPage() {
                                     onClick={() => {
                                       // Editing room
                                     }}
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+                                    className="text-[#2D4A42] hover:text-[#1A2E2B] px-3 py-1 rounded-lg hover:bg-gray-50 transition-colors"
                                   >
                                     ✏️ Edit
                                   </button>
@@ -388,7 +388,7 @@ export default function HousekeepingPage() {
                       </table>
                     </div>
                   ) : (
-                    <div className="px-6 py-8 text-center text-gray-500">
+                    <div className="px-6 py-8 text-center text-[#2D4A42]">
                       <div className="text-4xl mb-2">📭</div>
                       <p>No rooms in this status</p>
                     </div>
@@ -416,21 +416,21 @@ export default function HousekeepingPage() {
                     {staff.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900">{staff.name}</h3>
-                    <p className="text-sm text-gray-600">Housekeeping Staff</p>
+                    <h3 className="font-bold text-[#1A2E2B]">{staff.name}</h3>
+                    <p className="text-sm text-[#2D4A42]">Housekeeping Staff</p>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Rooms Completed</span>
+                    <span className="text-sm text-[#2D4A42]">Rooms Completed</span>
                     <span className="font-bold gradient-text">{staff.completed}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Quality Rating</span>
+                    <span className="text-sm text-[#2D4A42]">Quality Rating</span>
                     <span className="font-bold text-yellow-600">⭐ {staff.quality}/5</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Efficiency</span>
+                    <span className="text-sm text-[#2D4A42]">Efficiency</span>
                     <span className="font-bold text-green-600">{staff.efficiency}</span>
                   </div>
                 </div>
@@ -476,7 +476,7 @@ export default function HousekeepingPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Room Number *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Number *</label>
                   <input
                     type="text"
                     value={taskAssignment.roomNumber}
@@ -488,7 +488,7 @@ export default function HousekeepingPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Assign To *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Assign To *</label>
                   <select
                     value={taskAssignment.staff}
                     onChange={(e) => setTaskAssignment({ ...taskAssignment, staff: e.target.value })}
@@ -501,7 +501,7 @@ export default function HousekeepingPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Task Type *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Task Type *</label>
                   <select
                     value={taskAssignment.task}
                     onChange={(e) => setTaskAssignment({ ...taskAssignment, task: e.target.value })}

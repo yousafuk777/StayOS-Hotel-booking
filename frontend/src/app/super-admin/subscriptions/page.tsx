@@ -41,7 +41,7 @@ export default function SubscriptionsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">💳 Subscription Management</h1>
-            <p className="text-gray-600">Manage hotel subscription plans and billing</p>
+            <p className="text-[#2D4A42]">Manage hotel subscription plans and billing</p>
           </div>
           <button className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer">
             ➕ Create New Subscription
@@ -64,7 +64,7 @@ export default function SubscriptionsPage() {
                 {stat.value}
               </span>
             </div>
-            <p className="text-sm text-gray-600 font-semibold">{stat.label}</p>
+            <p className="text-sm text-[#2D4A42] font-semibold">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -84,7 +84,7 @@ export default function SubscriptionsPage() {
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
                 activeFilter === filter.id
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                  : 'glass hover:bg-gray-50 text-gray-700'
+                  : 'glass hover:bg-gray-50 text-[#1A2E2B]'
               }`}
             >
               <span>{filter.icon}</span>
@@ -102,27 +102,27 @@ export default function SubscriptionsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Tenant</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Plan</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Users</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Price/Month</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Renewal Date</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Plan</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Users</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Price/Month</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Renewal Date</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredSubs.map((sub) => (
                 <tr key={sub.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-4">
-                    <span className="font-semibold text-gray-900">{sub.tenant}</span>
+                    <span className="font-semibold text-[#1A2E2B]">{sub.tenant}</span>
                   </td>
                   <td className="py-4 px-4">
                     <span className="font-medium text-blue-600">{sub.plan}</span>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">{sub.users}</td>
+                  <td className="py-4 px-4 text-[#2D4A42]">{sub.users}</td>
                   <td className="py-4 px-4">
-                    <span className="font-bold text-gray-900">${sub.price}</span>
+                    <span className="font-bold text-[#1A2E2B]">${sub.price}</span>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -135,7 +135,7 @@ export default function SubscriptionsPage() {
                       {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">{sub.renewal}</td>
+                  <td className="py-4 px-4 text-[#2D4A42]">{sub.renewal}</td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button className="glass px-3 py-1 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer">
@@ -174,14 +174,14 @@ export default function SubscriptionsPage() {
                 MOST POPULAR
               </div>
             )}
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+            <h3 className="text-2xl font-bold text-[#1A2E2B] mb-2">{plan.name}</h3>
             <div className="mb-4">
               <span className="text-4xl font-bold gradient-text">${plan.price}</span>
-              <span className="text-gray-600">/month</span>
+              <span className="text-[#2D4A42]">/month</span>
             </div>
             <ul className="space-y-2 mb-6">
               {plan.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-gray-700">
+                <li key={idx} className="flex items-center gap-2 text-[#1A2E2B]">
                   <span className="text-green-500">✓</span>
                   <span>{feature}</span>
                 </li>
@@ -190,7 +190,7 @@ export default function SubscriptionsPage() {
             <button className={`w-full py-3 rounded-xl font-semibold cursor-pointer ${
               plan.popular 
                 ? 'btn-primary text-white' 
-                : 'glass hover:bg-gray-50 text-gray-700'
+                : 'glass hover:bg-gray-50 text-[#1A2E2B]'
             }`}>
               {plan.popular ? '✓ Current Plan' : 'Upgrade'}
             </button>

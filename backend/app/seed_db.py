@@ -15,7 +15,7 @@ async def seed_super_admin(db: AsyncSession):
             User.tenant_id == None
         )
     )
-    existing_admin = result.scalar_one_or_none()
+    existing_admin = result.scalars().first()
 
     if not existing_admin:
         new_admin = User(

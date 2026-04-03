@@ -3,6 +3,11 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ReactNode, useState, useEffect } from 'react'
+import { 
+  Hotel, LayoutDashboard, Calendar, CalendarDays, BedDouble, 
+  Sparkles, Users, User, LineChart, Tags, Star, Settings, Palette,
+  ClipboardList, LogOut
+} from 'lucide-react'
 import api from '../../services/api'
 
 interface AdminLayoutProps {
@@ -148,7 +153,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="flex min-h-screen bg-lightBg">
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div 
@@ -158,33 +163,33 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Sidebar - Fixed with independent scrolling */}
-      <aside className={`w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40 transition-all duration-300 ${
+      <aside className={`w-72 fixed left-0 top-0 h-screen overflow-y-auto bg-[#1A2E2B] border-r border-[rgba(255,255,255,0.06)] shadow-xl z-40 transition-all duration-300 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
         <div className="px-4 py-6">
           <Link href="/admin" className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
-              <span className="text-2xl">🏨</span>
+            <div className="bg-transparent border border-[rgba(255,255,255,0.06)] p-3 rounded-xl shadow-lg">
+              <span className="text-white"><Hotel size={24} /></span>
             </div>
             <div>
-              <h1 className="text-xl font-bold gradient-text">{hotelName}</h1>
-              <p className="text-xs text-gray-600">Admin Panel</p>
+              <h1 className="text-xl font-bold text-white">{hotelName}</h1>
+              <p className="text-xs text-[#4A6B63]">Admin Panel</p>
             </div>
           </Link>
 
           <nav className="space-y-2">
             {/* Main Menu */}
             <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Main Menu
               </h3>
               <div className="space-y-1">
                 {[
-                  { id: 'dashboard', icon: '📊', label: 'Dashboard', path: '/admin' },
-                  { id: 'bookings', icon: '📅', label: 'Bookings', path: '/admin/bookings' },
-                  { id: 'calendar', icon: '🗓️', label: 'Calendar', path: '/admin/calendar' },
-                  { id: 'rooms', icon: '🛏️', label: 'Rooms & Inventory', path: '/admin/rooms' },
-                  { id: 'housekeeping', icon: '🧹', label: 'Housekeeping', path: '/admin/housekeeping' },
+                  { id: 'dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin' },
+                  { id: 'bookings', icon: <Calendar size={20} />, label: 'Bookings', path: '/admin/bookings' },
+                  { id: 'calendar', icon: <CalendarDays size={20} />, label: 'Calendar', path: '/admin/calendar' },
+                  { id: 'rooms', icon: <BedDouble size={20} />, label: 'Rooms & Inventory', path: '/admin/rooms' },
+                  { id: 'housekeeping', icon: <Sparkles size={20} />, label: 'Housekeeping', path: '/admin/housekeeping' },
                 ].map((item) => {
                   const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
                   return (
@@ -192,13 +197,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       key={item.id}
                       href={item.path}
                       onClick={() => setSidebarOpen(false)}
-                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      className={`relative block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent rounded-r-md shadow-accent/50 shadow-sm"></div>}
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -209,16 +215,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Management */}
             <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Management
               </h3>
               <div className="space-y-1">
                 {[
-                  { id: 'staff', icon: '👥', label: 'Staff Management', path: '/admin/staff' },
-                  { id: 'guests', icon: '👤', label: 'Guests', path: '/admin/guests' },
-                  { id: 'analytics', icon: '📈', label: 'Analytics & Reports', path: '/admin/analytics' },
-                  { id: 'promotions', icon: '🏷️', label: 'Promotions', path: '/admin/promotions' },
-                  { id: 'reviews', icon: '⭐', label: 'Reviews', path: '/admin/reviews' },
+                  { id: 'staff', icon: <Users size={20} />, label: 'Staff Management', path: '/admin/staff' },
+                  { id: 'guests', icon: <User size={20} />, label: 'Guests', path: '/admin/guests' },
+                  { id: 'analytics', icon: <LineChart size={20} />, label: 'Analytics & Reports', path: '/admin/analytics' },
+                  { id: 'promotions', icon: <Tags size={20} />, label: 'Promotions', path: '/admin/promotions' },
+                  { id: 'reviews', icon: <Star size={20} />, label: 'Reviews', path: '/admin/reviews' },
                 ].map((item) => {
                   const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
                   return (
@@ -226,13 +232,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       key={item.id}
                       href={item.path}
                       onClick={() => setSidebarOpen(false)}
-                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      className={`relative block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent rounded-r-md shadow-accent/50 shadow-sm"></div>}
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -243,14 +250,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Configuration */}
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Configuration
               </h3>
               <div className="space-y-1">
                 {[
-                  { id: 'settings', icon: '⚙️', label: 'Hotel Settings', path: '/admin/settings' },
-                  { id: 'theme', icon: '🎨', label: 'Theme & Branding', path: '/admin/theme' },
-                  { id: 'policies', icon: '📋', label: 'Policies', path: '/admin/policies' },
+                  { id: 'settings', icon: <Settings size={20} />, label: 'Hotel Settings', path: '/admin/settings' },
+                  { id: 'theme', icon: <Palette size={20} />, label: 'Theme & Branding', path: '/admin/theme' },
+                  { id: 'policies', icon: <ClipboardList size={20} />, label: 'Policies', path: '/admin/policies' },
                 ].map((item) => {
                   const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
                   return (
@@ -258,13 +265,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       key={item.id}
                       href={item.path}
                       onClick={() => setSidebarOpen(false)}
-                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      className={`relative block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent rounded-r-md shadow-accent/50 shadow-sm"></div>}
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -292,7 +300,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </button>
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold gradient-text">{hotelName}</h1>
-                  <p className="text-xs md:text-sm text-gray-600">Admin Dashboard</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42]">Admin Dashboard</p>
                 </div>
               </div>
               
@@ -346,11 +354,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       </div>
                     )}
                     <div className="hidden sm:block md:hidden">
-                      <p className="font-semibold text-gray-900 text-sm">{userName}</p>
+                      <p className="font-semibold text-[#1A2E2B] text-sm">{userName}</p>
                     </div>
                     <div className="hidden md:block text-left">
-                      <p className="font-semibold text-gray-900 text-sm">{userName}</p>
-                      <p className="text-xs text-gray-600">{userRole}</p>
+                      <p className="font-semibold text-[#1A2E2B] text-sm">{userName}</p>
+                      <p className="text-xs text-[#2D4A42]">{userRole}</p>
                     </div>
                     <span className={`ml-1 transition-transform ${accountDropdownOpen ? 'rotate-180' : ''}`}>
                       ▼

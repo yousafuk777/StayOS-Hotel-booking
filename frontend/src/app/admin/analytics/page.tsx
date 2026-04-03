@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Analytics & Reports</h1>
-                <p className="text-sm text-gray-600">Revenue insights and performance metrics</p>
+                <p className="text-sm text-[#2D4A42]">Revenue insights and performance metrics</p>
               </div>
             </div>
             
@@ -88,16 +88,16 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold gradient-text">Revenue Trend</h2>
-              <p className="text-gray-600 mt-1">Daily revenue over the selected period</p>
+              <p className="text-[#2D4A42] mt-1">Daily revenue over the selected period</p>
             </div>
             <div className="flex items-center gap-2 glass p-1 rounded-xl">
               <button className="px-4 py-2 rounded-lg bg-white text-blue-600 shadow font-medium">
                 Revenue
               </button>
-              <button className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">
+              <button className="px-4 py-2 rounded-lg text-[#2D4A42] hover:bg-gray-50 font-medium">
                 Occupancy
               </button>
-              <button className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">
+              <button className="px-4 py-2 rounded-lg text-[#2D4A42] hover:bg-gray-50 font-medium">
                 ADR
               </button>
             </div>
@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
                   className="w-full bg-gradient-to-t from-blue-600 to-indigo-600 rounded-t-lg transition-all duration-500 hover:from-blue-500 hover:to-indigo-500"
                   style={{ height: `${height}%` }}
                 />
-                <span className="text-xs text-gray-600 font-medium">
+                <span className="text-xs text-[#2D4A42] font-medium">
                   {['1', '4', '7', '10', '13', '16', '19', '22', '25', '28', '31', '34'][i]}
                 </span>
               </div>
@@ -136,12 +136,12 @@ export default function AnalyticsPage() {
                 <div key={index} className="glass p-4 rounded-xl slide-up" style={{ animationDelay: `${0.7 + index * 0.1}s` }}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h3 className="font-bold text-gray-900">{room.type}</h3>
-                      <p className="text-sm text-gray-600">{room.bookings} bookings</p>
+                      <h3 className="font-bold text-[#1A2E2B]">{room.type}</h3>
+                      <p className="text-sm text-[#2D4A42]">{room.bookings} bookings</p>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold gradient-text">${room.revenue.toLocaleString()}</p>
-                      <p className="text-sm text-gray-600">{room.occupancy}% occupied</p>
+                      <p className="text-sm text-[#2D4A42]">{room.occupancy}% occupied</p>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -170,8 +170,8 @@ export default function AnalyticsPage() {
               ].map((item, index) => (
                 <div key={index} className="slide-up" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">{item.source}</span>
-                    <span className="text-sm text-gray-600">{item.percentage}%</span>
+                    <span className="font-medium text-[#1A2E2B]">{item.source}</span>
+                    <span className="text-sm text-[#2D4A42]">{item.percentage}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div 
@@ -194,19 +194,19 @@ export default function AnalyticsPage() {
             <div className="glass p-6 rounded-xl text-center">
               <div className="text-6xl mb-4">📅</div>
               <p className="text-4xl font-bold gradient-text mb-2">156</p>
-              <p className="text-gray-600 font-medium">Total Bookings</p>
+              <p className="text-[#2D4A42] font-medium">Total Bookings</p>
               <p className="text-sm text-green-600 mt-2 font-semibold">↑ 12 more than last month</p>
             </div>
             <div className="glass p-6 rounded-xl text-center">
               <div className="text-6xl mb-4">⭐</div>
               <p className="text-4xl font-bold gradient-text mb-2">4.8/5</p>
-              <p className="text-gray-600 font-medium">Average Guest Rating</p>
+              <p className="text-[#2D4A42] font-medium">Average Guest Rating</p>
               <p className="text-sm text-green-600 mt-2 font-semibold">↑ 0.3 improvement</p>
             </div>
             <div className="glass p-6 rounded-xl text-center">
               <div className="text-6xl mb-4">👥</div>
               <p className="text-4xl font-bold gradient-text mb-2">2,847</p>
-              <p className="text-gray-600 font-medium">Unique Guests Hosted</p>
+              <p className="text-[#2D4A42] font-medium">Unique Guests Hosted</p>
               <p className="text-sm text-blue-600 mt-2 font-semibold">YTD total</p>
             </div>
           </div>
@@ -220,23 +220,23 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button className="glass p-6 rounded-xl card-hover text-center group">
               <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📊</div>
-              <p className="font-semibold text-gray-900 mb-1">Revenue Report</p>
-              <p className="text-sm text-gray-600">PDF / Excel</p>
+              <p className="font-semibold text-[#1A2E2B] mb-1">Revenue Report</p>
+              <p className="text-sm text-[#2D4A42]">PDF / Excel</p>
             </button>
             <button className="glass p-6 rounded-xl card-hover text-center group">
               <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📈</div>
-              <p className="font-semibold text-gray-900 mb-1">Occupancy Stats</p>
-              <p className="text-sm text-gray-600">Detailed breakdown</p>
+              <p className="font-semibold text-[#1A2E2B] mb-1">Occupancy Stats</p>
+              <p className="text-sm text-[#2D4A42]">Detailed breakdown</p>
             </button>
             <button className="glass p-6 rounded-xl card-hover text-center group">
               <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">👤</div>
-              <p className="font-semibold text-gray-900 mb-1">Guest Analytics</p>
-              <p className="text-sm text-gray-600">Demographics</p>
+              <p className="font-semibold text-[#1A2E2B] mb-1">Guest Analytics</p>
+              <p className="text-sm text-[#2D4A42]">Demographics</p>
             </button>
             <button className="glass p-6 rounded-xl card-hover text-center group">
               <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📋</div>
-              <p className="font-semibold text-gray-900 mb-1">Custom Report</p>
-              <p className="text-sm text-gray-600">Build your own</p>
+              <p className="font-semibold text-[#1A2E2B] mb-1">Custom Report</p>
+              <p className="text-sm text-[#2D4A42]">Build your own</p>
             </button>
           </div>
         </div>

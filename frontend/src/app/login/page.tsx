@@ -82,7 +82,7 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               StayOS
             </h1>
-            <p className="text-gray-500 text-sm mt-1">Property Management Portal</p>
+            <p className="text-[#2D4A42] text-sm mt-1">Property Management Portal</p>
           </div>
 
           {/* Error banner */}
@@ -96,7 +96,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-gray-700 ml-1">
+              <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">
                 Email Address
               </label>
               <input
@@ -107,13 +107,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@yourhotel.com"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
               />
             </div>
 
             {/* Password */}
             <div className="space-y-1.5 relative">
-              <label className="block text-sm font-semibold text-gray-700 ml-1">
+              <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">
                 Password
               </label>
               <input
@@ -124,12 +124,12 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all pr-12"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-[38px] text-gray-400 hover:text-gray-600 focus:outline-none z-10"
+                className="absolute right-4 top-[38px] text-[#4A6B63] hover:text-[#2D4A42] focus:outline-none z-10"
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,7 +149,7 @@ export default function LoginPage() {
               id="login-btn"
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-95"
+              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled: disabled:cursor-not-allowed transition-all active:scale-95"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -174,7 +174,7 @@ export default function LoginPage() {
             </div>
             
             <div className="border-t border-gray-100 pt-6">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[#2D4A42]">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
                   Join StayOS Now
@@ -182,7 +182,7 @@ export default function LoginPage() {
               </p>
             </div>
             
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+            <p className="text-[10px] text-[#4A6B63] uppercase tracking-widest font-bold">
               Premium Property Management
             </p>
           </div>

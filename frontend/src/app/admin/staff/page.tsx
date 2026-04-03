@@ -64,7 +64,7 @@ export default function StaffPage() {
   const STATUS_CONFIG: any = {
     active: { label: 'Active', color: 'bg-green-100 text-green-700' },
     on_leave: { label: 'On Leave', color: 'bg-yellow-100 text-yellow-700' },
-    inactive: { label: 'Inactive', color: 'bg-gray-100 text-gray-600' },
+    inactive: { label: 'Inactive', color: 'bg-gray-100 text-[#2D4A42]' },
   }
 
   // Calculate dynamic stats from actual staff data
@@ -102,7 +102,7 @@ export default function StaffPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Staff Management</h1>
-                <p className="text-sm text-gray-600">Manage hotel employees and roles</p>
+                <p className="text-sm text-[#2D4A42]">Manage hotel employees and roles</p>
               </div>
             </div>
             
@@ -173,7 +173,7 @@ export default function StaffPage() {
                   className={`px-4 py-2 rounded-xl font-medium transition-all ${
                     staffFilter === item.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-gray-700'
+                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                   }`}
                 >
                   {item.label}
@@ -197,11 +197,11 @@ export default function StaffPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Employee</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Contact</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Employee</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Role</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Contact</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -224,7 +224,7 @@ export default function StaffPage() {
                   if (filteredStaff.length === 0) {
                     return (
                       <tr>
-                        <td colSpan={5} className="text-center py-12 text-gray-500">
+                        <td colSpan={5} className="text-center py-12 text-[#2D4A42]">
                           👥 No staff members found
                         </td>
                       </tr>
@@ -239,16 +239,16 @@ export default function StaffPage() {
                           {member.avatar}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{member.name}</p>
-                          <p className="text-sm text-gray-600">ID: EMP-{String(member.id).padStart(4, '0')}</p>
+                          <p className="font-semibold text-[#1A2E2B]">{member.name}</p>
+                          <p className="text-sm text-[#2D4A42]">ID: EMP-{String(member.id).padStart(4, '0')}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-gray-700">{member.role}</td>
+                    <td className="py-4 px-4 text-[#1A2E2B]">{member.role}</td>
                     <td className="py-4 px-4">
                       <div className="text-sm">
-                        <div className="text-gray-900">{member.email}</div>
-                        <div className="text-gray-600">{member.phone}</div>
+                        <div className="text-[#1A2E2B]">{member.email}</div>
+                        <div className="text-[#2D4A42]">{member.phone}</div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -271,7 +271,7 @@ export default function StaffPage() {
                         }}>
                           👁️ View
                         </button>
-                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => {
+                        <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-[#2D4A42]" onClick={() => {
                           setSelectedStaff(member)
                           setEditStaffData({
                             name: member.name,
@@ -327,7 +327,7 @@ export default function StaffPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Full Name *</label>
                   <input
                     type="text"
                     value={newStaff.name}
@@ -339,7 +339,7 @@ export default function StaffPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Role / Position *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Role / Position *</label>
                   <select
                     value={newStaff.role}
                     onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
@@ -360,7 +360,7 @@ export default function StaffPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Email Address *</label>
                     <input
                       type="email"
                       value={newStaff.email}
@@ -372,7 +372,7 @@ export default function StaffPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Phone Number *</label>
                     <input
                       type="tel"
                       value={newStaff.phone}
@@ -385,7 +385,7 @@ export default function StaffPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Employment Status *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Employment Status *</label>
                   <select
                     value={newStaff.status}
                     onChange={(e) => setNewStaff({ ...newStaff, status: e.target.value })}
@@ -452,7 +452,7 @@ export default function StaffPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Full Name *</label>
                   <input
                     type="text"
                     value={editStaffData.name}
@@ -463,7 +463,7 @@ export default function StaffPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Role / Position *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Role / Position *</label>
                   <select
                     value={editStaffData.role}
                     onChange={(e) => setEditStaffData({ ...editStaffData, role: e.target.value })}
@@ -484,7 +484,7 @@ export default function StaffPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Email Address *</label>
                     <input
                       type="email"
                       value={editStaffData.email}
@@ -495,7 +495,7 @@ export default function StaffPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Phone Number *</label>
                     <input
                       type="tel"
                       value={editStaffData.phone}
@@ -507,7 +507,7 @@ export default function StaffPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Employment Status *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Employment Status *</label>
                   <select
                     value={editStaffData.status}
                     onChange={(e) => setEditStaffData({ ...editStaffData, status: e.target.value })}

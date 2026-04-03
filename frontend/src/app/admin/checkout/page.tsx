@@ -56,7 +56,7 @@ export default function CheckOutPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Check-out Management</h1>
-        <p className="text-gray-600">Process guest departures efficiently</p>
+        <p className="text-[#2D4A42]">Process guest departures efficiently</p>
       </div>
 
       {/* Today's Checkouts Stats */}
@@ -64,7 +64,7 @@ export default function CheckOutPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Today's Checkouts</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Today's Checkouts</p>
               <p className="text-4xl font-bold gradient-text">{todayCheckouts.length}</p>
             </div>
             <div className="text-5xl">🚪</div>
@@ -73,7 +73,7 @@ export default function CheckOutPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Pending</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Pending</p>
               <p className="text-4xl font-bold gradient-text">{todayCheckouts.filter(g => g.status === 'pending').length}</p>
             </div>
             <div className="text-5xl">⏳</div>
@@ -82,7 +82,7 @@ export default function CheckOutPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Completed</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Completed</p>
               <p className="text-4xl font-bold gradient-text">{todayCheckouts.filter(g => g.status === 'completed').length}</p>
             </div>
             <div className="text-5xl">✓</div>
@@ -91,7 +91,7 @@ export default function CheckOutPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">VIP Departures</p>
+              <p className="text-[#2D4A42] font-medium mb-2">VIP Departures</p>
               <p className="text-4xl font-bold gradient-text">{todayCheckouts.filter(g => g.status === 'vip').length}</p>
             </div>
             <div className="text-5xl">👑</div>
@@ -131,7 +131,7 @@ export default function CheckOutPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-bold text-gray-900">{checkout.guest}</h3>
+                      <h3 className="text-lg font-bold text-[#1A2E2B]">{checkout.guest}</h3>
                       {checkout.status === 'vip' && (
                         <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-semibold">
                           VIP Guest
@@ -143,7 +143,7 @@ export default function CheckOutPage() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 text-sm text-[#2D4A42]">
                       <span>Room {checkout.room}</span>
                       <span>•</span>
                       <span>{checkout.type}</span>
@@ -170,15 +170,15 @@ export default function CheckOutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id={`bill-${index}`} className="w-4 h-4 rounded" />
-                    <label htmlFor={`bill-${index}`} className="text-sm text-gray-700">Bill settled</label>
+                    <label htmlFor={`bill-${index}`} className="text-sm text-[#1A2E2B]">Bill settled</label>
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id={`key-${index}`} className="w-4 h-4 rounded" />
-                    <label htmlFor={`key-${index}`} className="text-sm text-gray-700">Room key returned</label>
+                    <label htmlFor={`key-${index}`} className="text-sm text-[#1A2E2B]">Room key returned</label>
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id={`feedback-${index}`} className="w-4 h-4 rounded" />
-                    <label htmlFor={`feedback-${index}`} className="text-sm text-gray-700">Feedback collected</label>
+                    <label htmlFor={`feedback-${index}`} className="text-sm text-[#1A2E2B]">Feedback collected</label>
                   </div>
                 </div>
               </div>
@@ -194,7 +194,7 @@ export default function CheckOutPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">📧</div>
             <h3 className="font-bold text-lg mb-2">Email Invoice</h3>
-            <p className="text-gray-600 mb-4">Send bill automatically to guest email</p>
+            <p className="text-[#2D4A42] mb-4">Send bill automatically to guest email</p>
             <button 
               onClick={() => {
                 const enable = confirm('Enable automatic email invoice sending?');
@@ -210,7 +210,7 @@ export default function CheckOutPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">💳</div>
             <h3 className="font-bold text-lg mb-2">Auto Charge</h3>
-            <p className="text-gray-600 mb-4">Charge payment method on file</p>
+            <p className="text-[#2D4A42] mb-4">Charge payment method on file</p>
             <button 
               onClick={() => {
                 const enable = confirm('Enable automatic payment charging?');
@@ -226,7 +226,7 @@ export default function CheckOutPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">⭐</div>
             <h3 className="font-bold text-lg mb-2">Review Request</h3>
-            <p className="text-gray-600 mb-4">Send review request after checkout</p>
+            <p className="text-[#2D4A42] mb-4">Send review request after checkout</p>
             <button 
               onClick={() => {
                 const enable = confirm('Enable automatic review requests?');

@@ -188,7 +188,7 @@ export default function CalendarPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Booking Calendar</h1>
-                <p className="text-sm text-gray-600">Visual overview of reservations</p>
+                <p className="text-sm text-[#2D4A42]">Visual overview of reservations</p>
               </div>
             </div>
             
@@ -243,7 +243,7 @@ export default function CalendarPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   viewMode === 'month'
                     ? 'bg-white text-blue-600 shadow'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    : 'text-[#2D4A42] hover:bg-gray-50'
                 }`}
               >
                 Month
@@ -253,7 +253,7 @@ export default function CalendarPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   viewMode === 'week'
                     ? 'bg-white text-blue-600 shadow'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    : 'text-[#2D4A42] hover:bg-gray-50'
                 }`}
               >
                 Week
@@ -263,7 +263,7 @@ export default function CalendarPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   viewMode === 'day'
                     ? 'bg-white text-blue-600 shadow'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    : 'text-[#2D4A42] hover:bg-gray-50'
                 }`}
               >
                 Day
@@ -278,23 +278,23 @@ export default function CalendarPage() {
           <div className="flex items-center gap-6 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-500"></div>
-              <span className="text-gray-700 font-medium">Check-in</span>
+              <span className="text-[#1A2E2B] font-medium">Check-in</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-500"></div>
-              <span className="text-gray-700 font-medium">In-house</span>
+              <span className="text-[#1A2E2B] font-medium">In-house</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-red-500"></div>
-              <span className="text-gray-700 font-medium">Check-out</span>
+              <span className="text-[#1A2E2B] font-medium">Check-out</span>
             </div>
             <div className="ml-auto flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-600">Occupancy Rate</p>
+                <p className="text-sm text-[#2D4A42]">Occupancy Rate</p>
                 <p className="text-2xl font-bold gradient-text">{stats.occupancyRate}%</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Available Rooms</p>
+                <p className="text-sm text-[#2D4A42]">Available Rooms</p>
                 <p className="text-2xl font-bold gradient-text">{stats.availableRooms}/120</p>
               </div>
             </div>
@@ -306,7 +306,7 @@ export default function CalendarPage() {
           {/* Day Headers */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="text-center font-bold text-gray-700 py-2">
+              <div key={day} className="text-center font-bold text-[#1A2E2B] py-2">
                 {day}
               </div>
             ))}
@@ -317,13 +317,13 @@ export default function CalendarPage() {
             {loading ? (
               <div className="col-span-7 text-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4">Loading bookings...</p>
+                <p className="text-[#2D4A42] mt-4">Loading bookings...</p>
               </div>
             ) : bookings.length === 0 ? (
               <div className="col-span-7 text-center py-20">
                 <div className="text-6xl mb-4">📅</div>
                 <h3 className="text-2xl font-bold gradient-text mb-2">No Bookings Yet</h3>
-                <p className="text-gray-600 mb-6">The calendar is empty. Create your first booking!</p>
+                <p className="text-[#2D4A42] mb-6">The calendar is empty. Create your first booking!</p>
                 <button
                   onClick={() => router.push('/admin/bookings')}
                   className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer inline-flex items-center gap-2"
@@ -355,11 +355,11 @@ export default function CalendarPage() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`font-bold ${day === 15 ? 'text-blue-600' : 'text-gray-900'}`}>
+                        <span className={`font-bold ${day === 15 ? 'text-blue-600' : 'text-[#1A2E2B]'}`}>
                           {day}
                         </span>
                         {hasBookings && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-[#2D4A42]">
                             {dayBookings.length} booking{dayBookings.length > 1 ? 's' : ''}
                           </span>
                         )}
@@ -403,7 +403,7 @@ export default function CalendarPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 font-medium mb-2">{stat.label}</p>
+                  <p className="text-[#2D4A42] font-medium mb-2">{stat.label}</p>
                   <p className="text-4xl font-bold gradient-text">{stat.value}</p>
                 </div>
                 <div className="text-5xl float">{stat.icon}</div>

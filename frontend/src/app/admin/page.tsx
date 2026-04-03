@@ -74,7 +74,7 @@ export default function AdminPage() {
 
   if (!isHydrated || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
+      <div className="min-h-screen flex items-center justify-center text-[#2D4A42]">
         Loading dashboard...
       </div>
     )
@@ -115,7 +115,7 @@ export default function AdminPage() {
         <h1 className="text-5xl font-extrabold gradient-text mb-3">
           Dashboard Overview
         </h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-[#2D4A42] text-lg">
           Welcome back! Here's what's happening at your hotel today.
         </p>
       </div>
@@ -182,7 +182,7 @@ export default function AdminPage() {
               <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform`}>
                 {action.icon}
               </div>
-              <span className="font-medium text-gray-700 text-sm text-center">{action.label}</span>
+              <span className="font-medium text-[#1A2E2B] text-sm text-center">{action.label}</span>
             </button>
           ))}
         </div>
@@ -206,13 +206,13 @@ export default function AdminPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Guest</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Room Type</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Check-in/out</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Nights</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Amount</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Guest</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Room Type</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Check-in/out</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Nights</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Amount</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -223,18 +223,18 @@ export default function AdminPage() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
                         {booking.guest.charAt(0)}
                       </div>
-                      <span className="font-medium text-gray-900">{booking.guest}</span>
+                      <span className="font-medium text-[#1A2E2B]">{booking.guest}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-gray-700">{booking.room}</td>
-                  <td className="py-4 px-4 text-gray-700">
+                  <td className="py-4 px-4 text-[#1A2E2B]">{booking.room}</td>
+                  <td className="py-4 px-4 text-[#1A2E2B]">
                     <div className="text-sm">
                       <div>{booking.checkin}</div>
-                      <div className="text-gray-500">→ {booking.checkout}</div>
+                      <div className="text-[#2D4A42]">→ {booking.checkout}</div>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-gray-700">{booking.nights}</td>
-                  <td className="py-4 px-4 font-semibold text-gray-900">{booking.amount}</td>
+                  <td className="py-4 px-4 text-[#1A2E2B]">{booking.nights}</td>
+                  <td className="py-4 px-4 font-semibold text-[#1A2E2B]">{booking.amount}</td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       booking.status === 'vip'
@@ -275,7 +275,7 @@ export default function AdminPage() {
             <h2 className="text-2xl font-bold gradient-text flex items-center gap-3">
               🎯 Today's Arrivals
             </h2>
-            <span className="text-sm text-gray-600 font-medium">18 guests</span>
+            <span className="text-sm text-[#2D4A42] font-medium">18 guests</span>
           </div>
           
           <div className="space-y-4">
@@ -292,11 +292,11 @@ export default function AdminPage() {
               >
                 <div className="text-3xl">{arrival.vip ? '👑' : '🎫'}</div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{arrival.name}</p>
-                  <p className="text-sm text-gray-600">Room {arrival.room} • {arrival.type}</p>
+                  <p className="font-semibold text-[#1A2E2B]">{arrival.name}</p>
+                  <p className="text-sm text-[#2D4A42]">Room {arrival.room} • {arrival.type}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">{arrival.time}</p>
+                  <p className="font-semibold text-[#1A2E2B]">{arrival.time}</p>
                   <button 
                     onClick={() => {
                       // Checking in guest
@@ -343,7 +343,7 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-6 space-y-3">
-            <h3 className="font-semibold text-gray-700 mb-3">Priority Rooms</h3>
+            <h3 className="font-semibold text-[#1A2E2B] mb-3">Priority Rooms</h3>
             {[
               { room: '301', status: 'Cleaning in progress', eta: '15 mins' },
               { room: '502', status: 'Awaiting inspection', eta: 'Ready soon' },
@@ -351,8 +351,8 @@ export default function AdminPage() {
               <div key={index} className="flex items-center gap-3 glass p-3 rounded-xl">
                 <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">Room {task.room}</p>
-                  <p className="text-sm text-gray-600">{task.status}</p>
+                  <p className="font-semibold text-[#1A2E2B]">Room {task.room}</p>
+                  <p className="text-sm text-[#2D4A42]">{task.status}</p>
                 </div>
                 <span className="text-xs font-medium text-orange-600">{task.eta}</span>
               </div>

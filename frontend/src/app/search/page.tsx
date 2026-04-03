@@ -35,7 +35,7 @@ export default function SearchPage() {
           <h1 className="text-6xl md:text-7xl font-extrabold gradient-text drop-shadow-sm">
             Find Your Perfect Stay
           </h1>
-          <p className="text-xl text-gray-600 font-light max-w-2xl mx-auto">
+          <p className="text-xl text-[#2D4A42] font-light max-w-2xl mx-auto">
             Discover amazing hotels at unbeatable prices
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function SearchPage() {
           <div className="space-y-6">
             {/* Destination */}
             <div>
-              <label className="block text-lg font-semibold text-gray-700 mb-3">
+              <label className="block text-lg font-semibold text-[#1A2E2B] mb-3">
                 📍 Where are you going?
               </label>
               <input
@@ -59,7 +59,7 @@ export default function SearchPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Check-in */}
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                <label className="block text-sm font-semibold text-[#2D4A42] mb-2">
                   📅 Check-in
                 </label>
                 <input
@@ -72,7 +72,7 @@ export default function SearchPage() {
 
               {/* Check-out */}
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                <label className="block text-sm font-semibold text-[#2D4A42] mb-2">
                   📅 Check-out
                 </label>
                 <input
@@ -85,7 +85,7 @@ export default function SearchPage() {
 
               {/* Guests */}
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                <label className="block text-sm font-semibold text-[#2D4A42] mb-2">
                   👥 Guests
                 </label>
                 <select className="input-field w-full px-4 py-3 rounded-lg text-base focus:outline-none">
@@ -99,7 +99,7 @@ export default function SearchPage() {
 
               {/* Rooms */}
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                <label className="block text-sm font-semibold text-[#2D4A42] mb-2">
                   🏨 Rooms
                 </label>
                 <select className="input-field w-full px-4 py-3 rounded-lg text-base focus:outline-none">
@@ -122,7 +122,7 @@ export default function SearchPage() {
         <div className="space-y-8">
           <div className="text-center slide-up" style={{ animationDelay: '0.4s' }}>
             <h2 className="text-4xl font-bold gradient-text mb-3">Featured Hotels</h2>
-            <p className="text-gray-600 text-lg">Handpicked selection of the best properties</p>
+            <p className="text-[#2D4A42] text-lg">Handpicked selection of the best properties</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -148,10 +148,10 @@ export default function SearchPage() {
                 {/* Hotel Details */}
                 <div className="p-6 space-y-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-2xl font-bold text-[#1A2E2B] mb-1">
                       Grand Palace Hotel {hotel}
                     </h3>
-                    <p className="text-gray-600 flex items-center gap-2">
+                    <p className="text-[#2D4A42] flex items-center gap-2">
                       <span className="text-blue-500">📍</span>
                       <span>New York, Manhattan</span>
                     </p>
@@ -159,10 +159,10 @@ export default function SearchPage() {
 
                   {/* Amenities */}
                   <div className="flex flex-wrap gap-2">
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">📶 WiFi</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">🏊 Pool</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">💪 Gym</span>
-                    <span className="glass px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">🅿️ Parking</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-[#1A2E2B] border border-gray-200">📶 WiFi</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-[#1A2E2B] border border-gray-200">🏊 Pool</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-[#1A2E2B] border border-gray-200">💪 Gym</span>
+                    <span className="glass px-3 py-1 rounded-full text-sm text-[#1A2E2B] border border-gray-200">🅿️ Parking</span>
                   </div>
 
                   {/* Rating and Reviews */}
@@ -171,11 +171,11 @@ export default function SearchPage() {
                       <div className="flex text-yellow-500">
                         {'★'.repeat(4)}{'☆'}
                       </div>
-                      <span className="text-gray-500 text-sm">(248 reviews)</span>
+                      <span className="text-[#2D4A42] text-sm">(248 reviews)</span>
                     </div>
                     <div className="text-right">
                       <span className="text-3xl font-bold gradient-text">$299</span>
-                      <span className="text-gray-500 text-sm">/night</span>
+                      <span className="text-[#2D4A42] text-sm">/night</span>
                     </div>
                   </div>
 
@@ -195,18 +195,18 @@ export default function SearchPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-4">
               <div className="text-6xl float">💎</div>
-              <h3 className="text-2xl font-bold text-gray-900">Best Price Guarantee</h3>
-              <p className="text-gray-600 text-lg">We match any competitor's price</p>
+              <h3 className="text-2xl font-bold text-[#1A2E2B]">Best Price Guarantee</h3>
+              <p className="text-[#2D4A42] text-lg">We match any competitor's price</p>
             </div>
             <div className="text-center space-y-4">
               <div className="text-6xl float">⚡</div>
-              <h3 className="text-2xl font-bold text-gray-900">Instant Confirmation</h3>
-              <p className="text-gray-600 text-lg">Get your booking confirmed immediately</p>
+              <h3 className="text-2xl font-bold text-[#1A2E2B]">Instant Confirmation</h3>
+              <p className="text-[#2D4A42] text-lg">Get your booking confirmed immediately</p>
             </div>
             <div className="text-center space-y-4">
               <div className="text-6xl float">🛡️</div>
-              <h3 className="text-2xl font-bold text-gray-900">Secure Booking</h3>
-              <p className="text-gray-600 text-lg">Your payment and data are protected</p>
+              <h3 className="text-2xl font-bold text-[#1A2E2B]">Secure Booking</h3>
+              <p className="text-[#2D4A42] text-lg">Your payment and data are protected</p>
             </div>
           </div>
         </div>

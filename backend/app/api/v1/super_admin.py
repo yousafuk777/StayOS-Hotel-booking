@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 from app.api.deps import get_db, get_current_super_admin
-from app.schemas.tenant import TenantCreate, TenantResponse, TenantListResponse
+from app.schemas.tenant import TenantCreate, TenantResponse, TenantListResponse, TenantUpdate
 from app.schemas.user import UserCreate, UserUpdate
 from app.repositories.tenant_repo import TenantRepository
 from app.repositories.user_repo import UserRepository
@@ -24,6 +24,43 @@ class SuperAdminLoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: dict
+
+
+# ── Analytics Schemas ────────────────────────────────────────────────────────
+
+class AnalyticsKPI(BaseModel):
+    label: str
+    value: str
+    change: str
+    trend: str
+    icon: str
+
+
+class TimeSeriesPoint(BaseModel):
+    date: str
+    revenue: float
+    bookings: int
+
+
+class RevenueBreakdown(BaseModel):
+    category: str
+    amount: float
+    percentage: int
+
+
+class TopPerformer(BaseModel):
+    rank: int
+    hotel: str
+    revenue: float
+    occupancy: float
+    rating: float
+
+
+class AnalyticsResponse(BaseModel):
+    kpis: List[AnalyticsKPI]
+    revenue_trend: List[TimeSeriesPoint]
+    breakdown: List[RevenueBreakdown]
+    performers: List[TopPerformer]
 
 
 @router.post("/login", response_model=SuperAdminLoginResponse, tags=["Super Admin Auth"])
@@ -79,6 +116,46 @@ async def create_tenant(
 
     tenant = await TenantRepository.create(db, data.model_dump())
     return tenant
+
+
+@router.get("/tenants/{tenant_id}", response_model=TenantResponse)
+async def get_tenant(
+    tenant_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Get tenant details."""
+    tenant = await TenantRepository.get_by_id(db, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return tenant
+
+
+@router.patch("/tenants/{tenant_id}", response_model=TenantResponse)
+async def update_tenant(
+    tenant_id: int,
+    data: TenantUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Update tenant detail."""
+    tenant = await TenantRepository.update(db, tenant_id, data.model_dump(exclude_unset=True))
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return tenant
+
+
+@router.delete("/tenants/{tenant_id}")
+async def delete_tenant(
+    tenant_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Soft delete a tenant."""
+    success = await TenantRepository.delete(db, tenant_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {"message": "Tenant deleted successfully"}
 
 
 @router.get("/tenants", response_model=TenantListResponse)
@@ -202,6 +279,33 @@ async def delete_user(
 
 
 # ── Platform Stats ──────────────────────────────────────────────────────────
+
+@router.get("/analytics", response_model=AnalyticsResponse)
+async def get_platform_analytics(
+    days: int = Query(30, ge=7, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """Get comprehensive platform analytics with time-series trends."""
+    from app.services.analytics_service import AnalyticsService
+    
+    summary = await AnalyticsService.get_summary(db, days)
+    trends = await AnalyticsService.get_trends(db, days)
+    performers = await AnalyticsService.get_top_performers(db)
+    
+    # Mocking breakdown for now (will be implemented as actual revenue by room category in future)
+    breakdown = [
+        {"category": "Room Bookings", "amount": sum(t["revenue"] for t in trends) * 0.75, "percentage": 75},
+        {"category": "Services", "amount": sum(t["revenue"] for t in trends) * 0.25, "percentage": 25},
+    ]
+
+    return {
+        "kpis": summary["kpis"],
+        "revenue_trend": trends,
+        "breakdown": breakdown,
+        "performers": performers,
+    }
+
 
 @router.get("/stats")
 async def platform_stats(

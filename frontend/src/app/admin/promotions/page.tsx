@@ -32,7 +32,7 @@ export default function PromotionsPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Promotions Management</h1>
-                <p className="text-sm text-gray-600">Create and manage promotional offers</p>
+                <p className="text-sm text-[#2D4A42]">Create and manage promotional offers</p>
               </div>
             </div>
             
@@ -99,12 +99,12 @@ export default function PromotionsPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold gradient-text mb-2">{promo.title}</h3>
-                  <p className="text-sm text-gray-600">Code: <span className="font-mono font-bold text-blue-600">{promo.code}</span></p>
+                  <p className="text-sm text-[#2D4A42]">Code: <span className="font-mono font-bold text-blue-600">{promo.code}</span></p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   promo.status === 'active' ? 'bg-green-100 text-green-700' :
                   promo.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                  'bg-gray-100 text-gray-600'
+                  'bg-gray-100 text-[#2D4A42]'
                 }`}>
                   {promo.status.charAt(0).toUpperCase() + promo.status.slice(1)}
                 </span>
@@ -112,17 +112,17 @@ export default function PromotionsPage() {
 
               <div className="mb-4">
                 <div className="text-3xl font-bold gradient-text mb-2">{promo.discount}</div>
-                <p className="text-sm text-gray-600">Type: {promo.type}</p>
+                <p className="text-sm text-[#2D4A42]">Type: {promo.type}</p>
               </div>
 
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Redemptions:</span>
-                  <span className="font-semibold text-gray-900">{promo.bookings}</span>
+                  <span className="text-[#2D4A42]">Redemptions:</span>
+                  <span className="font-semibold text-[#1A2E2B]">{promo.bookings}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Expires:</span>
-                  <span className="font-semibold text-gray-900">{promo.expiry}</span>
+                  <span className="text-[#2D4A42]">Expires:</span>
+                  <span className="font-semibold text-[#1A2E2B]">{promo.expiry}</span>
                 </div>
               </div>
 

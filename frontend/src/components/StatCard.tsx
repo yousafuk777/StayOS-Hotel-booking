@@ -71,9 +71,9 @@ export default function StatCard({
     >
       <div className="flex items-center justify-between text-left">
         <div>
-          <p className="text-gray-600 font-medium mb-2">{label}</p>
+          <p className="text-[#2D4A42] font-medium mb-2">{label}</p>
           <p className="text-4xl font-bold gradient-text">{value}</p>
-          {subtext && <p className="text-sm text-gray-500 mt-1">{subtext}</p>}
+          {subtext && <p className="text-sm text-[#2D4A42] mt-1">{subtext}</p>}
           {progress !== undefined && (
             <div className="mt-3">
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -82,7 +82,7 @@ export default function StatCard({
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">{progress}% {total ? `of ${total}` : ''}</p>
+              <p className="text-xs text-[#2D4A42] mt-1">{progress}% {total ? `of ${total}` : ''}</p>
             </div>
           )}
         </div>

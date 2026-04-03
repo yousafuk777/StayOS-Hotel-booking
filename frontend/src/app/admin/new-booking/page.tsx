@@ -100,7 +100,7 @@ export default function NewBookingPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Create New Booking</h1>
-        <p className="text-gray-600">Add a new reservation for a guest</p>
+        <p className="text-[#2D4A42]">Add a new reservation for a guest</p>
       </div>
       
       {/* Error Message */}

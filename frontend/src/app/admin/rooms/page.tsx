@@ -145,7 +145,7 @@ export default function RoomsPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Rooms & Inventory</h1>
-                <p className="text-sm text-gray-600">Manage room availability and pricing</p>
+                <p className="text-sm text-[#2D4A42]">Manage room availability and pricing</p>
               </div>
             </div>
             
@@ -229,7 +229,7 @@ export default function RoomsPage() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-gray-700'
+                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                   }`}
                 >
                   <span>{tab.icon}</span>
@@ -242,7 +242,7 @@ export default function RoomsPage() {
               <select 
                 value={selectedRoomType}
                 onChange={(e) => setSelectedRoomType(e.target.value)}
-                className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+                className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Types</option>
                 <option value="Standard Queen">Standard Queen</option>
@@ -255,7 +255,7 @@ export default function RoomsPage() {
               <select 
                 value={selectedFloor}
                 onChange={(e) => setSelectedFloor(e.target.value)}
-                className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+                className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Floors</option>
                 <option value="1">Floor 1</option>
@@ -343,7 +343,7 @@ export default function RoomsPage() {
                 <div className="col-span-full text-center py-20">
                   <div className="text-6xl mb-4">🏨</div>
                   <h3 className="text-2xl font-bold gradient-text mb-2">No Rooms Found</h3>
-                  <p className="text-gray-600">Try adjusting your filters or add a new room</p>
+                  <p className="text-[#2D4A42]">Try adjusting your filters or add a new room</p>
                 </div>
               )
             }
@@ -376,8 +376,8 @@ export default function RoomsPage() {
               {/* Room Details */}
               <div className="p-6 space-y-4">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{room.type}</h3>
-                  <p className="text-sm text-gray-600">Floor {room.floor} • Sleeps {room.capacity}</p>
+                  <h3 className="text-xl font-bold text-[#1A2E2B] mb-1">{room.type}</h3>
+                  <p className="text-sm text-[#2D4A42]">Floor {room.floor} • Sleeps {room.capacity}</p>
                 </div>
 
                 {/* Amenities */}
@@ -391,7 +391,7 @@ export default function RoomsPage() {
                     }
                     const config = amenityConfig[amenity]
                     return config ? (
-                      <span key={amenity} className="glass px-2 py-1 rounded-lg text-xs text-gray-700">
+                      <span key={amenity} className="glass px-2 py-1 rounded-lg text-xs text-[#1A2E2B]">
                         {config.icon} {config.label}
                       </span>
                     ) : null
@@ -401,7 +401,7 @@ export default function RoomsPage() {
                 {/* Pricing */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div>
-                    <p className="text-sm text-gray-600">Nightly Rate</p>
+                    <p className="text-sm text-[#2D4A42]">Nightly Rate</p>
                     <p className="text-2xl font-bold gradient-text">${room.price}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export default function RoomsPage() {
                     }}>
                       ✏️ Edit
                     </button>
-                    <button className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => {
+                    <button className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-medium text-[#2D4A42]" onClick={() => {
                       setSelectedRoom(room)
                       setShowCalendarModal(true)
                     }}>
@@ -443,9 +443,9 @@ export default function RoomsPage() {
             <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {}}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🧹</div>
-                <span className="font-semibold text-gray-900">Update Housekeeping</span>
+                <span className="font-semibold text-[#1A2E2B]">Update Housekeeping</span>
               </div>
-              <p className="text-sm text-gray-600">Mark rooms as clean/ready</p>
+              <p className="text-sm text-[#2D4A42]">Mark rooms as clean/ready</p>
             </button>
 
             <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
@@ -453,9 +453,9 @@ export default function RoomsPage() {
             }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">💲</div>
-                <span className="font-semibold text-gray-900">Bulk Price Update</span>
+                <span className="font-semibold text-[#1A2E2B]">Bulk Price Update</span>
               </div>
-              <p className="text-sm text-gray-600">Adjust rates for multiple rooms</p>
+              <p className="text-sm text-[#2D4A42]">Adjust rates for multiple rooms</p>
             </button>
 
             <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
@@ -463,9 +463,9 @@ export default function RoomsPage() {
             }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">📊</div>
-                <span className="font-semibold text-gray-900">Availability Report</span>
+                <span className="font-semibold text-[#1A2E2B]">Availability Report</span>
               </div>
-              <p className="text-sm text-gray-600">View occupancy analytics</p>
+              <p className="text-sm text-[#2D4A42]">View occupancy analytics</p>
             </button>
 
             <button className="glass p-6 rounded-xl card-hover text-left group" onClick={() => {
@@ -473,9 +473,9 @@ export default function RoomsPage() {
             }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-3xl group-hover:scale-110 transition-transform">🏷️</div>
-                <span className="font-semibold text-gray-900">Room Categories</span>
+                <span className="font-semibold text-[#1A2E2B]">Room Categories</span>
               </div>
-              <p className="text-sm text-gray-600">Manage room types & amenities</p>
+              <p className="text-sm text-[#2D4A42]">Manage room types & amenities</p>
             </button>
           </div>
         </div>
@@ -513,7 +513,7 @@ export default function RoomsPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Room Number *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Number *</label>
                   <input
                     type="text"
                     value={newRoom.number}
@@ -526,7 +526,7 @@ export default function RoomsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Room Type *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Type *</label>
                     <select
                       value={newRoom.type}
                       onChange={(e) => setNewRoom({ ...newRoom, type: e.target.value })}
@@ -542,7 +542,7 @@ export default function RoomsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Room Status *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Status *</label>
                     <select
                       value={newRoom.status}
                       onChange={(e) => setNewRoom({ ...newRoom, status: e.target.value })}
@@ -557,7 +557,7 @@ export default function RoomsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Floor *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Floor *</label>
                     <select
                       value={newRoom.floor}
                       onChange={(e) => setNewRoom({ ...newRoom, floor: parseInt(e.target.value) })}
@@ -574,7 +574,7 @@ export default function RoomsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Price per Night ($) *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Price per Night ($) *</label>
                     <input
                       type="number"
                       value={newRoom.price}
@@ -586,7 +586,7 @@ export default function RoomsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Capacity (Guests) *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Capacity (Guests) *</label>
                     <input
                       type="number"
                       value={newRoom.capacity}
@@ -600,7 +600,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Room Amenities</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-3">Room Amenities</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { key: 'wifi', icon: '📶', label: 'WiFi' },
@@ -623,7 +623,7 @@ export default function RoomsPage() {
                           }}
                           className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-[#1A2E2B]">
                           {amenity.icon} {amenity.label}
                         </span>
                       </label>
@@ -687,7 +687,7 @@ export default function RoomsPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Room Number *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Number *</label>
                   <input
                     type="text"
                     value={editRoomData.number}
@@ -698,7 +698,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Room Type *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Type *</label>
                   <select
                     value={editRoomData.type}
                     onChange={(e) => setEditRoomData({ ...editRoomData, type: e.target.value })}
@@ -715,7 +715,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Room Status *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Room Status *</label>
                   <select
                     value={editRoomData.status}
                     onChange={(e) => setEditRoomData({ ...editRoomData, status: e.target.value })}
@@ -731,7 +731,7 @@ export default function RoomsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Floor *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Floor *</label>
                     <input
                       type="number"
                       value={editRoomData.floor}
@@ -744,7 +744,7 @@ export default function RoomsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Price per Night ($) *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Price per Night ($) *</label>
                     <input
                       type="number"
                       value={editRoomData.price}
@@ -757,7 +757,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Capacity (Guests) *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Capacity (Guests) *</label>
                   <input
                     type="number"
                     value={editRoomData.capacity}
@@ -770,7 +770,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Amenities</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-3">Amenities</label>
                   <div className="grid grid-cols-2 gap-3">
                     {['WiFi', 'TV', 'AC', 'Coffee'].map((amenity) => (
                       <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
@@ -785,7 +785,7 @@ export default function RoomsPage() {
                           }}
                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                         />
-                        <span className="text-sm text-gray-700">{amenity}</span>
+                        <span className="text-sm text-[#1A2E2B]">{amenity}</span>
                       </label>
                     ))}
                   </div>
@@ -827,14 +827,14 @@ export default function RoomsPage() {
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-600 mb-4">View and manage bookings for this room</p>
+              <p className="text-[#2D4A42] mb-4">View and manage bookings for this room</p>
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">📍 Room {selectedRoom.number}</h3>
-                <p className="text-gray-700 mb-1"><strong>Type:</strong> {selectedRoom.type}</p>
-                <p className="text-gray-700 mb-1"><strong>Floor:</strong> Floor {selectedRoom.floor}</p>
-                <p className="text-gray-700 mb-1"><strong>Price:</strong> ${selectedRoom.price}/night</p>
-                <p className="text-gray-700 mb-1"><strong>Capacity:</strong> {selectedRoom.capacity} guests</p>
-                <p className="text-gray-700"><strong>Status:</strong> <span className={`font-semibold capitalize ${
+                <h3 className="text-xl font-bold text-[#1A2E2B] mb-2">📍 Room {selectedRoom.number}</h3>
+                <p className="text-[#1A2E2B] mb-1"><strong>Type:</strong> {selectedRoom.type}</p>
+                <p className="text-[#1A2E2B] mb-1"><strong>Floor:</strong> Floor {selectedRoom.floor}</p>
+                <p className="text-[#1A2E2B] mb-1"><strong>Price:</strong> ${selectedRoom.price}/night</p>
+                <p className="text-[#1A2E2B] mb-1"><strong>Capacity:</strong> {selectedRoom.capacity} guests</p>
+                <p className="text-[#1A2E2B]"><strong>Status:</strong> <span className={`font-semibold capitalize ${
                   selectedRoom.status === 'clean' ? 'text-green-600' :
                   selectedRoom.status === 'dirty' ? 'text-orange-600' :
                   selectedRoom.status === 'maintenance' ? 'text-red-600' :
@@ -844,16 +844,16 @@ export default function RoomsPage() {
             </div>
 
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200 mb-6">
-              <h4 className="text-lg font-bold text-gray-900 mb-3">📆 Upcoming Availability</h4>
-              <p className="text-gray-700 mb-2">This feature would show a calendar view with:</p>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <h4 className="text-lg font-bold text-[#1A2E2B] mb-3">📆 Upcoming Availability</h4>
+              <p className="text-[#1A2E2B] mb-2">This feature would show a calendar view with:</p>
+              <ul className="list-disc list-inside space-y-1 text-[#1A2E2B]">
                 <li>Current bookings and reservations</li>
                 <li>Check-in and check-out dates</li>
                 <li>Blocked dates for maintenance</li>
                 <li>Available dates for new bookings</li>
               </ul>
               <div className="mt-4 p-4 bg-white rounded-lg border border-purple-100">
-                <p className="text-sm text-gray-600">💡 In the full version, this would integrate with the booking system to show real-time availability.</p>
+                <p className="text-sm text-[#2D4A42]">💡 In the full version, this would integrate with the booking system to show real-time availability.</p>
               </div>
             </div>
 

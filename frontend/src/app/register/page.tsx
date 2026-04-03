@@ -96,7 +96,7 @@ export default function RegisterPage() {
           <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
             {loginStep ? 'Signing you in...' : 'Setting up your desk...'}
           </h2>
-          <p className="text-gray-600 mb-8 font-medium">
+          <p className="text-[#2D4A42] mb-8 font-medium">
             Join the premium property management ecosystem.
           </p>
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 shadow-sm" />
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               StayOS
             </h1>
-            <p className="text-gray-500 text-sm mt-1 text-center px-4">Start your premium management journey</p>
+            <p className="text-[#2D4A42] text-sm mt-1 text-center px-4">Start your premium management journey</p>
           </div>
 
           {/* Error banner */}
@@ -140,7 +140,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               {/* First Name */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-gray-700 ml-1">First Name</label>
+                <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">First Name</label>
                 <input
                   type="text"
                   name="firstName"
@@ -148,12 +148,12 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
                 />
               </div>
               {/* Last Name */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-gray-700 ml-1">Last Name</label>
+                <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">Last Name</label>
                 <input
                   type="text"
                   name="lastName"
@@ -161,14 +161,14 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                  className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-gray-700 ml-1">Email Address</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
@@ -176,13 +176,13 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@yourhotel.com"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
             </div>
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-gray-700 ml-1">Password</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] ml-1">Password</label>
               <input
                 type="password"
                 name="password"
@@ -190,7 +190,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 bg-white/70 text-[#1A2E2B] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               />
             </div>
 
@@ -198,7 +198,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-95"
+              className="w-full py-4 mt-2 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-600/30 disabled: disabled:cursor-not-allowed transition-all active:scale-95"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -212,7 +212,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-8 text-center pt-6 border-t border-gray-50">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#2D4A42]">
               Already have an account?{' '}
               <Link href="/login" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
                 Sign In Instead

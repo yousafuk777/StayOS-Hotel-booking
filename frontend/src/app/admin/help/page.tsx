@@ -59,7 +59,7 @@ export default function HelpPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Help & Support</h1>
-        <p className="text-gray-600">Find answers and get assistance with using the system</p>
+        <p className="text-[#2D4A42]">Find answers and get assistance with using the system</p>
       </div>
 
       {/* Search Bar */}
@@ -75,7 +75,7 @@ export default function HelpPage() {
               className="input-field w-full px-6 py-4 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <p className="text-gray-600 text-center">
+          <p className="text-[#2D4A42] text-center">
             Try searching for "booking", "payment", "housekeeping", or "guest management"
           </p>
         </div>
@@ -96,8 +96,8 @@ export default function HelpPage() {
               <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center text-3xl mb-4`}>
                 {category.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{category.name}</h3>
-              <p className="text-gray-600">View guides and FAQs</p>
+              <h3 className="text-xl font-bold text-[#1A2E2B] mb-2">{category.name}</h3>
+              <p className="text-[#2D4A42]">View guides and FAQs</p>
             </button>
           ))}
         </div>
@@ -123,10 +123,10 @@ export default function HelpPage() {
           {filteredFaqs.map((faq, index) => (
             <details key={index} className="group glass rounded-xl">
               <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                <h3 className="font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                <h3 className="font-semibold text-[#1A2E2B] pr-4">{faq.question}</h3>
                 <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
               </summary>
-              <div className="px-6 pb-6 text-gray-600">
+              <div className="px-6 pb-6 text-[#2D4A42]">
                 {faq.answer}
               </div>
             </details>
@@ -141,7 +141,7 @@ export default function HelpPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">📧</div>
             <h3 className="font-bold text-lg mb-2">Email Support</h3>
-            <p className="text-gray-600 mb-4">Get help via email</p>
+            <p className="text-[#2D4A42] mb-4">Get help via email</p>
             <button
               onClick={() => {
                 // Opening email client
@@ -154,7 +154,7 @@ export default function HelpPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">💬</div>
             <h3 className="font-bold text-lg mb-2">Live Chat</h3>
-            <p className="text-gray-600 mb-4">Chat with our team</p>
+            <p className="text-[#2D4A42] mb-4">Chat with our team</p>
             <button
               onClick={() => {
                 const chatOpen = confirm('Start live chat with support team?');
@@ -170,7 +170,7 @@ export default function HelpPage() {
           <div className="glass p-6 rounded-xl text-center">
             <div className="text-5xl mb-4">📞</div>
             <h3 className="font-bold text-lg mb-2">Phone Support</h3>
-            <p className="text-gray-600 mb-4">Call us directly</p>
+            <p className="text-[#2D4A42] mb-4">Call us directly</p>
             <button
               onClick={() => {
                 // Dialing support number
@@ -209,7 +209,7 @@ export default function HelpPage() {
               className="glass p-6 rounded-xl hover:bg-gray-50 transition-all text-left cursor-pointer"
             >
               <span className="text-3xl mb-3 block">{link.icon}</span>
-              <span className="font-semibold text-gray-900">{link.name}</span>
+              <span className="font-semibold text-[#1A2E2B]">{link.name}</span>
             </button>
           ))}
         </div>
