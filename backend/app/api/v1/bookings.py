@@ -31,7 +31,7 @@ async def get_bookings(
     for b in bookings:
         # Assuming guest relationship is loaded
         guest_name = f"{b.guest.first_name} {b.guest.last_name}" if b.guest else "Unknown"
-        room_type = b.rooms[0].room.room_type if b.rooms and b.rooms[0].room else "Unknown"
+        room_type = b.rooms[0].room.category.name if b.rooms and b.rooms[0].room and b.rooms[0].room.category else "Unknown"
         
         # Create response dict to match schema
         b_dict = {
@@ -77,7 +77,7 @@ async def get_pending_bookings(
     formatted_bookings = []
     for b in bookings:
         guest_name = f"{b.guest.first_name} {b.guest.last_name}" if b.guest else "Unknown"
-        room_type = b.rooms[0].room.room_type if b.rooms and b.rooms[0].room else "Unknown"
+        room_type = b.rooms[0].room.category.name if b.rooms and b.rooms[0].room and b.rooms[0].room.category else "Unknown"
         
         b_dict = {
             "id": b.id,
