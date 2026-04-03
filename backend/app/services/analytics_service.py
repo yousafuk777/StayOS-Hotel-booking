@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, and_
+from sqlalchemy import select, func, desc, and_, cast, Date
 from datetime import datetime, timedelta
 from decimal import Decimal
 from app.models.booking import Booking, BookingRoom
@@ -99,7 +99,7 @@ class AnalyticsService:
         # For simplicity in this demo environment, let's group by isoformat date
         query = (
             select(
-                func.date(Booking.check_in_date).label("date"),
+                cast(Booking.check_in_date, Date).label("date"),
                 func.sum(Booking.total_amount).label("revenue"),
                 func.count(Booking.id).label("bookings")
             )

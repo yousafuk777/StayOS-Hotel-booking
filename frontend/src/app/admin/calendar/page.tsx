@@ -97,7 +97,7 @@ export default function CalendarPage() {
         })
       }
       // Check if this day is during stay (between check-in and check-out, not check-in or check-out day)
-      else if (targetDate > checkinDate && targetDate < checkoutDate) {
+      else if (targetDate > checkinDate && targetDate.getTime() < checkoutDate.getTime()) {
         dayBookings.push({
           ...booking,
           type: 'stay'
@@ -143,7 +143,7 @@ export default function CalendarPage() {
       }
 
       // Count occupied rooms for today
-      if (today >= checkinDate && today < checkoutDate) {
+      if (today >= checkinDate && today.getTime() < checkoutDate.getTime()) {
         occupiedRooms++
       }
     })
@@ -387,6 +387,7 @@ export default function CalendarPage() {
               </>
             )}
           </div>
+        </div>
 
         {/* Today's Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
