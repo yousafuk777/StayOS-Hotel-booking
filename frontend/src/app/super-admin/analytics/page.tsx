@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
-        <p className="text-gray-500 font-medium animate-pulse">Aggregating platform intelligence...</p>
+        <p className="text-[#2D4A42] font-medium animate-pulse">Aggregating platform intelligence...</p>
       </div>
     )
   }
@@ -83,13 +83,13 @@ export default function AnalyticsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">📈 Analytics Dashboard</h1>
-            <p className="text-gray-600">Comprehensive insights into your hotel performance</p>
+            <p className="text-[#2D4A42]">Comprehensive insights into your hotel performance</p>
           </div>
           <div className="flex gap-3">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="glass px-4 py-3 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+              className="glass px-4 py-3 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
             >
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
                 {kpi.trend === 'up' ? '↑' : '↓'}
               </span>
             </div>
-            <p className="text-sm text-gray-600 font-semibold mb-1">{kpi.label}</p>
+            <p className="text-sm text-[#2D4A42] font-semibold mb-1">{kpi.label}</p>
             <p className="text-3xl font-bold gradient-text">{kpi.value}</p>
           </div>
         ))}
@@ -127,7 +127,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold gradient-text">💰 Revenue Trend</h3>
-              <p className="text-sm text-gray-500">Platform revenue accumulation over time</p>
+              <p className="text-sm text-[#2D4A42]">Platform revenue accumulation over time</p>
             </div>
             {loading && (
               <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
@@ -147,13 +147,13 @@ export default function AnalyticsPage() {
                   dataKey="date"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  tick={{ fill: '#4A6B63', fontSize: 12 }}
                   dy={10}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  tick={{ fill: '#4A6B63', fontSize: 12 }}
                   tickFormatter={(val) => `$${val > 1000 ? (val / 1000).toFixed(0) + 'k' : val}`}
                 />
                 <Tooltip
@@ -186,8 +186,8 @@ export default function AnalyticsPage() {
             {revenueByCategory.map((item: REVENUE_BREAKDOWN, index: number) => (
               <div key={index}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-gray-900">{item.category}</span>
-                  <span className="text-sm font-bold text-gray-700">${item.amount.toLocaleString()}</span>
+                  <span className="font-semibold text-[#1A2E2B]">{item.category}</span>
+                  <span className="text-sm font-bold text-[#1A2E2B]">${item.amount.toLocaleString()}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                     style={{ width: `${item.percentage}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{item.percentage}% of total revenue</p>
+                <p className="text-xs text-[#2D4A42] mt-1">{item.percentage}% of total revenue</p>
               </div>
             ))}
           </div>
@@ -246,13 +246,13 @@ export default function AnalyticsPage() {
                     #{hotel.rank}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{hotel.hotel}</p>
-                    <p className="text-xs text-gray-500">Revenue: ${hotel.revenue.toLocaleString()}</p>
+                    <p className="font-bold text-[#1A2E2B]">{hotel.hotel}</p>
+                    <p className="text-xs text-[#2D4A42]">Revenue: ${hotel.revenue.toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-green-600">{hotel.occupancy}% Occ.</p>
-                  <p className="text-xs text-gray-500">⭐ {hotel.rating}</p>
+                  <p className="text-xs text-[#2D4A42]">⭐ {hotel.rating}</p>
                 </div>
               </div>
             ))}
@@ -267,22 +267,22 @@ export default function AnalyticsPage() {
           <div className="text-center">
             <div className="text-4xl mb-2">🌍</div>
             <p className="text-2xl font-bold gradient-text">45</p>
-            <p className="text-sm text-gray-600">Countries Represented</p>
+            <p className="text-sm text-[#2D4A42]">Countries Represented</p>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">👨‍👩‍👧‍👦</div>
             <p className="text-2xl font-bold gradient-text">2,847</p>
-            <p className="text-sm text-gray-600">Unique Guests</p>
+            <p className="text-sm text-[#2D4A42]">Unique Guests</p>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">🔄</div>
             <p className="text-2xl font-bold gradient-text">38%</p>
-            <p className="text-sm text-gray-600">Returning Guests</p>
+            <p className="text-sm text-[#2D4A42]">Returning Guests</p>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">⭐</div>
             <p className="text-2xl font-bold gradient-text">4.8/5</p>
-            <p className="text-sm text-gray-600">Avg Rating</p>
+            <p className="text-sm text-[#2D4A42]">Avg Rating</p>
           </div>
         </div>
       </div>

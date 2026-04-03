@@ -79,7 +79,7 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Notifications</h1>
-        <p className="text-gray-600">Stay updated with your hotel's activities</p>
+        <p className="text-[#2D4A42]">Stay updated with your hotel's activities</p>
       </div>
 
       {/* Stats */}
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Total Notifications</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Total Notifications</p>
               <p className="text-4xl font-bold gradient-text">{notifications.length}</p>
             </div>
             <div className="text-5xl">🔔</div>
@@ -96,7 +96,7 @@ export default function NotificationsPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Unread</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Unread</p>
               <p className="text-4xl font-bold gradient-text">{unreadCount}</p>
             </div>
             <div className="text-5xl">📩</div>
@@ -105,7 +105,7 @@ export default function NotificationsPage() {
         <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Read</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Read</p>
               <p className="text-4xl font-bold gradient-text">{notifications.filter(n => n.read).length}</p>
             </div>
             <div className="text-5xl">✓</div>
@@ -148,7 +148,7 @@ export default function NotificationsPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className={`font-bold text-lg ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                    <h3 className={`font-bold text-lg ${!notification.read ? 'text-[#1A2E2B]' : 'text-[#1A2E2B]'}`}>
                       {notification.title}
                     </h3>
                     {!notification.read && (
@@ -156,9 +156,9 @@ export default function NotificationsPage() {
                         New
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">{notification.time}</span>
+                    <span className="text-sm text-[#2D4A42]">{notification.time}</span>
                   </div>
-                  <p className="text-gray-600 mb-3">{notification.message}</p>
+                  <p className="text-[#2D4A42] mb-3">{notification.message}</p>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={(e) => {
@@ -201,8 +201,8 @@ export default function NotificationsPage() {
           ].map((setting, index) => (
             <div key={index} className="flex items-center justify-between p-4 glass rounded-xl">
               <div>
-                <h3 className="font-semibold text-gray-900">{setting.name}</h3>
-                <p className="text-sm text-gray-600">{setting.description}</p>
+                <h3 className="font-semibold text-[#1A2E2B]">{setting.name}</h3>
+                <p className="text-sm text-[#2D4A42]">{setting.description}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" defaultChecked={setting.enabled} className="sr-only peer" />

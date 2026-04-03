@@ -106,7 +106,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between fade-in">
         <div>
           <h1 className="text-4xl font-bold gradient-text">User Management</h1>
-          <p className="text-gray-600">Manage all platform users across all hotels</p>
+          <p className="text-[#2D4A42]">Manage all platform users across all hotels</p>
         </div>
         
         <button 
@@ -179,7 +179,7 @@ export default function UsersPage() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                     filter === key
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-100 text-gray-700'
+                      : 'glass hover:bg-gray-100 text-[#1A2E2B]'
                   }`}
                 >
                   <span>{config.icon}</span>
@@ -192,7 +192,7 @@ export default function UsersPage() {
               <input
                 type="search"
                 placeholder="Search users..."
-                className="input-field px-4 py-2 rounded-xl w-64 text-gray-900 focus:outline-none"
+                className="input-field px-4 py-2 rounded-xl w-64 text-[#1A2E2B] focus:outline-none"
               />
             </div>
           </div>
@@ -210,24 +210,24 @@ export default function UsersPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">User</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Tenant ID</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Joined</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">User</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Role</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant ID</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Joined</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium italic animate-pulse">
+                    <td colSpan={6} className="py-20 text-center text-[#2D4A42] font-medium italic animate-pulse">
                       Loading user data...
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center text-gray-500 font-medium">
+                    <td colSpan={6} className="py-20 text-center text-[#2D4A42] font-medium">
                       No users found.
                     </td>
                   </tr>
@@ -244,24 +244,24 @@ export default function UsersPage() {
                             {(user.first_name || user.email).charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-[#1A2E2B]">
                               {user.first_name ? `${user.first_name} ${user.last_name || ''}` : 'StayOS User'}
                             </h3>
-                            <p className="text-xs text-gray-500">{user.email}</p>
+                            <p className="text-xs text-[#2D4A42]">{user.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="capitalize px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-semibold">
+                        <span className="capitalize px-2 py-1 rounded bg-gray-100 text-[#1A2E2B] text-xs font-semibold">
                           {user.role.split('.').pop()?.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-sm text-gray-600 font-medium">
+                        <span className="text-sm text-[#2D4A42] font-medium">
                           {user.tenant_id ? `#${user.tenant_id}` : 'Platform Level'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-600">
+                      <td className="py-4 px-4 text-sm text-[#2D4A42]">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-4 px-4">

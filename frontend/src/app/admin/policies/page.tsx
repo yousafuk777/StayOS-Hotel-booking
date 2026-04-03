@@ -21,7 +21,7 @@ export default function PoliciesPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Hotel Policies</h1>
-                <p className="text-sm text-gray-600">Manage rules and regulations</p>
+                <p className="text-sm text-[#2D4A42]">Manage rules and regulations</p>
               </div>
             </div>
             
@@ -45,7 +45,7 @@ export default function PoliciesPage() {
           </h2>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Free Cancellation Period</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Free Cancellation Period</label>
               <select className="input-field w-full px-4 py-3 rounded-xl focus:outline-none">
                 <option>Up to 24 hours before check-in</option>
                 <option>Up to 48 hours before check-in</option>
@@ -54,7 +54,7 @@ export default function PoliciesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Cancellation Fee</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Cancellation Fee</label>
               <textarea
                 rows={3}
                 defaultValue="Guests who cancel within 24 hours of check-in will be charged one night's stay. No-shows will be charged the full reservation amount."
@@ -71,7 +71,7 @@ export default function PoliciesPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Check-in Time</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Check-in Time</label>
               <input
                 type="time"
                 defaultValue="15:00"
@@ -79,7 +79,7 @@ export default function PoliciesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Check-out Time</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Check-out Time</label>
               <input
                 type="time"
                 defaultValue="11:00"
@@ -87,7 +87,7 @@ export default function PoliciesPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Early Check-in / Late Check-out</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Early Check-in / Late Check-out</label>
               <textarea
                 rows={3}
                 defaultValue="Early check-in and late check-out are subject to availability. Additional charges may apply: $50 for early check-in before 12 PM, $75 for late check-out after 2 PM."
@@ -106,12 +106,12 @@ export default function PoliciesPage() {
             <label className="flex items-center gap-3 p-4 glass rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
               <input type="checkbox" className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
               <div className="flex-1">
-                <p className="font-semibold text-gray-900">Pets Allowed</p>
-                <p className="text-sm text-gray-600">Allow guests to bring pets</p>
+                <p className="font-semibold text-[#1A2E2B]">Pets Allowed</p>
+                <p className="text-sm text-[#2D4A42]">Allow guests to bring pets</p>
               </div>
             </label>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Pet Fee</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Pet Fee</label>
               <input
                 type="text"
                 defaultValue="$75 per pet per night"
@@ -119,7 +119,7 @@ export default function PoliciesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Pet Rules</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Pet Rules</label>
               <textarea
                 rows={3}
                 defaultValue="Maximum 2 pets per room. Pets must not be left unattended in rooms. Weight limit: 50 lbs per pet."
@@ -136,7 +136,7 @@ export default function PoliciesPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Children Stay Free</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Children Stay Free</label>
               <input
                 type="text"
                 defaultValue="Children under 12 years stay free when using existing beds"
@@ -144,7 +144,7 @@ export default function PoliciesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Extra Bed Policy</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Extra Bed Policy</label>
               <textarea
                 rows={3}
                 defaultValue="One extra bed allowed per room at $50 per night. Cribs available free of charge upon request."
@@ -161,18 +161,18 @@ export default function PoliciesPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Accepted Payment Methods</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Accepted Payment Methods</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {['Credit Card', 'Debit Card', 'Cash', 'Bank Transfer'].map((method) => (
                   <label key={method} className="flex items-center gap-3 p-4 glass rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
                     <input type="checkbox" defaultChecked className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
-                    <span className="font-medium text-gray-700">{method}</span>
+                    <span className="font-medium text-[#1A2E2B]">{method}</span>
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Deposit Required</label>
+              <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Deposit Required</label>
               <textarea
                 rows={3}
                 defaultValue="A refundable security deposit of $200 is required upon check-in for incidental charges."

@@ -21,7 +21,7 @@ export default function ThemePage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Theme & Branding</h1>
-                <p className="text-sm text-gray-600">Customize your hotel's visual identity</p>
+                <p className="text-sm text-[#2D4A42]">Customize your hotel's visual identity</p>
               </div>
             </div>
             
@@ -56,15 +56,15 @@ export default function ThemePage() {
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="bg-blue-50 rounded-xl p-4 text-center">
                       <div className="text-3xl mb-2">🏊</div>
-                      <p className="font-semibold text-gray-900">Pool</p>
+                      <p className="font-semibold text-[#1A2E2B]">Pool</p>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-4 text-center">
                       <div className="text-3xl mb-2">🍽️</div>
-                      <p className="font-semibold text-gray-900">Dining</p>
+                      <p className="font-semibold text-[#1A2E2B]">Dining</p>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-4 text-center">
                       <div className="text-3xl mb-2">💆</div>
-                      <p className="font-semibold text-gray-900">Spa</p>
+                      <p className="font-semibold text-[#1A2E2B]">Spa</p>
                     </div>
                   </div>
                   <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold">
@@ -86,7 +86,7 @@ export default function ThemePage() {
                   { name: 'Danger', value: '#EF4444' },
                 ].map((color) => (
                   <div key={color.name}>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">{color.name}</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">{color.name}</label>
                     <div className="flex items-center gap-3">
                       <input
                         type="color"
@@ -111,11 +111,11 @@ export default function ThemePage() {
               <h3 className="text-xl font-bold gradient-text mb-6">Brand Colors</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Color</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Primary Color</label>
                   <input type="color" defaultValue="#3B82F6" className="w-full h-12 rounded-lg cursor-pointer" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Secondary Color</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Secondary Color</label>
                   <input type="color" defaultValue="#6366F1" className="w-full h-12 rounded-lg cursor-pointer" />
                 </div>
               </div>
@@ -125,7 +125,7 @@ export default function ThemePage() {
               <h3 className="text-xl font-bold gradient-text mb-6">Typography</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Font Family</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Font Family</label>
                   <select className="input-field w-full px-4 py-3 rounded-xl focus:outline-none">
                     <option>Inter</option>
                     <option>Roboto</option>
@@ -140,8 +140,8 @@ export default function ThemePage() {
               <h3 className="text-xl font-bold gradient-text mb-6">Logo Upload</h3>
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-all cursor-pointer">
                 <div className="text-5xl mb-4">📷</div>
-                <p className="font-semibold text-gray-900 mb-2">Drop your logo here</p>
-                <p className="text-sm text-gray-600">or click to browse</p>
+                <p className="font-semibold text-[#1A2E2B] mb-2">Drop your logo here</p>
+                <p className="text-sm text-[#2D4A42]">or click to browse</p>
               </div>
             </div>
           </div>

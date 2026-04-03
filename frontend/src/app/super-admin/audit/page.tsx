@@ -40,7 +40,7 @@ export default function AuditLogsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">📋 Audit Logs</h1>
-            <p className="text-gray-600">Complete system activity trail and compliance tracking</p>
+            <p className="text-[#2D4A42]">Complete system activity trail and compliance tracking</p>
           </div>
           <div className="flex gap-3">
             <button className="glass px-6 py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50 transition-all">📥 Export Logs</button>
@@ -57,7 +57,7 @@ export default function AuditLogsPage() {
               <div className="text-4xl">{stat.icon}</div>
               <span className={`text-2xl font-bold ${stat.color === 'blue' ? 'text-blue-600' : stat.color === 'green' ? 'text-green-600' : stat.color === 'red' ? 'text-red-600' : 'text-yellow-600'}`}>{stat.value}</span>
             </div>
-            <p className="text-sm text-gray-600 font-semibold mb-1">{stat.label}</p>
+            <p className="text-sm text-[#2D4A42] font-semibold mb-1">{stat.label}</p>
             <p className={`text-xs font-semibold ${stat.change.startsWith('+') || stat.change.startsWith('-') ? 'text-green-600' : 'text-red-600'}`}>{stat.change} from last week</p>
           </div>
         ))}
@@ -72,14 +72,14 @@ export default function AuditLogsPage() {
               { id: 'success', label: 'Success', icon: '✓' },
               { id: 'failed', label: 'Failed', icon: '✕' }
             ].map((filter) => (
-              <button key={filter.id} onClick={() => setActiveFilter(filter.id)} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${activeFilter === filter.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'glass hover:bg-gray-50 text-gray-700'}`}>
+              <button key={filter.id} onClick={() => setActiveFilter(filter.id)} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${activeFilter === filter.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'glass hover:bg-gray-50 text-[#1A2E2B]'}`}>
                 <span>{filter.icon}</span><span>{filter.label}</span>
               </button>
             ))}
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            <select className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer">
+            <select className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer">
               <option>All Actions</option>
               <option>User Login</option>
               <option>Booking Created</option>
@@ -87,14 +87,14 @@ export default function AuditLogsPage() {
               <option>Settings Modified</option>
             </select>
 
-            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer">
+            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer">
               <option value="1">Last 24 Hours</option>
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
               <option value="90">Last 90 Days</option>
             </select>
 
-            <input type="search" placeholder="Search logs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none w-64" />
+            <input type="search" placeholder="Search logs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none w-64" />
           </div>
         </div>
       </div>
@@ -107,13 +107,13 @@ export default function AuditLogsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Action</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">User</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Entity</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Timestamp</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">IP Address</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Action</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">User</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Entity</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Timestamp</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">IP Address</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -121,21 +121,21 @@ export default function AuditLogsPage() {
                 <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-4">
                     <div>
-                      <p className="font-semibold text-gray-900">{log.action}</p>
-                      <p className="text-xs text-gray-500 max-w-xs truncate">{log.details}</p>
+                      <p className="font-semibold text-[#1A2E2B]">{log.action}</p>
+                      <p className="text-xs text-[#2D4A42] max-w-xs truncate">{log.details}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white text-xs font-bold">{log.user.charAt(0).toUpperCase()}</div>
-                      <span className="text-sm text-gray-700 font-mono">{log.user}</span>
+                      <span className="text-sm text-[#1A2E2B] font-mono">{log.user}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <div><p className="font-semibold text-gray-900">{log.entity}</p><p className="text-xs text-gray-500 font-mono">{log.entityId}</p></div>
+                    <div><p className="font-semibold text-[#1A2E2B]">{log.entity}</p><p className="text-xs text-[#2D4A42] font-mono">{log.entityId}</p></div>
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-600 font-mono">{log.timestamp}</td>
-                  <td className="py-4 px-4 text-sm text-gray-600 font-mono">{log.ip}</td>
+                  <td className="py-4 px-4 text-sm text-[#2D4A42] font-mono">{log.timestamp}</td>
+                  <td className="py-4 px-4 text-sm text-[#2D4A42] font-mono">{log.ip}</td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${log.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{log.status.toUpperCase()}</span>
                   </td>
@@ -151,7 +151,7 @@ export default function AuditLogsPage() {
         </div>
 
         <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600">Showing <span className="font-semibold">1-6</span> of <span className="font-semibold">15,847</span> results</p>
+          <p className="text-sm text-[#2D4A42]">Showing <span className="font-semibold">1-6</span> of <span className="font-semibold">15,847</span> results</p>
           <div className="flex gap-2">
             <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50" disabled>← Previous</button>
             <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Next →</button>
@@ -174,9 +174,9 @@ export default function AuditLogsPage() {
                 <div className="flex items-start gap-3">
                   <div className={`text-2xl ${alert.severity === 'high' ? 'text-red-600' : alert.severity === 'medium' ? 'text-yellow-600' : 'text-blue-600'}`}>⚠️</div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-1">{alert.title}</h3>
-                    <p className="text-sm text-gray-600">{alert.description}</p>
-                    <p className="text-xs text-gray-500 mt-2">🕐 {alert.time}</p>
+                    <h3 className="font-bold text-[#1A2E2B] mb-1">{alert.title}</h3>
+                    <p className="text-sm text-[#2D4A42]">{alert.description}</p>
+                    <p className="text-xs text-[#2D4A42] mt-2">🕐 {alert.time}</p>
                   </div>
                 </div>
                 <button className={`px-4 py-2 rounded-xl font-semibold text-sm cursor-pointer ${alert.severity === 'high' ? 'bg-red-100 text-red-700 hover:bg-red-200' : alert.severity === 'medium' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}>{alert.action}</button>

@@ -3,6 +3,12 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { 
+  Building2, LayoutDashboard, Calendar, CalendarDays, BedDouble, 
+  Sparkles, Users, User, LineChart, Tags, Star, Settings, Palette,
+  ClipboardList, LogOut, Hotel, CreditCard, CircleDollarSign,
+  Activity, FileText
+} from 'lucide-react'
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -154,36 +160,36 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }
 
   const sidebarItems = [
-    { id: 'overview', icon: '📊', label: 'Overview', href: '/super-admin' },
-    { id: 'tenants', icon: '🏨', label: 'Tenants & Hotels', href: '/super-admin/tenants' },
-    { id: 'users', icon: '👥', label: 'User Management', href: '/super-admin/users' },
-    { id: 'subscriptions', icon: '💳', label: 'Subscriptions', href: '/super-admin/subscriptions' },
-    { id: 'transactions', icon: '💰', label: 'Transactions', href: '/super-admin/transactions' },
-    { id: 'analytics', icon: '📈', label: 'Analytics', href: '/super-admin/analytics' },
-    { id: 'system', icon: '⚙️', label: 'System Health', href: '/super-admin/system' },
-    { id: 'audit', icon: '📋', label: 'Audit Logs', href: '/super-admin/audit' },
-    { id: 'cms', icon: '📝', label: 'CMS', href: '/super-admin/cms' },
-    { id: 'settings', icon: '🔧', label: 'Settings', href: '/super-admin/settings' },
+    { id: 'overview', icon: <LayoutDashboard size={20} />, label: 'Overview', href: '/super-admin' },
+    { id: 'tenants', icon: <Hotel size={20} />, label: 'Tenants & Hotels', href: '/super-admin/tenants' },
+    { id: 'users', icon: <Users size={20} />, label: 'User Management', href: '/super-admin/users' },
+    { id: 'subscriptions', icon: <CreditCard size={20} />, label: 'Subscriptions', href: '/super-admin/subscriptions' },
+    { id: 'transactions', icon: <CircleDollarSign size={20} />, label: 'Transactions', href: '/super-admin/transactions' },
+    { id: 'analytics', icon: <LineChart size={20} />, label: 'Analytics', href: '/super-admin/analytics' },
+    { id: 'system', icon: <Activity size={20} />, label: 'System Health', href: '/super-admin/system' },
+    { id: 'audit', icon: <ClipboardList size={20} />, label: 'Audit Logs', href: '/super-admin/audit' },
+    { id: 'cms', icon: <FileText size={20} />, label: 'CMS', href: '/super-admin/cms' },
+    { id: 'settings', icon: <Settings size={20} />, label: 'Settings', href: '/super-admin/settings' },
   ]
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="flex min-h-screen bg-lightBg">
       {/* Sidebar */}
-      <aside className="w-72 fixed left-0 top-0 h-screen overflow-y-auto glass-card border-r border-gray-200 z-40">
+      <aside className="w-72 fixed left-0 top-0 h-screen overflow-y-auto bg-[#1A2E2B] border-r border-[rgba(255,255,255,0.06)] shadow-xl z-40">
         <div className="px-4 py-6">
           <Link href="/super-admin" className="flex items-center gap-3 mb-6 px-4">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
-              <span className="text-2xl">🏛️</span>
+            <div className="bg-transparent border border-[rgba(255,255,255,0.06)] p-3 rounded-xl shadow-lg">
+              <span className="text-white"><Building2 size={24} /></span>
             </div>
             <div>
-              <h1 className="text-xl font-bold gradient-text">StayOS</h1>
-              <p className="text-xs text-gray-600">Super Admin Console</p>
+              <h1 className="text-xl font-bold text-white">StayOS</h1>
+              <p className="text-xs text-[#4A6B63]">Super Admin Console</p>
             </div>
           </Link>
 
           <nav className="space-y-2">
             <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Main Menu
               </h3>
               <div className="space-y-1">
@@ -195,11 +201,11 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                       href={item.href}
                       className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg scale-105'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -209,7 +215,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             </div>
 
             <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Management
               </h3>
               <div className="space-y-1">
@@ -219,13 +225,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                     <Link
                       key={item.id}
                       href={item.href}
-                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      className={`relative block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent rounded-r-md shadow-accent/50 shadow-sm"></div>}
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -235,7 +242,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             </div>
 
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-4">
+              <h3 className="text-xs font-semibold text-[#C8941A] uppercase tracking-wider mb-3 px-4">
                 Configuration
               </h3>
               <div className="space-y-1">
@@ -245,13 +252,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                     <Link
                       key={item.id}
                       href={item.href}
-                      className={`block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      className={`relative block w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? 'bg-[#0F6E56] text-white shadow-lg'
+                          : 'hover:bg-[rgba(255,255,255,0.08)] text-[#A8C5BC] hover:text-white'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent rounded-r-md shadow-accent/50 shadow-sm"></div>}
+                      <span className="flex items-center justify-center">{item.icon}</span>
                       <span className="font-medium">{item.label}</span>
                       {isActive && <span className="ml-auto">→</span>}
                     </Link>
@@ -263,15 +271,15 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
           {/* System Stats */}
           <div className="mt-8 px-4">
-            <div className="glass-card p-4 rounded-xl space-y-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Metrics</h3>
+            <div className="bg-transparent border border-[rgba(255,255,255,0.06)] p-4 rounded-xl space-y-3">
+              <h3 className="text-xs font-semibold text-[#2D4A42] uppercase tracking-wider mb-2">Metrics</h3>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Uptime</span>
+                  <span className="text-[#2D4A42]">Uptime</span>
                   <span className="text-green-600 font-semibold">99.99%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Latency</span>
+                  <span className="text-[#2D4A42]">Latency</span>
                   <span className="text-blue-600 font-semibold">45ms</span>
                 </div>
               </div>
@@ -283,9 +291,9 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <button
               id="sa-logout-btn"
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all font-medium text-sm"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-[rgba(255,255,255,0.08)] transition-all font-medium text-sm"
             >
-              <span>🚪</span>
+              <span className="flex items-center justify-center"><LogOut size={20} /></span>
               <span>Sign Out</span>
             </button>
           </div>
@@ -301,7 +309,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               <div className="flex items-center gap-2 md:gap-6">
                 <div className="hidden lg:flex items-center gap-4">
                   <div className="glass px-3 md:px-4 py-2 rounded-lg">
-                    <span className="text-xs md:text-sm text-gray-600">Platform Status:</span>
+                    <span className="text-xs md:text-sm text-[#2D4A42]">Platform Status:</span>
                     <span className="text-green-600 font-semibold ml-2 text-xs md:text-sm">● Online</span>
                   </div>
                 </div>
@@ -340,8 +348,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                       </div>
                     )}
                     <div className="hidden sm:block text-left">
-                      <p className="text-xs md:text-sm font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">{adminName}</p>
-                      <p className="text-[10px] md:text-xs text-gray-600 hidden md:block">
+                      <p className="text-xs md:text-sm font-semibold text-[#1A2E2B] truncate max-w-[120px] sm:max-w-[200px]">{adminName}</p>
+                      <p className="text-[10px] md:text-xs text-[#2D4A42] hidden md:block">
                         {userRole === 'super_admin' ? 'Super Administrator' : 
                          userRole === 'admin' ? 'Hotel Administrator' : 
                          userRole === 'staff' ? 'Staff Member' : 'User'}

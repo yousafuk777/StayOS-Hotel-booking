@@ -63,7 +63,7 @@ export default function SuperAdminPage() {
         {/* Header */}
         <div className="fade-in">
           <h1 className="text-5xl font-bold gradient-text mb-2">Platform Overview</h1>
-          <p className="text-gray-600 text-lg">Real-time platform analytics and metrics</p>
+          <p className="text-[#2D4A42] text-lg">Real-time platform analytics and metrics</p>
         </div>
 
         {/* Key Metrics Cards */}
@@ -73,7 +73,7 @@ export default function SuperAdminPage() {
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Total Tenants</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Total Tenants</p>
                 <p className="text-5xl font-bold gradient-text">
                   {loading ? <Skeleton /> : stats?.total_tenants ?? 0}
                 </p>
@@ -91,7 +91,7 @@ export default function SuperAdminPage() {
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Total Users</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Total Users</p>
                 <p className="text-5xl font-bold gradient-text">
                   {loading ? <Skeleton /> : stats?.total_users ?? 0}
                 </p>
@@ -115,7 +115,7 @@ export default function SuperAdminPage() {
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Pending Tenants</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Pending Tenants</p>
                 <p className="text-5xl font-bold gradient-text">
                   {loading ? <Skeleton /> : pendingCount}
                 </p>
@@ -131,7 +131,7 @@ export default function SuperAdminPage() {
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Hotel Staff</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Hotel Staff</p>
                 <p className="text-5xl font-bold gradient-text">
                   {loading ? <Skeleton /> : (
                     Object.entries(stats?.role_counts ?? {})
@@ -162,7 +162,7 @@ export default function SuperAdminPage() {
               return (
                 <div key={item.label} className="glass p-5 rounded-xl border border-transparent hover:border-gray-200 transition-all">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold text-gray-700">{item.label}</span>
+                    <span className="font-semibold text-[#1A2E2B]">{item.label}</span>
                     <span className={`px-3 py-1 rounded-full text-sm font-bold ${item.color}`}>
                       {loading ? '—' : item.value}
                     </span>
@@ -173,7 +173,7 @@ export default function SuperAdminPage() {
                       style={{ width: loading ? '0%' : `${pct}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">{loading ? '—' : `${pct}% of total`}</p>
+                  <p className="text-xs text-[#2D4A42] mt-2">{loading ? '—' : `${pct}% of total`}</p>
                 </div>
               )
             })}
@@ -187,7 +187,7 @@ export default function SuperAdminPage() {
               <h2 className="text-3xl font-bold gradient-text flex items-center gap-3">
                 📋 Pending Tenant Applications
               </h2>
-              <p className="text-gray-600 mt-1">New hotel onboarding requests awaiting action</p>
+              <p className="text-[#2D4A42] mt-1">New hotel onboarding requests awaiting action</p>
             </div>
             <Link
               href="/super-admin/tenants"
@@ -202,7 +202,7 @@ export default function SuperAdminPage() {
               <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-600" />
             </div>
           ) : pendingTenants.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
+            <div className="text-center py-10 text-[#2D4A42]">
               <div className="text-5xl mb-3">🎉</div>
               <p className="font-semibold">No pending applications</p>
               <p className="text-sm">All tenants have been reviewed.</p>
@@ -219,8 +219,8 @@ export default function SuperAdminPage() {
                     <div className="flex items-center gap-4">
                       <div className="text-4xl">🏨</div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900">{tenant.name}</h3>
-                        <p className="text-gray-600">
+                        <h3 className="text-xl font-bold text-[#1A2E2B]">{tenant.name}</h3>
+                        <p className="text-[#2D4A42]">
                           {tenant.slug}.stayos.com &nbsp;•&nbsp;
                           <span className="capitalize">{tenant.plan}</span> plan &nbsp;•&nbsp;
                           {(tenant.commission_rate * 100).toFixed(1)}% commission
@@ -233,7 +233,7 @@ export default function SuperAdminPage() {
                       </span>
                       <Link
                         href="/super-admin/tenants"
-                        className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-gray-700 text-sm"
+                        className="glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-[#1A2E2B] text-sm"
                       >
                         Review →
                       </Link>
@@ -255,12 +255,12 @@ export default function SuperAdminPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { key: 'super_admin',    label: 'Super Admin',  icon: '🏛️', color: 'from-indigo-500 to-purple-600' },
-                { key: 'hotel_admin',    label: 'Hotel Admin',  icon: '🏨', color: 'from-blue-500 to-blue-600' },
-                { key: 'hotel_manager',  label: 'Manager',      icon: '📋', color: 'from-cyan-500 to-blue-500' },
-                { key: 'front_desk',     label: 'Front Desk',   icon: '🛎️', color: 'from-green-500 to-emerald-600' },
-                { key: 'housekeeping',   label: 'Housekeeping', icon: '🧹', color: 'from-yellow-500 to-orange-500' },
-                { key: 'guest',          label: 'Guests',       icon: '👤', color: 'from-pink-500 to-rose-600' },
+                { key: 'super_admin',    label: 'Super Admin',  icon: '🏛️', bg: '#0F6E56' },
+                { key: 'hotel_admin',    label: 'Hotel Admin',  icon: '🏨', bg: '#1D9E75' },
+                { key: 'hotel_manager',  label: 'Manager',      icon: '📋', bg: '#C8941A' },
+                { key: 'front_desk',     label: 'Front Desk',   icon: '🛎️', bg: '#A67A14' },
+                { key: 'housekeeping',   label: 'Housekeeping', icon: '🧹', bg: '#1A2E2B' },
+                { key: 'guest',          label: 'Guests',       icon: '👤', bg: '#4A6B63' },
               ].map((role) => {
                 const count = Object.entries(stats?.role_counts ?? {}).find(([k]) =>
                   k.includes(role.key)
@@ -268,7 +268,8 @@ export default function SuperAdminPage() {
                 return (
                   <div
                     key={role.key}
-                    className={`bg-gradient-to-br ${role.color} rounded-2xl p-5 text-white text-center shadow-lg`}
+                    className={`rounded-2xl p-5 text-white text-center shadow-lg`}
+                    style={{ backgroundColor: role.bg }}
                   >
                     <div className="text-4xl mb-2">{role.icon}</div>
                     <p className="text-3xl font-bold">{count}</p>

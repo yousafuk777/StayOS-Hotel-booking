@@ -174,7 +174,7 @@ export default function GuestsPage() {
               </button>
               <div className="flex-1 md:flex-none">
                 <h1 className="text-2xl md:text-3xl font-bold gradient-text">Guest Management</h1>
-                <p className="text-xs md:text-sm text-gray-600">View and manage all guests</p>
+                <p className="text-xs md:text-sm text-[#2D4A42]">View and manage all guests</p>
               </div>
             </div>
             
@@ -245,7 +245,7 @@ export default function GuestsPage() {
                   className={`px-3 md:px-4 py-2 rounded-xl font-medium text-sm transition-all ${
                     filter === item.id
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-gray-700'
+                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                   }`}
                 >
                   {item.label}
@@ -270,18 +270,18 @@ export default function GuestsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Guest</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Contact</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Total Stays</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Total Spent</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Last Visit</th>
-                  <th className="text-left py-4 px-4 font-semibold text-gray-700 text-sm">Actions</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Guest</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Contact</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Total Stays</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Total Spent</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Last Visit</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredGuests.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-gray-500">
+                    <td colSpan={6} className="text-center py-12 text-[#2D4A42]">
                       👥 No guests found matching your filters
                     </td>
                   </tr>
@@ -295,30 +295,30 @@ export default function GuestsPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-gray-900 text-sm">{guest.name}</p>
+                            <p className="font-semibold text-[#1A2E2B] text-sm">{guest.name}</p>
                             {guest.vip && <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">VIP</span>}
                           </div>
-                          <p className="text-xs text-gray-600">Guest ID: GST-{String(guest.id).padStart(5, '0')}</p>
+                          <p className="text-xs text-[#2D4A42]">Guest ID: GST-{String(guest.id).padStart(5, '0')}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-xs md:text-sm">
-                        <div className="text-gray-900">{guest.email}</div>
-                        <div className="text-gray-600">{guest.phone}</div>
+                        <div className="text-[#1A2E2B]">{guest.email}</div>
+                        <div className="text-[#2D4A42]">{guest.phone}</div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-700">{guest.stays} stays</td>
+                    <td className="py-4 px-4 text-sm text-[#1A2E2B]">{guest.stays} stays</td>
                     <td className="py-4 px-4">
                       <p className="font-semibold gradient-text text-sm">${guest.totalSpent.toLocaleString()}</p>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-700">{guest.lastVisit}</td>
+                    <td className="py-4 px-4 text-sm text-[#1A2E2B]">{guest.lastVisit}</td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-1 md:gap-2">
                         <button className="glass px-2 md:px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-xs md:text-sm font-medium text-blue-600" onClick={() => handleViewProfile(guest)}>
                           👁️
                         </button>
-                        <button className="glass px-2 md:px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-xs md:text-sm font-medium text-gray-600" onClick={() => {
+                        <button className="glass px-2 md:px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-xs md:text-sm font-medium text-[#2D4A42]" onClick={() => {
                           setSelectedGuest(guest)
                           setEditGuestData({
                             name: guest.name,
@@ -332,7 +332,7 @@ export default function GuestsPage() {
                         }}>
                           ✏️
                         </button>
-                        <button className="glass px-2 md:px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all text-xs md:text-sm font-medium text-gray-600" onClick={() => handleMessageGuest(guest)}>
+                        <button className="glass px-2 md:px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all text-xs md:text-sm font-medium text-[#2D4A42]" onClick={() => handleMessageGuest(guest)}>
                           📧
                         </button>
                       </div>
@@ -347,7 +347,7 @@ export default function GuestsPage() {
           {/* Mobile View - Card List */}
           <div className="md:hidden space-y-4">
             {filteredGuests.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-[#2D4A42]">
                 👥 No guests found matching your filters
               </div>
             ) : (
@@ -360,34 +360,34 @@ export default function GuestsPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-gray-900">{guest.name}</p>
+                          <p className="font-semibold text-[#1A2E2B]">{guest.name}</p>
                           {guest.vip && <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">VIP</span>}
                         </div>
-                        <p className="text-xs text-gray-600">GST-{String(guest.id).padStart(5, '0')}</p>
+                        <p className="text-xs text-[#2D4A42]">GST-{String(guest.id).padStart(5, '0')}</p>
                       </div>
                     </div>
                   </div>
                   
                   <div className="space-y-2 mb-4 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span className="text-gray-900 font-medium">{guest.email}</span>
+                      <span className="text-[#2D4A42]">Email:</span>
+                      <span className="text-[#1A2E2B] font-medium">{guest.email}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Phone:</span>
-                      <span className="text-gray-900 font-medium">{guest.phone}</span>
+                      <span className="text-[#2D4A42]">Phone:</span>
+                      <span className="text-[#1A2E2B] font-medium">{guest.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Stays:</span>
-                      <span className="text-gray-900 font-medium">{guest.stays}</span>
+                      <span className="text-[#2D4A42]">Stays:</span>
+                      <span className="text-[#1A2E2B] font-medium">{guest.stays}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Total Spent:</span>
+                      <span className="text-[#2D4A42]">Total Spent:</span>
                       <span className="gradient-text font-semibold">${guest.totalSpent.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Last Visit:</span>
-                      <span className="text-gray-900 font-medium">{guest.lastVisit}</span>
+                      <span className="text-[#2D4A42]">Last Visit:</span>
+                      <span className="text-[#1A2E2B] font-medium">{guest.lastVisit}</span>
                     </div>
                   </div>
 
@@ -395,7 +395,7 @@ export default function GuestsPage() {
                     <button className="flex-1 glass px-3 py-2 rounded-lg hover:bg-blue-50 transition-all text-xs font-medium text-blue-600" onClick={() => handleViewProfile(guest)}>
                       👁️ Profile
                     </button>
-                    <button className="flex-1 glass px-3 py-2 rounded-lg hover:bg-gray-100 transition-all text-xs font-medium text-gray-600" onClick={() => {
+                    <button className="flex-1 glass px-3 py-2 rounded-lg hover:bg-gray-100 transition-all text-xs font-medium text-[#2D4A42]" onClick={() => {
                       setSelectedGuest(guest)
                       setEditGuestData({
                         name: guest.name,
@@ -409,7 +409,7 @@ export default function GuestsPage() {
                     }}>
                       ✏️ Edit
                     </button>
-                    <button className="flex-1 glass px-3 py-2 rounded-lg hover:bg-gray-50 transition-all text-xs font-medium text-gray-600" onClick={() => handleMessageGuest(guest)}>
+                    <button className="flex-1 glass px-3 py-2 rounded-lg hover:bg-gray-50 transition-all text-xs font-medium text-[#2D4A42]" onClick={() => handleMessageGuest(guest)}>
                       📧 Msg
                     </button>
                   </div>
@@ -437,7 +437,7 @@ export default function GuestsPage() {
             <form onSubmit={handleAddGuest} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Full Name *
                   </label>
                   <input
@@ -451,7 +451,7 @@ export default function GuestsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Email Address *
                   </label>
                   <input
@@ -465,7 +465,7 @@ export default function GuestsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -479,7 +479,7 @@ export default function GuestsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     VIP Status
                   </label>
                   <label className="flex items-center gap-3 p-4 glass rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
@@ -489,7 +489,7 @@ export default function GuestsPage() {
                       onChange={(e) => setNewGuest({...newGuest, vip: e.target.checked})}
                       className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="font-medium text-gray-700 text-sm">Mark as VIP Guest</span>
+                    <span className="font-medium text-[#1A2E2B] text-sm">Mark as VIP Guest</span>
                   </label>
                 </div>
               </div>
@@ -535,8 +535,8 @@ export default function GuestsPage() {
                   {selectedGuest.name.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedGuest.name}</h3>
-                  <p className="text-gray-600 text-sm md:text-base">Guest ID: GST-{String(selectedGuest.id).padStart(5, '0')}</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-[#1A2E2B] mb-2">{selectedGuest.name}</h3>
+                  <p className="text-[#2D4A42] text-sm md:text-base">Guest ID: GST-{String(selectedGuest.id).padStart(5, '0')}</p>
                   {selectedGuest.vip && (
                     <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full inline-block mt-2">
                       ⭐ VIP Member
@@ -548,28 +548,28 @@ export default function GuestsPage() {
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Email Address</p>
-                  <p className="font-semibold text-gray-900 text-sm">{selectedGuest.email}</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Email Address</p>
+                  <p className="font-semibold text-[#1A2E2B] text-sm">{selectedGuest.email}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Phone Number</p>
-                  <p className="font-semibold text-gray-900 text-sm">{selectedGuest.phone}</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Phone Number</p>
+                  <p className="font-semibold text-[#1A2E2B] text-sm">{selectedGuest.phone}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Total Stays</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Total Stays</p>
                   <p className="font-bold text-xl md:text-2xl gradient-text">{selectedGuest.stays}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Total Spent</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Total Spent</p>
                   <p className="font-bold text-xl md:text-2xl gradient-text">${selectedGuest.totalSpent.toLocaleString()}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Last Visit</p>
-                  <p className="font-semibold text-gray-900 text-sm">{selectedGuest.lastVisit}</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Last Visit</p>
+                  <p className="font-semibold text-[#1A2E2B] text-sm">{selectedGuest.lastVisit}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Member Since</p>
-                  <p className="font-semibold text-gray-900 text-sm">2024</p>
+                  <p className="text-xs md:text-sm text-[#2D4A42] mb-1">Member Since</p>
+                  <p className="font-semibold text-[#1A2E2B] text-sm">2024</p>
                 </div>
               </div>
 
@@ -629,7 +629,7 @@ export default function GuestsPage() {
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Full Name *</label>
                   <input
                     type="text"
                     value={editGuestData.name}
@@ -641,7 +641,7 @@ export default function GuestsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Email Address *</label>
                     <input
                       type="email"
                       value={editGuestData.email}
@@ -652,7 +652,7 @@ export default function GuestsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Phone Number *</label>
                     <input
                       type="tel"
                       value={editGuestData.phone}
@@ -665,7 +665,7 @@ export default function GuestsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Stays *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Total Stays *</label>
                     <input
                       type="number"
                       value={editGuestData.stays}
@@ -677,7 +677,7 @@ export default function GuestsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Spent ($) *</label>
+                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Total Spent ($) *</label>
                     <input
                       type="number"
                       value={editGuestData.totalSpent}
@@ -697,7 +697,7 @@ export default function GuestsPage() {
                     onChange={(e) => setEditGuestData({ ...editGuestData, vip: e.target.checked })}
                     className="w-5 h-5 rounded accent-blue-600"
                   />
-                  <label htmlFor="vip-edit" className="text-sm font-semibold text-gray-700">VIP Guest</label>
+                  <label htmlFor="vip-edit" className="text-sm font-semibold text-[#1A2E2B]">VIP Guest</label>
                 </div>
 
                 <div className="pt-4 flex gap-3 flex-col md:flex-row">
@@ -738,14 +738,14 @@ export default function GuestsPage() {
             <div className="space-y-6">
               {/* Recipient Info */}
               <div className="glass p-4 rounded-xl border border-gray-200">
-                <p className="text-xs md:text-sm text-gray-600 mb-2">To:</p>
-                <p className="font-semibold text-gray-900 text-sm md:text-base">{selectedGuest.name}</p>
-                <p className="text-xs md:text-sm text-gray-600">{selectedGuest.email}</p>
+                <p className="text-xs md:text-sm text-[#2D4A42] mb-2">To:</p>
+                <p className="font-semibold text-[#1A2E2B] text-sm md:text-base">{selectedGuest.name}</p>
+                <p className="text-xs md:text-sm text-[#2D4A42]">{selectedGuest.email}</p>
               </div>
 
               {/* Message Input */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                   Message *
                 </label>
                 <textarea
@@ -756,7 +756,7 @@ export default function GuestsPage() {
                   rows={5}
                   required
                 />
-                <p className="text-xs text-gray-500 mt-2">{guestMessage.length} characters</p>
+                <p className="text-xs text-[#2D4A42] mt-2">{guestMessage.length} characters</p>
               </div>
 
               {/* Actions */}

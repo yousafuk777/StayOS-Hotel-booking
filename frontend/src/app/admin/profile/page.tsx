@@ -148,7 +148,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">👤 My Profile</h1>
-        <p className="text-gray-600">Manage your personal information and settings</p>
+        <p className="text-[#2D4A42]">Manage your personal information and settings</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -199,14 +199,14 @@ export default function ProfilePage() {
               )}
             </div>
             
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-[#1A2E2B]">
               {user.firstName} {user.lastName}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">{getRoleDisplay(user.role)}</p>
-            <p className="text-xs text-gray-500 mt-2">{user.email}</p>
+            <p className="text-sm text-[#2D4A42] mt-1">{getRoleDisplay(user.role)}</p>
+            <p className="text-xs text-[#2D4A42] mt-2">{user.email}</p>
 
             {isEditing && (
-              <div className="mt-4 text-sm text-gray-600">
+              <div className="mt-4 text-sm text-[#2D4A42]">
                 <p>💡 Click on your profile picture to change or remove it</p>
               </div>
             )}
@@ -221,18 +221,18 @@ export default function ProfilePage() {
 
           {/* Quick Stats */}
           <div className="glass-card rounded-2xl p-6 mt-6 slide-up">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Account Stats</h3>
+            <h3 className="text-lg font-bold text-[#1A2E2B] mb-4">📊 Account Stats</h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Member Since</span>
-                <span className="text-sm font-semibold text-gray-900">March 2026</span>
+                <span className="text-sm text-[#2D4A42]">Member Since</span>
+                <span className="text-sm font-semibold text-[#1A2E2B]">March 2026</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Last Login</span>
-                <span className="text-sm font-semibold text-gray-900">Today</span>
+                <span className="text-sm text-[#2D4A42]">Last Login</span>
+                <span className="text-sm font-semibold text-[#1A2E2B]">Today</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Status</span>
+                <span className="text-sm text-[#2D4A42]">Status</span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                   Active
                 </span>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium">{user.firstName}</p>
+                  <p className="text-[#1A2E2B] font-medium">{user.firstName}</p>
                 )}
               </div>
 
@@ -283,7 +283,7 @@ export default function ProfilePage() {
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium">{user.lastName}</p>
+                  <p className="text-[#1A2E2B] font-medium">{user.lastName}</p>
                 )}
               </div>
 
@@ -298,7 +298,7 @@ export default function ProfilePage() {
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium">{user.email}</p>
+                  <p className="text-[#1A2E2B] font-medium">{user.email}</p>
                 )}
               </div>
 
@@ -314,15 +314,15 @@ export default function ProfilePage() {
                     placeholder="+1 (555) 123-4567"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium">{user.phone || 'Not provided'}</p>
+                  <p className="text-[#1A2E2B] font-medium">{user.phone || 'Not provided'}</p>
                 )}
               </div>
 
               {/* Role (Read-only) */}
               <div>
                 <label className="form-label">Role</label>
-                <p className="text-gray-900 font-medium">{getRoleDisplay(user.role)}</p>
-                <p className="text-xs text-gray-500 mt-1">Contact administrator to change role</p>
+                <p className="text-[#1A2E2B] font-medium">{getRoleDisplay(user.role)}</p>
+                <p className="text-xs text-[#2D4A42] mt-1">Contact administrator to change role</p>
               </div>
             </div>
 
@@ -352,8 +352,8 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Password</p>
-                  <p className="text-sm text-gray-600">Last changed 30 days ago</p>
+                  <p className="font-semibold text-[#1A2E2B]">Password</p>
+                  <p className="text-sm text-[#2D4A42]">Last changed 30 days ago</p>
                 </div>
                 <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer text-sm font-medium">
                   Change Password
@@ -362,8 +362,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Two-Factor Authentication</p>
-                  <p className="text-sm text-gray-600">Add an extra layer of security</p>
+                  <p className="font-semibold text-[#1A2E2B]">Two-Factor Authentication</p>
+                  <p className="text-sm text-[#2D4A42]">Add an extra layer of security</p>
                 </div>
                 <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer text-sm font-medium">
                   Enable 2FA
@@ -372,8 +372,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Active Sessions</p>
-                  <p className="text-sm text-gray-600">Manage your logged-in devices</p>
+                  <p className="font-semibold text-[#1A2E2B]">Active Sessions</p>
+                  <p className="text-sm text-[#2D4A42]">Manage your logged-in devices</p>
                 </div>
                 <button className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer text-sm font-medium">
                   View Sessions
@@ -389,8 +389,8 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Email Notifications</p>
-                  <p className="text-sm text-gray-600">Receive booking updates via email</p>
+                  <p className="font-semibold text-[#1A2E2B]">Email Notifications</p>
+                  <p className="text-sm text-[#2D4A42]">Receive booking updates via email</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -400,8 +400,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Dark Mode</p>
-                  <p className="text-sm text-gray-600">Use dark theme across the platform</p>
+                  <p className="font-semibold text-[#1A2E2B]">Dark Mode</p>
+                  <p className="text-sm text-[#2D4A42]">Use dark theme across the platform</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" />
@@ -411,8 +411,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between p-4 glass rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Language</p>
-                  <p className="text-sm text-gray-600">Choose your preferred language</p>
+                  <p className="font-semibold text-[#1A2E2B]">Language</p>
+                  <p className="text-sm text-[#2D4A42]">Choose your preferred language</p>
                 </div>
                 <select className="glass px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option>English</option>

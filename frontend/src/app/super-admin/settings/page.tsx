@@ -82,7 +82,7 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">🔧 System Settings</h1>
-            <p className="text-gray-600">Configure your hotel management system</p>
+            <p className="text-[#2D4A42]">Configure your hotel management system</p>
           </div>
           <button
             onClick={handleSave}
@@ -104,7 +104,7 @@ export default function SettingsPage() {
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                  : 'glass hover:bg-gray-50 text-gray-700'
+                  : 'glass hover:bg-gray-50 text-[#1A2E2B]'
               }`}
             >
               <span>{tab.icon}</span>
@@ -384,8 +384,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">💳</div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Stripe</h3>
-                    <p className="text-sm text-gray-600">Accept credit card payments</p>
+                    <h3 className="text-xl font-bold text-[#1A2E2B]">Stripe</h3>
+                    <p className="text-sm text-[#2D4A42]">Accept credit card payments</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -431,8 +431,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">🅿️</div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">PayPal</h3>
-                    <p className="text-sm text-gray-600">Accept PayPal payments</p>
+                    <h3 className="text-xl font-bold text-[#1A2E2B]">PayPal</h3>
+                    <p className="text-sm text-[#2D4A42]">Accept PayPal payments</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -550,12 +550,12 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <input
                     type="color"
-                    defaultValue="#667eea"
+                    defaultValue="#0F6E56"
                     className="h-12 w-20 rounded-lg cursor-pointer border-2 border-gray-300"
                   />
                   <input
                     type="text"
-                    defaultValue="#667eea"
+                    defaultValue="#0F6E56"
                     className="input-field flex-1 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -566,12 +566,12 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <input
                     type="color"
-                    defaultValue="#764ba2"
+                    defaultValue="#C8941A"
                     className="h-12 w-20 rounded-lg cursor-pointer border-2 border-gray-300"
                   />
                   <input
                     type="text"
-                    defaultValue="#764ba2"
+                    defaultValue="#C8941A"
                     className="input-field flex-1 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -581,8 +581,8 @@ export default function SettingsPage() {
                 <label className="form-label">Hotel Logo</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
                   <div className="text-4xl mb-2">🖼️</div>
-                  <p className="text-gray-700 font-semibold mb-2">Drag & drop your logo here</p>
-                  <p className="text-sm text-gray-500 mb-4">or click to browse (PNG, JPG - Max 5MB)</p>
+                  <p className="text-[#1A2E2B] font-semibold mb-2">Drag & drop your logo here</p>
+                  <p className="text-sm text-[#2D4A42] mb-4">or click to browse (PNG, JPG - Max 5MB)</p>
                   <button className="btn-primary px-6 py-2 rounded-xl font-semibold cursor-pointer">
                     Upload Logo
                   </button>

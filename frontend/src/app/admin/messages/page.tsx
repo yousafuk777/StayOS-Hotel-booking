@@ -243,7 +243,7 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Messages & Communications</h1>
-        <p className="text-gray-600">Manage guest communications and internal messages</p>
+        <p className="text-[#2D4A42]">Manage guest communications and internal messages</p>
       </div>
 
       {/* Stats Cards */}
@@ -256,7 +256,7 @@ export default function MessagesPage() {
         >
           <div className="flex items-center justify-between text-left">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Total Messages</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Total Messages</p>
               <p className="text-4xl font-bold gradient-text">{activeMessages.length}</p>
             </div>
             <div className="text-5xl">💬</div>
@@ -270,7 +270,7 @@ export default function MessagesPage() {
         >
           <div className="flex items-center justify-between text-left">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Unread</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Unread</p>
               <p className="text-4xl font-bold gradient-text">{activeMessages.filter(m => !m.read).length}</p>
             </div>
             <div className="text-5xl">🔔</div>
@@ -284,7 +284,7 @@ export default function MessagesPage() {
         >
           <div className="flex items-center justify-between text-left">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Guest Messages</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Guest Messages</p>
               <p className="text-4xl font-bold gradient-text">{activeMessages.filter(m => m.type === 'guest').length}</p>
             </div>
             <div className="text-5xl">👤</div>
@@ -298,7 +298,7 @@ export default function MessagesPage() {
         >
           <div className="flex items-center justify-between text-left">
             <div>
-              <p className="text-gray-600 font-medium mb-2">Staff Messages</p>
+              <p className="text-[#2D4A42] font-medium mb-2">Staff Messages</p>
               <p className="text-4xl font-bold gradient-text">{activeMessages.filter(m => m.type === 'staff').length}</p>
             </div>
             <div className="text-5xl">👥</div>
@@ -313,7 +313,7 @@ export default function MessagesPage() {
             <div>
               <h2 className="text-2xl font-bold gradient-text">{showArchived ? 'Archived' : 'Inbox'}</h2>
               {messageFilter !== 'all' && !showArchived && (
-                <p className="text-sm text-gray-500 mt-1">Filtered: {messageFilter === 'unread' ? 'Unread Messages' : messageFilter === 'guest' ? 'Guest Messages' : 'Staff Messages'}</p>
+                <p className="text-sm text-[#2D4A42] mt-1">Filtered: {messageFilter === 'unread' ? 'Unread Messages' : messageFilter === 'guest' ? 'Guest Messages' : 'Staff Messages'}</p>
               )}
             </div>
             <div className="flex gap-3">
@@ -325,7 +325,7 @@ export default function MessagesPage() {
                 className={`px-6 py-3 rounded-xl font-semibold cursor-pointer transition-all ${
                   !showArchived 
                     ? 'btn-primary' 
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    : 'bg-gray-200 text-[#2D4A42] hover:bg-gray-300'
                 }`}
               >
                 ✏️ Compose Message
@@ -335,7 +335,7 @@ export default function MessagesPage() {
                 className={`px-6 py-3 rounded-xl font-semibold cursor-pointer transition-all ${
                   showArchived 
                     ? 'btn-primary' 
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    : 'bg-gray-200 text-[#2D4A42] hover:bg-gray-300'
                 }`}
               >
                 📦 Archived ({messages.filter(m => m.archived).length})
@@ -364,7 +364,7 @@ export default function MessagesPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className={`font-semibold ${!message.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3 className={`font-semibold ${!message.read ? 'text-[#1A2E2B]' : 'text-[#1A2E2B]'}`}>
                         {message.from}
                       </h3>
                       {!message.read && (
@@ -372,10 +372,10 @@ export default function MessagesPage() {
                           New
                         </span>
                       )}
-                      <span className="text-xs text-gray-500">{message.date}</span>
+                      <span className="text-xs text-[#2D4A42]">{message.date}</span>
                     </div>
-                    <p className="font-medium text-gray-900 mb-1">{message.subject}</p>
-                    <p className="text-gray-600 text-sm truncate">{message.preview}</p>
+                    <p className="font-medium text-[#1A2E2B] mb-1">{message.subject}</p>
+                    <p className="text-[#2D4A42] text-sm truncate">{message.preview}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -419,7 +419,7 @@ export default function MessagesPage() {
               className="glass p-4 rounded-xl hover:bg-gray-50 transition-all text-left cursor-pointer"
             >
               <span className="text-2xl mb-2 block">{template.icon}</span>
-              <span className="font-medium text-gray-700">{template.title}</span>
+              <span className="font-medium text-[#1A2E2B]">{template.title}</span>
             </button>
           ))}
         </div>
@@ -433,7 +433,7 @@ export default function MessagesPage() {
               <h3 className="text-2xl font-bold gradient-text">Compose Message</h3>
               <button
                 onClick={() => setShowComposeModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-[#4A6B63] hover:text-[#2D4A42] text-2xl"
               >
                 ×
               </button>
@@ -441,7 +441,7 @@ export default function MessagesPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
+                <label className="block text-sm font-medium text-[#1A2E2B] mb-2">To</label>
                 <input
                   type="text"
                   value={composeForm.to}
@@ -452,7 +452,7 @@ export default function MessagesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <label className="block text-sm font-medium text-[#1A2E2B] mb-2">Subject</label>
                 <input
                   type="text"
                   value={composeForm.subject}
@@ -463,7 +463,7 @@ export default function MessagesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <label className="block text-sm font-medium text-[#1A2E2B] mb-2">Message</label>
                 <textarea
                   value={composeForm.message}
                   onChange={(e) => setComposeForm({...composeForm, message: e.target.value})}
@@ -482,7 +482,7 @@ export default function MessagesPage() {
                 </button>
                 <button
                   onClick={() => setShowComposeModal(false)}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6 py-3 border border-gray-300 text-[#1A2E2B] rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -500,7 +500,7 @@ export default function MessagesPage() {
               <h3 className="text-2xl font-bold gradient-text">Reply to {replyingTo.from}</h3>
               <button
                 onClick={() => setShowReplyModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-[#4A6B63] hover:text-[#2D4A42] text-2xl"
               >
                 ×
               </button>
@@ -508,7 +508,7 @@ export default function MessagesPage() {
             
             {/* Original Message */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="text-sm text-gray-600 mb-2">
+              <div className="text-sm text-[#2D4A42] mb-2">
                 <strong>From:</strong> {replyingTo.from} • <strong>Subject:</strong> {replyingTo.subject}
               </div>
               <div className="text-gray-800 whitespace-pre-wrap">{replyingTo.preview}</div>
@@ -516,7 +516,7 @@ export default function MessagesPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Reply</label>
+                <label className="block text-sm font-medium text-[#1A2E2B] mb-2">Your Reply</label>
                 <textarea
                   value={replyForm.message}
                   onChange={(e) => setReplyForm({...replyForm, message: e.target.value})}
@@ -535,7 +535,7 @@ export default function MessagesPage() {
                 </button>
                 <button
                   onClick={() => setShowReplyModal(false)}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6 py-3 border border-gray-300 text-[#1A2E2B] rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>

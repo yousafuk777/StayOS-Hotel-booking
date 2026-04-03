@@ -32,7 +32,7 @@ export default function ReviewsPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Reviews Management</h1>
-                <p className="text-sm text-gray-600">Manage guest reviews and ratings</p>
+                <p className="text-sm text-[#2D4A42]">Manage guest reviews and ratings</p>
               </div>
             </div>
           </div>
@@ -108,8 +108,8 @@ export default function ReviewsPage() {
                   </div>
                 </div>
                 <div className="w-24 text-right">
-                  <span className="font-semibold text-gray-900">{rating.count}</span>
-                  <span className="text-sm text-gray-600 ml-2">({rating.percentage}%)</span>
+                  <span className="font-semibold text-[#1A2E2B]">{rating.count}</span>
+                  <span className="text-sm text-[#2D4A42] ml-2">({rating.percentage}%)</span>
                 </div>
               </div>
             ))}
@@ -126,8 +126,8 @@ export default function ReviewsPage() {
                     {review.guest.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900">{review.guest}</h3>
-                    <p className="text-sm text-gray-600">{review.date}</p>
+                    <h3 className="font-bold text-[#1A2E2B]">{review.guest}</h3>
+                    <p className="text-sm text-[#2D4A42]">{review.date}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -144,12 +144,12 @@ export default function ReviewsPage() {
                 </div>
               </div>
 
-              <p className="text-gray-700 mb-4 leading-relaxed">{review.comment}</p>
+              <p className="text-[#1A2E2B] mb-4 leading-relaxed">{review.comment}</p>
 
               {review.response && (
                 <div className="bg-blue-50 rounded-xl p-4 ml-16">
                   <p className="text-sm font-semibold text-blue-900 mb-1">Hotel Response:</p>
-                  <p className="text-gray-700">{review.response}</p>
+                  <p className="text-[#1A2E2B]">{review.response}</p>
                 </div>
               )}
 

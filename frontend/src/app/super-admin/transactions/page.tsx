@@ -39,7 +39,7 @@ export default function TransactionsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">💰 Transaction History</h1>
-            <p className="text-gray-600">Monitor all financial transactions and payments</p>
+            <p className="text-[#2D4A42]">Monitor all financial transactions and payments</p>
           </div>
           <button className="glass px-6 py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50 transition-all">
             📥 Export Report
@@ -62,7 +62,7 @@ export default function TransactionsPage() {
                 {stat.value}
               </span>
             </div>
-            <p className="text-sm text-gray-600 font-semibold mb-1">{stat.label}</p>
+            <p className="text-sm text-[#2D4A42] font-semibold mb-1">{stat.label}</p>
             <p className={`text-xs font-semibold ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
               {stat.change} from last month
             </p>
@@ -86,7 +86,7 @@ export default function TransactionsPage() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                   activeFilter === filter.id
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                    : 'glass hover:bg-gray-50 text-gray-700'
+                    : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                 }`}
               >
                 <span>{filter.icon}</span>
@@ -99,7 +99,7 @@ export default function TransactionsPage() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+              className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
             >
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
@@ -112,7 +112,7 @@ export default function TransactionsPage() {
               placeholder="Search transactions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none w-64"
+              className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none w-64"
             />
           </div>
         </div>
@@ -126,14 +126,14 @@ export default function TransactionsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Transaction ID</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Tenant</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Type</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Amount</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Method</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Date</th>
-                <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Transaction ID</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Type</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Amount</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Method</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Date</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -143,7 +143,7 @@ export default function TransactionsPage() {
                     <span className="font-mono text-sm font-semibold text-blue-600">{txn.id}</span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="font-semibold text-gray-900">{txn.tenant}</span>
+                    <span className="font-semibold text-[#1A2E2B]">{txn.tenant}</span>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -161,7 +161,7 @@ export default function TransactionsPage() {
                       {txn.amount > 0 ? '+' : ''}${Math.abs(txn.amount).toFixed(2)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">{txn.method}</td>
+                  <td className="py-4 px-4 text-[#2D4A42]">{txn.method}</td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       txn.status === 'completed'
@@ -173,13 +173,13 @@ export default function TransactionsPage() {
                       {txn.status.charAt(0).toUpperCase() + txn.status.slice(1)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">{txn.date}</td>
+                  <td className="py-4 px-4 text-[#2D4A42]">{txn.date}</td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button className="glass px-3 py-1 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer">
                         👁️ Details
                       </button>
-                      <button className="glass px-3 py-1 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600 cursor-pointer">
+                      <button className="glass px-3 py-1 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-[#2D4A42] cursor-pointer">
                         📄 Invoice
                       </button>
                     </div>
@@ -200,33 +200,33 @@ export default function TransactionsPage() {
           <button className="glass p-6 rounded-xl card-hover text-left group">
             <div className="flex items-center gap-3 mb-3">
               <div className="text-3xl group-hover:scale-110 transition-transform">💳</div>
-              <span className="font-semibold text-gray-900">Process Payment</span>
+              <span className="font-semibold text-[#1A2E2B]">Process Payment</span>
             </div>
-            <p className="text-sm text-gray-600">Manual payment entry</p>
+            <p className="text-sm text-[#2D4A42]">Manual payment entry</p>
           </button>
 
           <button className="glass p-6 rounded-xl card-hover text-left group">
             <div className="flex items-center gap-3 mb-3">
               <div className="text-3xl group-hover:scale-110 transition-transform">↩️</div>
-              <span className="font-semibold text-gray-900">Issue Refund</span>
+              <span className="font-semibold text-[#1A2E2B]">Issue Refund</span>
             </div>
-            <p className="text-sm text-gray-600">Process refund request</p>
+            <p className="text-sm text-[#2D4A42]">Process refund request</p>
           </button>
 
           <button className="glass p-6 rounded-xl card-hover text-left group">
             <div className="flex items-center gap-3 mb-3">
               <div className="text-3xl group-hover:scale-110 transition-transform">📊</div>
-              <span className="font-semibold text-gray-900">Generate Report</span>
+              <span className="font-semibold text-[#1A2E2B]">Generate Report</span>
             </div>
-            <p className="text-sm text-gray-600">Financial analytics</p>
+            <p className="text-sm text-[#2D4A42]">Financial analytics</p>
           </button>
 
           <button className="glass p-6 rounded-xl card-hover text-left group">
             <div className="flex items-center gap-3 mb-3">
               <div className="text-3xl group-hover:scale-110 transition-transform">🔍</div>
-              <span className="font-semibold text-gray-900">Dispute Mgmt</span>
+              <span className="font-semibold text-[#1A2E2B]">Dispute Mgmt</span>
             </div>
-            <p className="text-sm text-gray-600">Handle chargebacks</p>
+            <p className="text-sm text-[#2D4A42]">Handle chargebacks</p>
           </button>
         </div>
       </div>

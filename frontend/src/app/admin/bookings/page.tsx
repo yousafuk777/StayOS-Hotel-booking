@@ -111,11 +111,11 @@ export default function BookingsPage() {
     .reduce((sum, booking) => sum + booking.amount, 0)
 
   const STATUS_CONFIG: any = {
-    all: { label: 'All Bookings', color: 'bg-gray-100 text-gray-700' },
+    all: { label: 'All Bookings', color: 'bg-gray-100 text-[#1A2E2B]' },
     pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
     confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-700' },
     checked_in: { label: 'Checked In', color: 'bg-green-100 text-green-700' },
-    checked_out: { label: 'Checked Out', color: 'bg-gray-100 text-gray-600' },
+    checked_out: { label: 'Checked Out', color: 'bg-gray-100 text-[#2D4A42]' },
     cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
     'vip': { label: 'VIP', color: 'bg-purple-100 text-purple-700' },
   }
@@ -248,7 +248,7 @@ export default function BookingsPage() {
               </button>
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Bookings Management</h1>
-                <p className="text-sm text-gray-600">Manage all reservations</p>
+                <p className="text-sm text-[#2D4A42]">Manage all reservations</p>
               </div>
             </div>
             
@@ -289,7 +289,7 @@ export default function BookingsPage() {
                   className={`px-4 py-2 rounded-xl font-medium transition-all ${
                     filter === key
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-gray-700'
+                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                   }`}
                 >
                   {config.label}
@@ -304,7 +304,7 @@ export default function BookingsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   viewMode === 'list'
                     ? 'bg-white text-blue-600 shadow'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    : 'text-[#2D4A42] hover:bg-gray-50'
                 }`}
               >
                 ☰ List
@@ -314,7 +314,7 @@ export default function BookingsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   viewMode === 'calendar'
                     ? 'bg-white text-blue-600 shadow'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    : 'text-[#2D4A42] hover:bg-gray-50'
                 }`}
               >
                 📅 Calendar
@@ -380,7 +380,7 @@ export default function BookingsPage() {
               <select 
                 value={selectedRoom}
                 onChange={(e) => setSelectedRoom(e.target.value)}
-                className="glass px-4 py-2 rounded-xl text-gray-700 focus:outline-none cursor-pointer"
+                className="glass px-4 py-2 rounded-xl text-[#1A2E2B] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Rooms</option>
                 <option value="Deluxe Suite">Deluxe Suite</option>
@@ -398,26 +398,26 @@ export default function BookingsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Guest</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Room</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Dates</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Nights</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Guests</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Amount</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Guest</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Room</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Dates</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Nights</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Guests</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Amount</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
+                    <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-gray-500 italic animate-pulse">
+                      <td colSpan={8} className="text-center py-12 text-[#2D4A42] italic animate-pulse">
                         Loading bookings...
                       </td>
                     </tr>
                   ) : bookings.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-gray-500">
+                      <td colSpan={8} className="text-center py-12 text-[#2D4A42]">
                         📭 No bookings found
                       </td>
                     </tr>
@@ -433,26 +433,26 @@ export default function BookingsPage() {
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
                               {booking.guest.charAt(0)}
                             </div>
-                            <span className="font-medium text-gray-900">{booking.guest}</span>
+                            <span className="font-medium text-[#1A2E2B]">{booking.guest}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-gray-700">{booking.room}</td>
+                        <td className="py-4 px-4 text-[#1A2E2B]">{booking.room}</td>
                         <td className="py-4 px-4">
                           <div className="text-sm">
                             <div className="font-medium">{booking.checkin}</div>
-                            <div className="text-gray-500">→ {booking.checkout}</div>
+                            <div className="text-[#2D4A42]">→ {booking.checkout}</div>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-gray-700">{booking.nights}</td>
-                        <td className="py-4 px-4 text-gray-700">{booking.guests}</td>
-                        <td className="py-4 px-4 font-semibold text-gray-900">${booking.amount}</td>
+                        <td className="py-4 px-4 text-[#1A2E2B]">{booking.nights}</td>
+                        <td className="py-4 px-4 text-[#1A2E2B]">{booking.guests}</td>
+                        <td className="py-4 px-4 font-semibold text-[#1A2E2B]">${booking.amount}</td>
                         <td className="py-4 px-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             booking.status === 'vip' ? 'bg-purple-100 text-purple-700' :
                             booking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
                             booking.status === 'checked_in' ? 'bg-green-100 text-green-700' :
                             booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-gray-100 text-gray-600'
+                            'bg-gray-100 text-[#2D4A42]'
                           }`}>
                             {booking.status.replace('_', ' ').toUpperCase()}
                           </span>
@@ -462,7 +462,7 @@ export default function BookingsPage() {
                             <button className="glass px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600" onClick={() => handleViewBooking(booking)}>
                               👁️ View
                             </button>
-                            <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-gray-600" onClick={() => handleEditBooking(booking)}>
+                            <button className="glass px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium text-[#2D4A42]" onClick={() => handleEditBooking(booking)}>
                               ✏️ Edit
                             </button>
                           </div>
@@ -478,7 +478,7 @@ export default function BookingsPage() {
             <div className="text-center py-20">
               <div className="text-6xl mb-4">📅</div>
               <h3 className="text-2xl font-bold gradient-text mb-2">Calendar View</h3>
-              <p className="text-gray-600">Interactive booking calendar coming soon</p>
+              <p className="text-[#2D4A42]">Interactive booking calendar coming soon</p>
             </div>
           )}
         </div>
@@ -507,7 +507,7 @@ export default function BookingsPage() {
             <form onSubmit={handleAddBooking} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Guest Name *
                   </label>
                   <input
@@ -521,7 +521,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Email Address *
                   </label>
                   <input
@@ -535,7 +535,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -549,7 +549,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Number of Guests *
                   </label>
                   <input
@@ -564,7 +564,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Check-in Date *
                   </label>
                   <input
@@ -577,7 +577,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Check-out Date *
                   </label>
                   <input
@@ -590,7 +590,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Room Type *
                   </label>
                   <select
@@ -610,7 +610,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Booking Status *
                   </label>
                   <select
@@ -629,7 +629,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Special Requests
                   </label>
                   <textarea
@@ -688,14 +688,14 @@ export default function BookingsPage() {
                   {selectedBooking.guest.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{selectedBooking.guest}</h3>
-                  <p className="text-gray-600">Booking ID: BKG-{String(selectedBooking.id).padStart(5, '0')}</p>
+                  <h3 className="text-2xl font-bold text-[#1A2E2B] mb-2">{selectedBooking.guest}</h3>
+                  <p className="text-[#2D4A42]">Booking ID: BKG-{String(selectedBooking.id).padStart(5, '0')}</p>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block mt-2 ${
                     selectedBooking.status === 'vip' ? 'bg-purple-100 text-purple-700' :
                     selectedBooking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
                     selectedBooking.status === 'checked_in' ? 'bg-green-100 text-green-700' :
                     selectedBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-600'
+                    'bg-gray-100 text-[#2D4A42]'
                   }`}>
                     {selectedBooking.status.replace('_', ' ').toUpperCase()}
                   </span>
@@ -704,27 +704,27 @@ export default function BookingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Room Type</p>
-                  <p className="font-bold text-xl text-gray-900">{selectedBooking.room}</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Room Type</p>
+                  <p className="font-bold text-xl text-[#1A2E2B]">{selectedBooking.room}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Number of Guests</p>
-                  <p className="font-bold text-xl text-gray-900">{selectedBooking.guests}</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Number of Guests</p>
+                  <p className="font-bold text-xl text-[#1A2E2B]">{selectedBooking.guests}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Check-in Date</p>
-                  <p className="font-bold text-xl text-gray-900">{selectedBooking.checkin}</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Check-in Date</p>
+                  <p className="font-bold text-xl text-[#1A2E2B]">{selectedBooking.checkin}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Check-out Date</p>
-                  <p className="font-bold text-xl text-gray-900">{selectedBooking.checkout}</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Check-out Date</p>
+                  <p className="font-bold text-xl text-[#1A2E2B]">{selectedBooking.checkout}</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Duration</p>
-                  <p className="font-bold text-xl text-gray-900">{selectedBooking.nights} nights</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Duration</p>
+                  <p className="font-bold text-xl text-[#1A2E2B]">{selectedBooking.nights} nights</p>
                 </div>
                 <div className="glass p-4 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-1">Total Amount</p>
+                  <p className="text-sm text-[#2D4A42] mb-1">Total Amount</p>
                   <p className="font-bold text-3xl gradient-text">${selectedBooking.amount.toLocaleString()}</p>
                 </div>
               </div>
@@ -777,7 +777,7 @@ export default function BookingsPage() {
             <form onSubmit={handleUpdateBooking} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Guest Name *
                   </label>
                   <input
@@ -790,7 +790,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Room Type *
                   </label>
                   <select
@@ -809,7 +809,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Check-in Date *
                   </label>
                   <input
@@ -822,7 +822,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Check-out Date *
                   </label>
                   <input
@@ -835,7 +835,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Number of Guests *
                   </label>
                   <input
@@ -850,7 +850,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
                     Status *
                   </label>
                   <select

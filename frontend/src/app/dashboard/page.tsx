@@ -39,7 +39,7 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-8 card-hover slide-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Upcoming Bookings</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Upcoming Bookings</p>
                 <p className="text-5xl font-bold gradient-text">12</p>
               </div>
               <div className="text-6xl float">📅</div>
@@ -54,7 +54,7 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-8 card-hover slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Total Spent</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Total Spent</p>
                 <p className="text-5xl font-bold gradient-text">$2,450</p>
               </div>
               <div className="text-6xl float">💳</div>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-8 card-hover slide-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Loyalty Points</p>
+                <p className="text-[#2D4A42] font-medium mb-2">Loyalty Points</p>
                 <p className="text-5xl font-bold gradient-text">8,500</p>
               </div>
               <div className="text-6xl float">⭐</div>
@@ -103,13 +103,13 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">🏨</span>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-900">
+                        <h3 className="text-2xl font-bold text-[#1A2E2B]">
                           Grand Hotel New York
                         </h3>
-                        <p className="text-gray-600">Deluxe Room • 2 Guests</p>
+                        <p className="text-[#2D4A42]">Deluxe Room • 2 Guests</p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-3">
+                    <div className="flex flex-wrap gap-4 text-sm text-[#2D4A42] mt-3">
                       <div className="flex items-center gap-2">
                         <span>📅</span>
                         <span>Check-in: <strong>March 25, 2026</strong></span>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-right">
                       <p className="text-4xl font-bold gradient-text">$597</p>
-                      <p className="text-gray-500 text-sm">Total</p>
+                      <p className="text-[#2D4A42] text-sm">Total</p>
                     </div>
                     <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full font-semibold text-sm shadow-lg">
                       ✓ Confirmed
@@ -160,19 +160,19 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <a href="/search" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
               <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">🔍</div>
-              <p className="font-semibold text-gray-900">Search Hotels</p>
+              <p className="font-semibold text-[#1A2E2B]">Search Hotels</p>
             </a>
             <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
               <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">📅</div>
-              <p className="font-semibold text-gray-900">My Bookings</p>
+              <p className="font-semibold text-[#1A2E2B]">My Bookings</p>
             </a>
             <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
               <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⭐</div>
-              <p className="font-semibold text-gray-900">Reviews</p>
+              <p className="font-semibold text-[#1A2E2B]">Reviews</p>
             </a>
             <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
               <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⚙️</div>
-              <p className="font-semibold text-gray-900">Settings</p>
+              <p className="font-semibold text-[#1A2E2B]">Settings</p>
             </a>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold gradient-text mb-6 text-center">🎯 Loyalty Progress</h2>
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="text-center">
-              <p className="text-gray-600 mb-2">Points to Platinum Status</p>
+              <p className="text-[#2D4A42] mb-2">Points to Platinum Status</p>
               <div className="text-4xl font-bold gradient-text mb-4">1,500 / 10,000</div>
               <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
                 <div 
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                   style={{ width: '85%' }}
                 />
               </div>
-              <p className="text-sm text-gray-600 mt-2">You're 85% there! Keep earning points</p>
+              <p className="text-sm text-[#2D4A42] mt-2">You're 85% there! Keep earning points</p>
             </div>
           </div>
         </div>
