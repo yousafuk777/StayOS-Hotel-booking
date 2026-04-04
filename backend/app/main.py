@@ -1,11 +1,14 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.middleware.tenant import TenantMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine, async_session_maker
 from app.seed_db import seed_super_admin
 
+os.makedirs("uploads/rooms", exist_ok=True)
 
 app = FastAPI(
     title="StayOS API",
@@ -27,6 +30,7 @@ app.add_middleware(TenantMiddleware)
 
 # Routes
 app.include_router(api_router, prefix="/api/v1")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.on_event("startup")
