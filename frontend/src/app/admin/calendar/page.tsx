@@ -387,6 +387,7 @@ export default function CalendarPage() {
               </>
             )}
           </div>
+        </div>
 
         {/* Today's Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
