@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import StatCard from '../../../components/StatCard'
+import apiClient from '../../../services/apiClient'
 
 export default function StaffPage() {
   const [filter, setFilter] = useState('all')
@@ -12,30 +13,16 @@ export default function StaffPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStaff, setSelectedStaff] = useState<any>(null)
   
-  // Initialize staff from localStorage or use defaults
-  const [staff, setStaff] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedStaff = localStorage.getItem('staff')
-      if (storedStaff) {
-        try {
-          const parsed = JSON.parse(storedStaff)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed
-          }
-        } catch (e) {
-          console.error('Error loading staff from localStorage:', e)
-        }
-      }
+  const [staff, setStaff] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [toastMessage, setToastMessage] = useState('')
+  
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(''), 3000)
+      return () => clearTimeout(timer)
     }
-    // Default staff
-    return [
-      { id: 1, name: 'Maria Garcia', role: 'Housekeeping Manager', email: 'maria.g@hotel.com', phone: '+1 234 567 8901', status: 'active', avatar: 'MG' },
-      { id: 2, name: 'John Doe', role: 'Front Desk Supervisor', email: 'john.d@hotel.com', phone: '+1 234 567 8902', status: 'active', avatar: 'JD' },
-      { id: 3, name: 'Sarah Miller', role: 'Concierge', email: 'sarah.m@hotel.com', phone: '+1 234 567 8903', status: 'active', avatar: 'SM' },
-      { id: 4, name: 'Mike Johnson', role: 'Maintenance', email: 'mike.j@hotel.com', phone: '+1 234 567 8904', status: 'on_leave', avatar: 'MJ' },
-      { id: 5, name: 'Emily Davis', role: 'Restaurant Manager', email: 'emily.d@hotel.com', phone: '+1 234 567 8905', status: 'active', avatar: 'ED' },
-    ]
-  })
+  }, [toastMessage])
   
   const [newStaff, setNewStaff] = useState({
     name: '',
@@ -53,13 +40,46 @@ export default function StaffPage() {
     status: ''
   })
   
-  const router = useRouter()
-  
-  // Save staff to localStorage whenever they change
+  const ROLE_MAP: Record<string, string> = {
+    'Front Desk Agent': 'front_desk',
+    'Front Desk Supervisor': 'front_desk',
+    'Housekeeping Staff': 'housekeeping',
+    'Housekeeping Manager': 'housekeeping',
+    'Concierge': 'front_desk',
+    'Restaurant Manager': 'hotel_manager',
+    'Restaurant Staff': 'front_desk',
+    'Maintenance': 'housekeeping',
+    'Security': 'housekeeping',
+    'Manager': 'hotel_manager'
+  }
+
+  const fetchStaff = async () => {
+    try {
+      setLoading(true)
+      const { data } = await apiClient.get('/api/v1/staff/')
+      const mappedStaff = data.map((user: any) => ({
+        id: user.id,
+        name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+        role: user.role.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        rawRole: user.role,
+        email: user.email,
+        phone: user.phone || 'N/A',
+        status: user.is_active ? 'active' : 'inactive',
+        avatar: `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase(),
+        firstName: user.first_name,
+        lastName: user.last_name
+      }))
+      setStaff(mappedStaff)
+    } catch (error) {
+      console.error('Error fetching staff:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    console.log('Saving staff to localStorage:', staff.length, 'members')
-    localStorage.setItem('staff', JSON.stringify(staff))
-  }, [staff])
+    fetchStaff()
+  }, [])
 
   const STATUS_CONFIG: any = {
     active: { label: 'Active', color: 'bg-green-100 text-green-700' },
@@ -158,6 +178,19 @@ export default function StaffPage() {
           />
         </div>
 
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div className="fixed bottom-8 right-8 z-[100] slide-up">
+            <div className="glass px-8 py-4 rounded-2xl border-l-4 border-green-500 shadow-2xl flex items-center gap-3 bg-white">
+              <span className="text-2xl text-green-500">✓</span>
+              <div>
+                <p className="font-bold text-[#1A2E2B]">{toastMessage}</p>
+                <p className="text-xs text-[#2D4A42]">Success! Data sync complete.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="glass-card rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -220,6 +253,19 @@ export default function StaffPage() {
                     
                     return true
                   })
+                  
+                  if (loading) {
+                    return (
+                      <tr>
+                        <td colSpan={5} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-[#2D4A42] font-medium">Syncing with database...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  }
                   
                   if (filteredStaff.length === 0) {
                     return (
@@ -309,21 +355,35 @@ export default function StaffPage() {
               </button>
             </div>
 
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
               e.preventDefault()
-              const staffMember = {
-                id: staff.length + 1,
-                name: newStaff.name,
-                role: newStaff.role,
-                email: newStaff.email,
-                phone: newStaff.phone,
-                status: newStaff.status,
-                avatar: newStaff.name.split(' ').map(n => n[0]).join('').toUpperCase()
+              try {
+                setLoading(true)
+                const names = newStaff.name.split(' ')
+                const firstName = names[0]
+                const lastName = names.slice(1).join(' ') || '-'
+                
+                const staffData = {
+                  email: newStaff.email,
+                  first_name: firstName,
+                  last_name: lastName,
+                  role: ROLE_MAP[newStaff.role] || 'front_desk',
+                  phone: newStaff.phone || null,
+                  password: 'StayOS_Staff123!', // Default password
+                  is_active: newStaff.status === 'active'
+                }
+                
+                await apiClient.post('/api/v1/staff/', staffData)
+                await fetchStaff()
+                setShowAddModal(false)
+                setNewStaff({ name: '', role: 'Front Desk Agent', email: '', phone: '', status: 'active' })
+                setToastMessage('Staff member added successfully!')
+              } catch (error: any) {
+                console.error('Error adding staff:', error)
+                alert(error.response?.data?.detail || 'Failed to add staff member')
+              } finally {
+                setLoading(false)
               }
-              setStaff([...staff, staffMember])
-              // Staff member added successfully
-              setShowAddModal(false)
-              setNewStaff({ name: '', role: 'Front Desk Agent', email: '', phone: '', status: 'active' })
             }}>
               <div className="space-y-4">
                 <div>
@@ -432,23 +492,34 @@ export default function StaffPage() {
               </button>
             </div>
 
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
               e.preventDefault()
-              const updatedStaff = staff.map(member => 
-                member.id === selectedStaff.id ? {
-                  ...member,
-                  name: editStaffData.name,
-                  role: editStaffData.role,
+              try {
+                setLoading(true)
+                const names = editStaffData.name.split(' ')
+                const firstName = names[0]
+                const lastName = names.slice(1).join(' ') || '-'
+
+                const updateData = {
                   email: editStaffData.email,
-                  phone: editStaffData.phone,
-                  status: editStaffData.status,
-                  avatar: editStaffData.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                } : member
-              )
-              setStaff(updatedStaff)
-              // Staff member updated successfully
-              setShowEditModal(false)
-              setSelectedStaff(null)
+                  first_name: firstName,
+                  last_name: lastName,
+                  role: ROLE_MAP[editStaffData.role] || 'front_desk',
+                  phone: editStaffData.phone || null,
+                  is_active: editStaffData.status === 'active'
+                }
+
+                await apiClient.put(`/api/v1/staff/${selectedStaff.id}`, updateData)
+                await fetchStaff()
+                setShowEditModal(false)
+                setSelectedStaff(null)
+                setToastMessage('Staff member updated successfully!')
+              } catch (error: any) {
+                console.error('Error updating staff:', error)
+                alert(error.response?.data?.detail || 'Failed to update staff member')
+              } finally {
+                setLoading(false)
+              }
             }}>
               <div className="space-y-4">
                 <div>
