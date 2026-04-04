@@ -213,7 +213,7 @@ async def create_user(
     if data.role != UserRole.super_admin and data.tenant_id is None:
         raise HTTPException(
             status_code=400, 
-            detail=f"Tenant ID is required for role: {data.role}"
+            detail=f"Please assigned a Hotel! Tenant ID is required for role: {data.role}"
         )
 
     existing = await UserRepository.get_by_email(db, tenant_id=data.tenant_id, email=data.email)
