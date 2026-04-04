@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
 from app.models.booking import Booking, BookingRoom
+from app.models.room import Room
 from app.repositories.base import TenantScopedRepository
 
 
@@ -26,7 +27,7 @@ class BookingRepository(TenantScopedRepository):
             .where(Booking.tenant_id == tenant_id, Booking.is_deleted == False)
             .options(
                 selectinload(Booking.guest),
-                selectinload(Booking.rooms).selectinload(BookingRoom.room)
+                selectinload(Booking.rooms).selectinload(BookingRoom.room).selectinload(Room.category)
             )
         )
         
@@ -62,7 +63,7 @@ class BookingRepository(TenantScopedRepository):
             )
             .options(
                 selectinload(Booking.guest),
-                selectinload(Booking.rooms).selectinload(BookingRoom.room)
+                selectinload(Booking.rooms).selectinload(BookingRoom.room).selectinload(Room.category)
             )
         )
         result = await db.execute(stmt)
