@@ -40,6 +40,8 @@ export default function StaffPage() {
     status: ''
   })
   
+  const router = useRouter()
+
   const ROLE_MAP: Record<string, string> = {
     'Front Desk Agent': 'front_desk',
     'Front Desk Supervisor': 'front_desk',
@@ -106,6 +108,25 @@ export default function StaffPage() {
   }
 
   const stats = calculateStaffStats()
+
+  const handleDeleteStaff = async () => {
+    if (!selectedStaff) return
+    if (!window.confirm(`Are you sure you want to remove ${selectedStaff.name}? This action cannot be undone.`)) return
+    
+    try {
+      setLoading(true)
+      await apiClient.delete(`/api/v1/staff/${selectedStaff.id}`)
+      await fetchStaff()
+      setShowEditModal(false)
+      setSelectedStaff(null)
+      setToastMessage('Staff member removed successfully')
+    } catch (error: any) {
+      console.error('Error removing staff:', error)
+      alert(error.response?.data?.detail || 'Failed to remove staff member')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -590,19 +611,29 @@ export default function StaffPage() {
                   </select>
                 </div>
 
-                <div className="pt-4 flex gap-3">
+                <div className="pt-6 flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditModal(false)}
+                      className="flex-1 glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 btn-primary px-6 py-3 rounded-xl font-semibold"
+                    >
+                      ✓ Update Staff Member
+                    </button>
+                  </div>
+                  
                   <button
                     type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="flex-1 glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all"
+                    onClick={handleDeleteStaff}
+                    className="w-full py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50 transition-all border border-red-100 mt-2"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 btn-primary px-6 py-3 rounded-xl font-semibold"
-                  >
-                    ✓ Update Staff Member
+                    🗑️ Remove Staff Member
                   </button>
                 </div>
               </div>
