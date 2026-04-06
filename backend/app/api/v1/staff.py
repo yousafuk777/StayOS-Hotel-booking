@@ -23,6 +23,9 @@ async def read_staff(
             detail="Not enough permissions"
         )
     
+    if current_user.tenant_id is None:
+        return await UserRepository.get_all_staff_global(db)
+    
     staff = await UserRepository.get_tenant_staff(db, tenant_id=current_user.tenant_id)
     return staff
 
@@ -41,7 +44,12 @@ async def create_staff(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
         )
-    
+    if current_user.tenant_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Super Admin must select a tenant to create staff members."
+        )
+
     # Check if user already exists
     user = await UserRepository.get_by_email(db, tenant_id=current_user.tenant_id, email=staff_in.email)
     if user:
@@ -74,8 +82,11 @@ async def update_staff(
         )
     
     staff = await UserRepository.get_by_id(db, user_id=id)
-    if not staff or staff.tenant_id != current_user.tenant_id:
+    if not staff:
         raise HTTPException(status_code=404, detail="Staff member not found")
+        
+    if current_user.tenant_id is not None and staff.tenant_id != current_user.tenant_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions to update this staff member")
         
     update_data = staff_in.dict(exclude_unset=True)
     if "password" in update_data:
@@ -101,8 +112,11 @@ async def delete_staff(
         )
     
     staff = await UserRepository.get_by_id(db, user_id=id)
-    if not staff or staff.tenant_id != current_user.tenant_id:
+    if not staff:
         raise HTTPException(status_code=404, detail="Staff member not found")
+        
+    if current_user.tenant_id is not None and staff.tenant_id != current_user.tenant_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions to delete this staff member")
         
     await UserRepository.delete_global(db, user_id=id)
     return staff

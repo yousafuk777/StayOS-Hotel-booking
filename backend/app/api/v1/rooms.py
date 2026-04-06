@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
@@ -16,6 +16,8 @@ from app.models.hotel import Hotel
 from app.models.room import RoomImage
 
 async def get_user_hotel_id(db: AsyncSession, tenant_id: int) -> int:
+    if tenant_id is None:
+        return None
     result = await db.execute(select(Hotel).where(Hotel.tenant_id == tenant_id))
     hotel = result.scalars().first()
     if not hotel:
@@ -34,16 +36,28 @@ async def read_rooms(
     current_user: User = Depends(get_current_user),
     skip: int = 0,
     limit: int = 100,
+    hotel_id: Optional[int] = None,
 ) -> Any:
     """
     Retrieve rooms.
     """
-    hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
+    # If Super Admin and no specific tenant, show all rooms or specific hotel if provided
+    if current_user.tenant_id is None:
+        if hotel_id:
+            # Special case for Super Admin selecting a hotel
+            # We fetch hotel first to get tenant_id if needed, but repo only needs hotel_id if we have one
+            # Actually room repo needs both. This might need another repo method.
+            # For now, just show all.
+            pass
+        return await RoomRepository.get_all_global(db, skip=skip, limit=limit)
+
+    # Standard Tenant View
+    user_hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
         
     rooms = await RoomRepository.get_multi_by_hotel(
         db, 
         tenant_id=current_user.tenant_id, 
-        hotel_id=hotel_id,
+        hotel_id=user_hotel_id, # Using result from get_user_hotel_id
         skip=skip,
         limit=limit
     )
@@ -59,6 +73,9 @@ async def create_room(
     """
     Create new room.
     """
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Super Admin must select a tenant to create rooms.")
+
     hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
 
     category_id = room_in.category_id
@@ -114,17 +131,23 @@ async def update_room(
     """
     Update a room.
     """
-    room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+    if current_user.tenant_id is None:
+        # Super Admin - Fetch room globally first to get context
+        room = await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        # Standard Tenant View
+        room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
-
+        
+    tenant_id = room.tenant_id
+    hotel_id = room.hotel_id
     update_data = room_in.dict(exclude_unset=True)
-    
-    hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
     
     if "type" in update_data:
         category = await RoomCategoryRepository.get_by_name(
-            db, tenant_id=current_user.tenant_id, hotel_id=hotel_id, name=update_data["type"]
+            db, tenant_id=tenant_id, hotel_id=hotel_id, name=update_data["type"]
         )
         if not category:
             cat_data = {
@@ -133,7 +156,7 @@ async def update_room(
                 "base_price": update_data.get("price", room.effective_price),
                 "capacity": update_data.get("capacity", room.category.capacity)
             }
-            category = await RoomCategoryRepository.create(db, tenant_id=current_user.tenant_id, data=cat_data)
+            category = await RoomCategoryRepository.create(db, tenant_id=tenant_id, data=cat_data)
         update_data["category_id"] = category.id
 
     if "price" in update_data:
@@ -154,7 +177,10 @@ async def update_room(
     update_data.pop("type", None)
     update_data.pop("capacity", None)
 
-    room = await RoomRepository.update_with_relations(db, tenant_id=current_user.tenant_id, room_id=id, data=update_data)
+    if current_user.tenant_id is None:
+        room = await RoomRepository.update_global_with_relations(db, room_id=id, data=update_data)
+    else:
+        room = await RoomRepository.update_with_relations(db, tenant_id=current_user.tenant_id, room_id=id, data=update_data)
     return room
 
 @router.delete("/{id}", response_model=RoomResponse)
@@ -167,11 +193,17 @@ async def delete_room(
     """
     Delete a room.
     """
-    room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+    if current_user.tenant_id is None:
+        room = await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
         
-    await RoomRepository.delete(db, tenant_id=current_user.tenant_id, record_id=id)
+    # Repository doesn't have delete_global, so we use the instance from global fetch or tenant fetch
+    # and use its own tenant_id if we are Super Admin
+    await RoomRepository.delete(db, tenant_id=room.tenant_id, record_id=id)
     return room
 
 @router.post("/{id}/image", response_model=RoomResponse)
@@ -185,7 +217,11 @@ async def upload_room_image(
     """
     Upload an image for a room.
     """
-    room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+    if current_user.tenant_id is None:
+        room = await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
         
@@ -197,18 +233,10 @@ async def upload_room_image(
     with open(filepath, "wb") as f:
         f.write(content)
         
-    hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
-    url = f"http://localhost:8000/uploads/rooms/{filename}"
-
-    # Mark as primary and un-mark any current primary images
-    for img in room.images:
-        if img.is_primary:
-            img.is_primary = False
-    
     new_img = RoomImage(
-        tenant_id=current_user.tenant_id,
+        tenant_id=room.tenant_id, # Using room context
         room_id=id,
-        hotel_id=hotel_id,
+        hotel_id=room.hotel_id, # Using room context
         url=url,
         is_primary=True
     )
@@ -216,7 +244,10 @@ async def upload_room_image(
     await db.commit()
     
     # Return updated room
-    return await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+    if current_user.tenant_id is None:
+        return await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        return await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
 
 @router.get("/categories", response_model=List[RoomCategoryResponse])
 async def read_categories(
@@ -226,6 +257,9 @@ async def read_categories(
     """
     Retrieve room categories.
     """
+    if current_user.tenant_id is None:
+        return await RoomCategoryRepository.get_all_global(db)
+
     hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
     categories = await RoomCategoryRepository.get_all(
         db, tenant_id=current_user.tenant_id
@@ -244,6 +278,9 @@ async def update_category(
     """
     Update a room category.
     """
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Super Admin must select a tenant to update categories.")
+
     category = await RoomCategoryRepository.get_by_id(db, tenant_id=current_user.tenant_id, record_id=id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")

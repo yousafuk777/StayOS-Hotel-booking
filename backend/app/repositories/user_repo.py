@@ -82,6 +82,25 @@ class UserRepository(TenantScopedRepository):
         return result.scalars().all()
 
     @classmethod
+    async def get_all_staff_global(cls, db: AsyncSession):
+        """Get all staff members across all tenants (excluding guests)."""
+        from app.models.user import UserRole
+        # Exclude only guests for global view, Super Admins can be seen by other Super Admins if needed
+        # but usually we want to see hotel-level staff.
+        excluded_roles = [UserRole.guest]
+        result = await db.execute(
+            select(User)
+            .where(
+                and_(
+                    User.role.not_in(excluded_roles),
+                    User.is_deleted == False
+                )
+            )
+            .order_by(User.created_at.desc())
+        )
+        return result.scalars().all()
+
+    @classmethod
     async def get_count(cls, db: AsyncSession):
         """Get total user count across all tenants."""
         result = await db.execute(

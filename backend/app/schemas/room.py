@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from decimal import Decimal
+from app.schemas.staff import StaffResponse
 
 # --- Room Category Schemas ---
 
@@ -57,6 +58,13 @@ class RoomBase(BaseModel):
     status: str = "available"
     custom_price: Optional[Decimal] = None
     notes: Optional[str] = None
+    
+    # Housekeeping fields
+    housekeeping_status: str = "clean"
+    housekeeping_priority: str = "normal"
+    housekeeping_progress: int = 100
+    assigned_staff_id: Optional[int] = None
+    housekeeping_task: str = "Clean room"
 
 class RoomCreate(RoomBase):
     category_id: Optional[int] = None
@@ -76,6 +84,13 @@ class RoomUpdate(BaseModel):
     price: Optional[Decimal] = None
     capacity: Optional[int] = None
     amenities: Optional[List[str]] = None
+    
+    # Housekeeping fields
+    housekeeping_status: Optional[str] = None
+    housekeeping_priority: Optional[str] = None
+    housekeeping_progress: Optional[int] = None
+    assigned_staff_id: Optional[int] = None
+    housekeeping_task: Optional[str] = None
 
 class RoomResponse(RoomBase):
     id: int
@@ -85,6 +100,7 @@ class RoomResponse(RoomBase):
     
     category: RoomCategoryResponse
     images: List[RoomImageResponse] = []
+    assigned_staff: Optional[StaffResponse] = None
     
     class Config:
         from_attributes = True
