@@ -16,6 +16,8 @@ export default function AdminPage() {
   ]
 
   const [bookings, setBookings] = useState<any[]>([])
+  const [arrivals, setArrivals] = useState<any[]>([])
+  const [roomStatus, setRoomStatus] = useState<any>(null)
   const [stats, setStats] = useState<any>(null)
   const [isHydrated, setIsHydrated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -26,28 +28,64 @@ export default function AdminPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
+      setStatsLoading(true)
+      
       try {
+        // Fetch core data (bookings and stats) as priority
         const [bookingsRes, statsRes] = await Promise.all([
-          api.get('/api/v1/bookings/pending'),
-          api.get('/api/v1/bookings/stats')
+          api.get('/api/v1/bookings/pending').catch(err => {
+            console.error('Pending bookings fetch failed:', err)
+            return { data: { bookings: [] } }
+          }),
+          api.get('/api/v1/bookings/stats').catch(err => {
+            console.error('Stats fetch failed:', err)
+            return { data: null }
+          })
         ])
 
-        const bookingData = bookingsRes.data.bookings.map((b: any) => ({
-          id: b.id,
-          guest: b.guest_name,
-          room: b.room_type,
-          checkin: b.check_in_date.split('T')[0],
-          checkout: b.check_out_date.split('T')[0],
-          nights: b.nights,
-          amount: parseFloat(b.total_amount),
-          status: b.status,
-          guests: b.num_guests
-        }))
+        // Handle bookings (fallback to mock only if fetch truly fails and returns empty)
+        const rawBookings = bookingsRes.data?.bookings || []
+        if (rawBookings.length > 0) {
+          const bookingData = rawBookings.map((b: any) => ({
+            id: b.id,
+            guest: b.guest_name,
+            room: b.room_type,
+            checkin: b.check_in_date?.split('T')[0] || 'N/A',
+            checkout: b.check_out_date?.split('T')[0] || 'N/A',
+            nights: b.nights,
+            amount: parseFloat(b.total_amount),
+            status: b.status,
+            guests: b.num_guests
+          }))
+          setBookings(bookingData)
+        } else if (!bookingsRes.data) {
+           setBookings(defaultBookings)
+        } else {
+           setBookings([])
+        }
         
-        setBookings(bookingData)
-        setStats(statsRes.data)
+        if (statsRes.data) {
+          setStats(statsRes.data)
+        }
+
+        // Fetch secondary data (arrivals and room status)
+        const [arrivalsRes, roomStatusRes] = await Promise.all([
+          api.get('/api/v1/bookings/arrivals').catch(err => {
+            console.error('Arrivals fetch failed:', err)
+            return { data: { bookings: [] } }
+          }),
+          api.get('/api/v1/rooms/dashboard-summary').catch(err => {
+            console.error('Room summary fetch failed:', err)
+            return { data: null }
+          })
+        ])
+
+        setArrivals(arrivalsRes.data?.bookings || [])
+        setRoomStatus(roomStatusRes.data)
+
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
+        console.error('Critical error fetching dashboard data:', error)
         setBookings(defaultBookings)
       } finally {
         setLoading(false)
@@ -275,39 +313,41 @@ export default function AdminPage() {
             <h2 className="text-2xl font-bold gradient-text flex items-center gap-3">
               🎯 Today's Arrivals
             </h2>
-            <span className="text-sm text-[#2D4A42] font-medium">18 guests</span>
+            <span className="text-sm text-[#2D4A42] font-medium">{arrivals.length} guests</span>
           </div>
           
-          <div className="space-y-4">
-            {[
-              { name: 'Robert Taylor', time: '2:00 PM', room: '301', type: 'Deluxe' },
-              { name: 'Lisa Anderson', time: '3:30 PM', room: '502', type: 'Executive' },
-              { name: 'David Wilson', time: '4:00 PM', room: '205', type: 'Standard' },
-              { name: 'Maria Garcia', time: '5:00 PM', room: 'PH1', type: 'Penthouse', vip: true },
-            ].map((arrival, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-4 glass p-4 rounded-xl slide-up"
-                style={{ animationDelay: `${0.9 + index * 0.1}s` }}
-              >
-                <div className="text-3xl">{arrival.vip ? '👑' : '🎫'}</div>
-                <div className="flex-1">
-                  <p className="font-semibold text-[#1A2E2B]">{arrival.name}</p>
-                  <p className="text-sm text-[#2D4A42]">Room {arrival.room} • {arrival.type}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-[#1A2E2B]">{arrival.time}</p>
-                  <button 
-                    onClick={() => {
-                      // Checking in guest
-                    }}
-                    className="text-xs text-blue-600 font-medium hover:underline cursor-pointer"
-                  >
-                    Check-in →
-                  </button>
-                </div>
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {arrivals.length === 0 ? (
+              <div className="text-center py-12 glass rounded-xl text-[#2D4A42]">
+                <p className="text-4xl mb-2">🎈</p>
+                <p className="font-medium">No more arrivals today!</p>
               </div>
-            ))}
+            ) : (
+              arrivals.map((arrival, index) => (
+                <div
+                  key={arrival.id}
+                  className="flex items-center gap-4 glass p-4 rounded-xl slide-up"
+                  style={{ animationDelay: `${0.9 + index * 0.1}s` }}
+                >
+                  <div className="text-3xl">{arrival.status === 'vip' ? '👑' : '🎫'}</div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-[#1A2E2B]">{arrival.guest_name}</p>
+                    <p className="text-sm text-[#2D4A42]">Room {arrival.room_number || 'TBD'} • {arrival.room_type}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-[#1A2E2B]">
+                      {new Date(arrival.check_in_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <button 
+                      onClick={() => router.push(`/admin/bookings?id=${arrival.id}`)}
+                      className="text-xs text-blue-600 font-medium hover:underline cursor-pointer"
+                    >
+                      Check-in →
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -327,36 +367,39 @@ export default function AdminPage() {
           
           <div className="grid grid-cols-3 gap-4">
             {[
-              { status: 'Clean', count: 45, color: 'from-green-500 to-green-600', icon: '✓' },
-              { status: 'Dirty', count: 12, color: 'from-red-500 to-red-600', icon: '✕' },
-              { status: 'Inspect', count: 8, color: 'from-orange-500 to-orange-600', icon: '⚠️' },
-            ].map((room, index) => (
+              { status: 'Clean', count: roomStatus?.status_counts?.Clean || 0, color: 'from-green-500 to-green-600', icon: '✓' },
+              { status: 'Dirty', count: roomStatus?.status_counts?.Dirty || 0, color: 'from-red-500 to-red-600', icon: '✕' },
+              { status: 'Inspect', count: roomStatus?.status_counts?.Inspect || 0, color: 'from-orange-500 to-orange-600', icon: '⚠️' },
+            ].map((statusData, index) => (
               <div
                 key={index}
-                className={`bg-gradient-to-br ${room.color} rounded-xl p-6 text-white text-center card-hover`}
+                className={`bg-gradient-to-br ${statusData.color} rounded-xl p-6 text-white text-center card-hover shadow-lg`}
               >
-                <div className="text-4xl mb-2">{room.icon}</div>
-                <div className="text-4xl font-bold mb-1">{room.count}</div>
-                <div className="text-sm opacity-90">{room.status}</div>
+                <div className="text-4xl mb-2">{statusData.icon}</div>
+                <div className="text-4xl font-bold mb-1">{statusData.count}</div>
+                <div className="text-sm opacity-90">{statusData.status}</div>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 space-y-3">
-            <h3 className="font-semibold text-[#1A2E2B] mb-3">Priority Rooms</h3>
-            {[
-              { room: '301', status: 'Cleaning in progress', eta: '15 mins' },
-              { room: '502', status: 'Awaiting inspection', eta: 'Ready soon' },
-            ].map((task, index) => (
-              <div key={index} className="flex items-center gap-3 glass p-3 rounded-xl">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="font-semibold text-[#1A2E2B]">Room {task.room}</p>
-                  <p className="text-sm text-[#2D4A42]">{task.status}</p>
+          <div className="mt-8 space-y-3">
+            <h3 className="font-semibold text-[#1A2E2B] mb-3 flex items-center gap-2">
+              🔥 Priority Housekeeping
+            </h3>
+            {!roomStatus?.priority_rooms || roomStatus.priority_rooms.length === 0 ? (
+              <p className="text-sm text-[#2D4A42] italic">No immediate priority tasks.</p>
+            ) : (
+              roomStatus.priority_rooms.map((task: any, index: number) => (
+                <div key={index} className="flex items-center gap-3 glass p-4 rounded-xl border-l-4 border-orange-500">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-[#1A2E2B]">Room {task.room_number}</p>
+                    <p className="text-sm text-[#2D4A42]">{task.status}</p>
+                  </div>
+                  <span className="text-xs font-bold text-orange-600 bg-orange-50 rounded px-2 py-1 uppercase">{task.eta}</span>
                 </div>
-                <span className="text-xs font-medium text-orange-600">{task.eta}</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

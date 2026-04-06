@@ -38,10 +38,26 @@ class Room(BaseModel):
     custom_price = Column(DECIMAL(10, 2))  # Override category base_price if set
     notes = Column(Text)
 
+    # Housekeeping fields
+    housekeeping_status = Column(
+        String(20),
+        nullable=False,
+        default="clean"  # clean, dirty, cleaning, inspection, maintenance
+    )
+    housekeeping_priority = Column(
+        String(20),
+        nullable=False,
+        default="normal"  # normal, high, vip
+    )
+    housekeeping_progress = Column(Integer, default=100)
+    assigned_staff_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    housekeeping_task = Column(String(100), default="Clean room")
+
     # Relationships
     tenant = relationship("Tenant")
     hotel = relationship("Hotel", back_populates="rooms")
     category = relationship("RoomCategory", back_populates="rooms")
+    assigned_staff = relationship("User", foreign_keys=[assigned_staff_id])
     images = relationship("RoomImage", back_populates="room", cascade="all, delete-orphan")
     booking_rooms = relationship("BookingRoom", back_populates="room", cascade="all, delete-orphan")
 

@@ -8,6 +8,38 @@ from app.models.user import User
 
 router = APIRouter()
 
+def format_booking_response(b):
+    """Helper to format a Booking ORM object into a BookingResponse compatible dict."""
+    guest_name = f"{b.guest.first_name} {b.guest.last_name}" if b.guest else "Unknown"
+    room_type = b.rooms[0].room.category.name if b.rooms and b.rooms[0].room and b.rooms[0].room.category else "Unknown"
+    room_number = b.rooms[0].room.room_number if b.rooms and b.rooms[0].room else "TBD"
+    
+    return {
+        "id": b.id,
+        "tenant_id": b.tenant_id,
+        "hotel_id": b.hotel_id,
+        "guest_id": b.guest_id,
+        "reference_number": b.reference_number,
+        "check_in_date": b.check_in_date,
+        "check_out_date": b.check_out_date,
+        "nights": b.nights,
+        "num_guests": b.num_guests,
+        "status": b.status,
+        "room_total": b.room_total,
+        "addon_total": b.addon_total or 0,
+        "discount_amount": b.discount_amount or 0,
+        "tax_amount": b.tax_amount or 0,
+        "total_amount": b.total_amount,
+        "special_requests": b.special_requests,
+        "cancellation_reason": b.cancellation_reason,
+        "cancelled_at": b.cancelled_at,
+        "confirmed_at": b.confirmed_at,
+        "created_at": b.created_at,
+        "updated_at": b.updated_at,
+        "guest_name": guest_name,
+        "room_type": room_type,
+        "room_number": room_number
+    }
 
 @router.get("/", response_model=BookingListResponse)
 async def get_bookings(
@@ -26,41 +58,7 @@ async def get_bookings(
         search=search
     )
     # Map to include guest name and room type for simpler frontend consumption
-    # In a real app, this mapping would be done in the repository or via a more complex query
-    formatted_bookings = []
-    for b in bookings:
-        # Assuming guest relationship is loaded
-        guest_name = f"{b.guest.first_name} {b.guest.last_name}" if b.guest else "Unknown"
-        room_type = b.rooms[0].room.category.name if b.rooms and b.rooms[0].room and b.rooms[0].room.category else "Unknown"
-        
-        # Create response dict to match schema
-        b_dict = {
-            "id": b.id,
-            "tenant_id": b.tenant_id,
-            "hotel_id": b.hotel_id,
-            "guest_id": b.guest_id,
-            "reference_number": b.reference_number,
-            "check_in_date": b.check_in_date,
-            "check_out_date": b.check_out_date,
-            "nights": b.nights,
-            "num_guests": b.num_guests,
-            "status": b.status,
-            "room_total": b.room_total,
-            "addon_total": b.addon_total,
-            "discount_amount": b.discount_amount,
-            "tax_amount": b.tax_amount,
-            "total_amount": b.total_amount,
-            "special_requests": b.special_requests,
-            "cancellation_reason": b.cancellation_reason,
-            "cancelled_at": b.cancelled_at,
-            "confirmed_at": b.confirmed_at,
-            "created_at": b.created_at,
-            "updated_at": b.updated_at,
-            "guest_name": guest_name,
-            "room_type": room_type
-        }
-        formatted_bookings.append(b_dict)
-        
+    formatted_bookings = [format_booking_response(b) for b in bookings]
     return {"bookings": formatted_bookings, "total": len(formatted_bookings)}
 
 
@@ -74,35 +72,21 @@ async def get_pending_bookings(
     tenant_id = request.state.tenant_id or current_user.tenant_id
     bookings = await BookingRepository.get_pending_bookings(db, tenant_id=tenant_id)
     
-    formatted_bookings = []
-    for b in bookings:
-        guest_name = f"{b.guest.first_name} {b.guest.last_name}" if b.guest else "Unknown"
-        room_type = b.rooms[0].room.category.name if b.rooms and b.rooms[0].room and b.rooms[0].room.category else "Unknown"
-        
-        b_dict = {
-            "id": b.id,
-            "tenant_id": b.tenant_id,
-            "hotel_id": b.hotel_id,
-            "guest_id": b.guest_id,
-            "reference_number": b.reference_number,
-            "check_in_date": b.check_in_date,
-            "check_out_date": b.check_out_date,
-            "nights": b.nights,
-            "num_guests": b.num_guests,
-            "status": b.status,
-            "room_total": b.room_total,
-            "addon_total": b.addon_total,
-            "discount_amount": b.discount_amount,
-            "tax_amount": b.tax_amount,
-            "total_amount": b.total_amount,
-            "special_requests": b.special_requests,
-            "created_at": b.created_at,
-            "updated_at": b.updated_at,
-            "guest_name": guest_name,
-            "room_type": room_type
-        }
-        formatted_bookings.append(b_dict)
-        
+    formatted_bookings = [format_booking_response(b) for b in bookings]
+    return {"bookings": formatted_bookings, "total": len(formatted_bookings)}
+
+
+@router.get("/arrivals", response_model=BookingListResponse)
+async def get_today_arrivals(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(RequireHotelAdmin)
+):
+    """Get all bookings checking in today for the current tenant."""
+    tenant_id = request.state.tenant_id or current_user.tenant_id
+    bookings = await BookingRepository.get_today_arrivals(db, tenant_id=tenant_id)
+    
+    formatted_bookings = [format_booking_response(b) for b in bookings]
     return {"bookings": formatted_bookings, "total": len(formatted_bookings)}
 
 

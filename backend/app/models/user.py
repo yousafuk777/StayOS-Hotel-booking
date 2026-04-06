@@ -31,6 +31,7 @@ class User(BaseModel):
     )
     is_active = Column(Boolean, nullable=False, default=True)
     is_verified = Column(Boolean, nullable=False, default=False)
+    is_vip = Column(Boolean, nullable=False, default=False)
 
     # Relationships
     tenant = relationship("Tenant", back_populates="users")

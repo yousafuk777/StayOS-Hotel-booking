@@ -12,8 +12,11 @@ const userSchema = z.object({
   last_name: z.string().min(2, 'Last name is required'),
   role: z.string(),
   password: z.string().min(8, 'Password must be at least 8 characters').optional().or(z.literal('')),
-  tenant_id: z.coerce.number().nullable().optional(),
+  tenant_id: z.any().transform(v => (v === "" || v === "null" || v === null || v === undefined) ? null : Number(v)),
   is_active: z.boolean().default(true),
+}).refine(data => data.role === 'super_admin' || (data.tenant_id !== null && data.tenant_id !== undefined && !isNaN(data.tenant_id)), {
+  message: "Hotel assignment is required for staff roles",
+  path: ["tenant_id"]
 })
 
 type UserFormValues = z.infer<typeof userSchema>
@@ -158,13 +161,17 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Assign to Hotel (Tenant)</label>
+                <label className="text-sm font-semibold text-[#1A2E2B] ml-1">
+                  Assign to Hotel (Tenant)
+                  <span className="text-xs text-[#2D4A42] font-normal ml-2 italic">(Required for Staff)</span>
+                </label>
                 <select {...register('tenant_id')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
                   <option value="">Platform (No Tenant)</option>
                   {tenants.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
+                {errors.tenant_id && <p className="text-xs text-red-500 ml-1">{errors.tenant_id.message}</p>}
               </div>
             </div>
 
