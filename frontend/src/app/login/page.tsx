@@ -42,6 +42,18 @@ export default function LoginPage() {
       localStorage.removeItem('tenant_id')
       localStorage.removeItem('profile_picture')
 
+      const overrideKey = `profile_override_${data.user.id || data.user.email || 'default'}`
+      const storedOverride = localStorage.getItem(overrideKey)
+      if (storedOverride) {
+        const override = JSON.parse(storedOverride)
+        if (override.user) {
+          data.user = { ...data.user, ...override.user }
+        }
+        if (override.profile_picture) {
+          localStorage.setItem('profile_picture', override.profile_picture)
+        }
+      }
+
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('user', JSON.stringify(data.user))
 
