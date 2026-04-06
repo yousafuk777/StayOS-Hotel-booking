@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1 import auth, super_admin, rooms, staff
-from app.api.v1 import bookings
+from app.api.v1 import bookings, guests
 
 # Create main API router
 api_router = APIRouter()
@@ -10,6 +10,7 @@ api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 api_router.include_router(rooms.router, prefix="/rooms", tags=["Rooms"])
 api_router.include_router(staff.router, prefix="/staff", tags=["Staff"])
+api_router.include_router(guests.router, prefix="/guests", tags=["Guests"])
 
 # Include platform management routes
 api_router.include_router(super_admin.router, prefix="/super-admin", tags=["Super Admin"])
