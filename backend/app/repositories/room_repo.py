@@ -129,3 +129,54 @@ class RoomRepository(TenantScopedRepository[Room]):
     async def update_with_relations(cls, db: AsyncSession, tenant_id: int, room_id: int, data: Dict[str, Any]) -> Room:
         obj = await super().update(db, tenant_id, room_id, data)
         return await cls.get_with_relations(db, tenant_id, obj.id) if obj else None
+
+    @classmethod
+    async def get_dashboard_summary(cls, db: AsyncSession, tenant_id: int):
+        """Get summary of room statuses for the dashboard."""
+        from sqlalchemy import func
+        from app.models.booking import Booking, BookingRoom
+        from datetime import datetime
+        
+        # 1. Get counts by status
+        status_stmt = (
+            select(cls.model.status, func.count(cls.model.id))
+            .where(cls.model.tenant_id == tenant_id, cls.model.is_deleted == False)
+            .group_by(cls.model.status)
+        )
+        status_result = await db.execute(status_stmt)
+        # Handle decimal/int conversion if necessary
+        status_counts = {row[0]: int(row[1]) for row in status_result.all()}
+        
+        # 2. Get priority rooms (Dirty rooms that have a check-in today)
+        today = datetime.utcnow().date()
+        priority_stmt = (
+            select(cls.model)
+            .join(BookingRoom, cls.model.id == BookingRoom.room_id)
+            .join(Booking, BookingRoom.booking_id == Booking.id)
+            .where(
+                cls.model.tenant_id == tenant_id,
+                cls.model.status.in_(['Dirty', 'Cleanup', 'Inspect']),
+                func.date(Booking.check_in_date) == today,
+                Booking.status.in_(['confirmed', 'pending', 'vip']),
+                cls.model.is_deleted == False
+            )
+            .order_by(Booking.check_in_date.asc())
+            .limit(5)
+        )
+        priority_result = await db.execute(priority_stmt)
+        priority_rooms = priority_result.scalars().all()
+        
+        return {
+            "status_counts": {
+                "Clean": status_counts.get("Available", 0) + status_counts.get("Clean", 0) + status_counts.get("Ready", 0),
+                "Dirty": status_counts.get("Dirty", 0) + status_counts.get("Cleanup", 0) + status_counts.get("Occupied", 0),
+                "Inspect": status_counts.get("Inspect", 0) + status_counts.get("Maintenance", 0),
+            },
+            "priority_rooms": [
+                {
+                    "room_number": r.room_number,
+                    "status": r.status,
+                    "eta": "Priority" if r.status == 'Dirty' else "Review"
+                } for r in priority_rooms
+            ]
+        }

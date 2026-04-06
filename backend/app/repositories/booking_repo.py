@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, and_, func
 from sqlalchemy.orm import selectinload
+from datetime import datetime
 from app.models.booking import Booking, BookingRoom
 from app.models.room import Room
 from app.repositories.base import TenantScopedRepository
@@ -70,6 +71,29 @@ class BookingRepository(TenantScopedRepository):
         return result.scalars().unique().all()
 
     @classmethod
+    async def get_today_arrivals(cls, db: AsyncSession, tenant_id: int):
+        """Get bookings checking in today for the dashboard."""
+        from datetime import datetime
+        today = datetime.utcnow().date()
+        
+        stmt = (
+            select(cls.model)
+            .where(
+                cls.model.tenant_id == tenant_id,
+                func.date(cls.model.check_in_date) == today,
+                cls.model.status.in_(['confirmed', 'pending', 'vip']),
+                cls.model.is_deleted == False
+            )
+            .options(
+                selectinload(cls.model.guest),
+                selectinload(cls.model.rooms).selectinload(BookingRoom.room).selectinload(Room.category)
+            )
+            .order_by(cls.model.check_in_date.asc())
+        )
+        result = await db.execute(stmt)
+        return result.scalars().unique().all()
+
+    @classmethod
     async def get_dashboard_stats(cls, db: AsyncSession, tenant_id: int):
         """Calculate dashboard statistics for a tenant."""
         from sqlalchemy import func
@@ -115,12 +139,23 @@ class BookingRepository(TenantScopedRepository):
         checked_in_res = await db.execute(checked_in_stmt)
         checked_in_count = checked_in_res.scalar() or 0
         
+        # Calculate dynamic occupancy rate
+        from app.models.room import Room
+        total_rooms_stmt = select(func.count(Room.id)).where(
+            Room.tenant_id == tenant_id,
+            Room.is_deleted == False
+        )
+        total_rooms_res = await db.execute(total_rooms_stmt)
+        total_rooms = total_rooms_res.scalar() or 1 # Avoid division by zero
+        
+        occupancy_rate = (checked_in_count / total_rooms) * 100
+        
         return {
             "revenue_this_month": float(revenue_this_month),
             "bookings_this_month": bookings_this_month,
             "pending_count": pending_count,
             "checked_in_count": checked_in_count,
-            "occupancy_rate": 78, # Hardcoded for now until Room availability logic is added
+            "occupancy_rate": min(100.0, float(occupancy_rate)), 
         }
 
     @classmethod

@@ -58,9 +58,10 @@ class BookingResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    # Include guest info for display
+    # Include guest and room info for display
     guest_name: Optional[str] = None
     room_type: Optional[str] = None
+    room_number: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

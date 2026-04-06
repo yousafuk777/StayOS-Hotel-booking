@@ -249,6 +249,19 @@ async def upload_room_image(
     else:
         return await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
 
+@router.get("/dashboard-summary")
+async def get_dashboard_summary(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get room status summary for the dashboard.
+    """
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Super Admin must select a tenant for dashboard summary.")
+        
+    return await RoomRepository.get_dashboard_summary(db, tenant_id=current_user.tenant_id)
+
 @router.get("/categories", response_model=List[RoomCategoryResponse])
 async def read_categories(
     db: AsyncSession = Depends(get_db),
