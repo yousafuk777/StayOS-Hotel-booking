@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function ProfilePage() {
@@ -8,6 +8,15 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const [isImageEditorOpen, setIsImageEditorOpen] = useState(false)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 200, height: 200 })
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const editorCanvasRef = useRef<HTMLCanvasElement>(null)
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
@@ -40,6 +49,15 @@ export default function ProfilePage() {
     }
   }, [])
 
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [cameraStream])
+
   const handleSave = async () => {
     setIsSaving(true)
     // Simulate API call
@@ -55,7 +73,7 @@ export default function ProfilePage() {
     setIsSaving(false)
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       // Check file size (max 5MB)
@@ -70,13 +88,11 @@ export default function ProfilePage() {
         return
       }
       
-      // Convert to base64 and store
+      // Convert to base64 and open editor
       const reader = new FileReader()
       reader.onloadend = () => {
-        setProfilePic(reader.result as string)
-      }
-      reader.onerror = () => {
-        alert('Error reading file')
+        setUploadedImage(reader.result as string)
+        setIsImageEditorOpen(true)
       }
       reader.readAsDataURL(file)
     }
@@ -85,6 +101,86 @@ export default function ProfilePage() {
   const removeProfilePic = () => {
     setProfilePic(null)
     localStorage.removeItem('profile_picture')
+  }
+
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        } 
+      })
+      setCameraStream(stream)
+      setIsCameraOpen(true)
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Unable to access camera. Please check permissions and try again.')
+    }
+  }
+
+  const closeCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop())
+      setCameraStream(null)
+    }
+    setIsCameraOpen(false)
+  }
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      const context = canvas.getContext('2d')
+      
+      if (context) {
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        context.drawImage(video, 0, 0)
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.8)
+        setCapturedImage(imageData)
+        setIsImageEditorOpen(true)
+        closeCamera()
+      }
+    }
+  }
+
+  const closeImageEditor = () => {
+    setIsImageEditorOpen(false)
+    setCapturedImage(null)
+    setUploadedImage(null)
+    setCropArea({ x: 0, y: 0, width: 200, height: 200 })
+  }
+
+  const applyCrop = () => {
+    if (editorCanvasRef.current) {
+      const canvas = editorCanvasRef.current
+      const context = canvas.getContext('2d')
+      
+      if (context) {
+        const image = new Image()
+        image.onload = () => {
+          canvas.width = cropArea.width
+          canvas.height = cropArea.height
+          context.drawImage(
+            image,
+            cropArea.x, cropArea.y, cropArea.width, cropArea.height,
+            0, 0, cropArea.width, cropArea.height
+          )
+          
+          const croppedImage = canvas.toDataURL('image/jpeg', 0.8)
+          setProfilePic(croppedImage)
+          closeImageEditor()
+        }
+        image.src = capturedImage || uploadedImage || ''
+      }
+    }
   }
 
   const getRoleDisplay = (role: string) => {
@@ -146,15 +242,23 @@ export default function ProfilePage() {
 
             {isEditing && (
               <div className="mt-4 space-y-3">
-                <label className="btn-primary px-6 py-2 rounded-xl font-semibold cursor-pointer w-full inline-block">
-                  📷 {profilePic ? 'Change Photo' : 'Upload Photo'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
+                <div className="flex gap-3">
+                  <label className="btn-primary px-4 py-2 rounded-xl font-semibold cursor-pointer flex-1 text-center">
+                    📁 Upload Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    onClick={openCamera}
+                    className="btn-primary px-4 py-2 rounded-xl font-semibold cursor-pointer flex-1"
+                  >
+                    📷 Take Photo
+                  </button>
+                </div>
                 <p className="text-xs text-[#2D4A42] mt-2">Max 5MB • JPG, PNG, GIF</p>
               </div>
             )}
@@ -373,6 +477,97 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Camera Modal */}
+      {isCameraOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-[#1A2E2B]">📷 Take Profile Photo</h3>
+              <button
+                onClick={closeCamera}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="relative mb-4">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full rounded-xl"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={capturePhoto}
+                className="flex-1 btn-primary py-3 rounded-xl font-semibold cursor-pointer"
+              >
+                📸 Capture Photo
+              </button>
+              <button
+                onClick={closeCamera}
+                className="flex-1 glass py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Editor Modal */}
+      {isImageEditorOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-[#1A2E2B]">✂️ Edit Profile Photo</h3>
+              <button
+                onClick={closeImageEditor}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <img
+                src={capturedImage || uploadedImage || ''}
+                alt="Edit"
+                className="w-full max-h-96 object-contain rounded-xl border-2 border-gray-200"
+              />
+              <canvas ref={editorCanvasRef} className="hidden" />
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-[#2D4A42] mb-2">💡 Drag to adjust crop area (basic cropping - full image will be used for now)</p>
+              <div className="flex gap-2 text-xs text-[#2D4A42]">
+                <span>📏 Image will be cropped to square format</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={applyCrop}
+                className="flex-1 btn-primary py-3 rounded-xl font-semibold cursor-pointer"
+              >
+                ✓ Apply & Save
+              </button>
+              <button
+                onClick={closeImageEditor}
+                className="flex-1 glass py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
