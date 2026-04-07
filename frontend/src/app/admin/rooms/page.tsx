@@ -155,10 +155,13 @@ export default function RoomsPage() {
 
   const STATUS_CONFIG: any = {
     clean: { label: 'Clean', color: 'bg-green-500', icon: '✓' },
+    available: { label: 'Available', color: 'bg-green-500', icon: '✓' },
     dirty: { label: 'Dirty', color: 'bg-red-500', icon: '✕' },
+    occupied: { label: 'Occupied', color: 'bg-blue-500', icon: '👥' },
     inspection: { label: 'Inspection', color: 'bg-orange-500', icon: '⚠️' },
     maintenance: { label: 'Maintenance', color: 'bg-purple-500', icon: '🔧' },
     cleaning: { label: 'Cleaning', color: 'bg-yellow-500', icon: '🧹' },
+    unknown: { label: 'Unknown', color: 'bg-gray-500', icon: '❓' },
   }
 
   return (
@@ -405,8 +408,8 @@ export default function RoomsPage() {
                 
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4 flex items-center gap-2">
-                  <span className={`${STATUS_CONFIG[room.status].color} text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg`}>
-                    {STATUS_CONFIG[room.status].icon} {STATUS_CONFIG[room.status].label}
+                  <span className={`${(STATUS_CONFIG[room.status] || STATUS_CONFIG.unknown).color} text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg`}>
+                    {(STATUS_CONFIG[room.status] || STATUS_CONFIG.unknown).icon} {(STATUS_CONFIG[room.status] || STATUS_CONFIG.unknown).label}
                   </span>
                 </div>
 
