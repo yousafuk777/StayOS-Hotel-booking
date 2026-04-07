@@ -189,7 +189,7 @@ export default function AdminPage() {
         />
         <StatCard
           label="Occupancy Rate"
-          value={statsLoading ? '...' : `${stats?.occupancy_rate || 0}%`}
+          value={statsLoading ? '...' : `${Number(stats?.occupancy_rate || 0).toFixed(1)}%`}
           icon="📊"
           color="orange"
           subtext="All rooms"
