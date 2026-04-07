@@ -8,7 +8,9 @@ from app.core.config import settings
 from app.core.database import Base, engine, async_session_maker
 from app.seed_db import seed_super_admin
 
-os.makedirs("uploads/rooms", exist_ok=True)
+# Ensure upload directories exist
+for folder in ["rooms", "hotels"]:
+    os.makedirs(f"uploads/{folder}", exist_ok=True)
 
 app = FastAPI(
     title="StayOS API",

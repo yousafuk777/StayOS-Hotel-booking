@@ -1,11 +1,73 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import apiClient from '../../../services/apiClient'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general')
+  const [loading, setLoading] = useState(false)
+  const [hotel, setHotel] = useState<any>(null)
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    fetchHotel()
+  }, [])
+
+  const fetchHotel = async () => {
+    try {
+      setLoading(true)
+      const { data } = await apiClient.get('/api/v1/hotels/mine')
+      setHotel(data)
+    } catch (error) {
+      console.error('Error fetching hotel:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateHotel = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setSaving(true)
+      await apiClient.patch('/api/v1/hotels/mine', {
+        name: hotel.name,
+        description: hotel.description,
+        address_line1: hotel.address_line1,
+        phone: hotel.phone,
+        email: hotel.email,
+        website: hotel.website
+      })
+      setToast('Settings saved successfully!')
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      alert('Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      setSaving(true)
+      const { data } = await apiClient.post(`/api/v1/hotels/${hotel.id}/image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setHotel({ ...hotel, image_url: data.image_url })
+      setToast('Logo updated!')
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('Failed to upload image')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -27,12 +89,11 @@ export default function SettingsPage() {
             </div>
             
             <button 
-              onClick={() => {
-                // Settings saved successfully
-              }}
-              className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
+              onClick={handleUpdateHotel}
+              disabled={saving}
+              className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer disabled:opacity-50"
             >
-              💾 Save Changes
+              {saving ? '⏳ Saving...' : '💾 Save Changes'}
             </button>
           </div>
         </div>
@@ -72,43 +133,56 @@ export default function SettingsPage() {
           {/* Settings Content */}
           <div className="lg:col-span-2">
             {/* General Information */}
-            {activeTab === 'general' && (
-              <div className="glass-card rounded-2xl p-8 slide-up">
-                <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
-                  ℹ️ General Information
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Hotel Name</label>
-                    <input
-                      type="text"
-                      defaultValue="Grand Plaza Hotel"
-                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none"
-                    />
+            {activeTab === 'general' && hotel && (
+              <div className="space-y-6">
+                <div className="glass-card rounded-2xl p-8 slide-up">
+                  <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
+                    🖼️ Property Branding
+                  </h2>
+                  <div className="flex flex-col items-center gap-6 p-6 glass rounded-2xl border-2 border-dashed border-gray-100">
+                    <div className="relative group">
+                      <div className="w-48 h-48 rounded-[2rem] bg-gray-50 overflow-hidden shadow-xl border-4 border-white">
+                        {hotel.image_url ? (
+                          <img src={`http://localhost:8000${hotel.image_url}`} alt="Hotel Logo" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🏨</div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                             onClick={() => document.getElementById('hotel-image')?.click()}>
+                          <span className="text-white font-bold">Change Image</span>
+                        </div>
+                      </div>
+                    </div>
+                    <input id="hotel-image" type="file" className="hidden" accept="image/*" 
+                           onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
+                    <div className="text-center">
+                      <p className="font-bold text-[#1A2E2B]">Primary Property Photo</p>
+                      <p className="text-sm text-[#2D4A42]">Visible on landing pages and discovery cards</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Description</label>
-                    <textarea
-                      rows={4}
-                      defaultValue="Luxury hotel in the heart of the city offering world-class amenities and exceptional service."
-                      className="input-field w-full px-4 py-3 rounded-xl focus:outline-none resize-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                </div>
+
+                <div className="glass-card rounded-2xl p-8 slide-up">
+                  <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
+                    ℹ️ General Information
+                  </h2>
+                  <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Check-in Time</label>
+                      <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Hotel Name</label>
                       <input
-                        type="time"
-                        defaultValue="15:00"
+                        type="text"
+                        value={hotel.name}
+                        onChange={(e) => setHotel({ ...hotel, name: e.target.value })}
                         className="input-field w-full px-4 py-3 rounded-xl focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Check-out Time</label>
-                      <input
-                        type="time"
-                        defaultValue="11:00"
-                        className="input-field w-full px-4 py-3 rounded-xl focus:outline-none"
+                      <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">Description</label>
+                      <textarea
+                        rows={4}
+                        value={hotel.description || ''}
+                        onChange={(e) => setHotel({ ...hotel, description: e.target.value })}
+                        className="input-field w-full px-4 py-3 rounded-xl focus:outline-none resize-none"
                       />
                     </div>
                   </div>

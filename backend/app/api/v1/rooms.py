@@ -230,9 +230,11 @@ async def upload_room_image(
     filename = f"{uuid.uuid4()}.{ext}"
     filepath = os.path.join("uploads", "rooms", filename)
     
+    # Save file
     with open(filepath, "wb") as f:
         f.write(content)
         
+    url = f"/uploads/rooms/{filename}"
     new_img = RoomImage(
         tenant_id=room.tenant_id, # Using room context
         room_id=id,
