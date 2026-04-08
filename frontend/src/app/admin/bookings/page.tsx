@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import StatCard from '../../../components/StatCard'
 import api from '../../../services/api'
+import { useBookings } from '../../../context/BookingsContext'
 
 interface Booking {
   id: number
@@ -18,8 +19,7 @@ interface Booking {
 }
 
 export default function BookingsPage() {
-  const [filter, setFilter] = useState('all')
-  const [bookingStatsFilter, setBookingStatsFilter] = useState<'all' | 'total' | 'pending' | 'checkedin' | 'revenue'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'vip'>('all')
   const [viewMode, setViewMode] = useState('list')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
@@ -28,48 +28,19 @@ export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRoom, setSelectedRoom] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<any>(null)
   const router = useRouter()
 
-  const [bookings, setBookings] = useState<Booking[]>([])
+  // Use global bookings context
+  const { bookings: globalBookings, stats: globalStats, refreshBookings, addBookingToLocal } = useBookings()
+  const [bookings, setBookings] = useState<Booking[]>(globalBookings)
+  const [stats, setStats] = useState(globalStats)
 
-  const fetchBookings = async () => {
-    setLoading(true)
-    try {
-      const [bookingsRes, statsRes] = await Promise.all([
-        api.get('/api/v1/bookings', {
-          params: {
-            status: filter !== 'all' ? filter : undefined,
-            search: searchQuery || undefined
-          }
-        }),
-        api.get('/api/v1/bookings/stats')
-      ])
-      
-      const bookingData = bookingsRes.data.bookings.map((b: any) => ({
-        id: b.id,
-        guest: b.guest_name,
-        room: b.room_type,
-        checkin: b.check_in_date.split('T')[0],
-        checkout: b.check_out_date.split('T')[0],
-        nights: b.nights,
-        amount: parseFloat(b.total_amount),
-        status: b.status,
-        guests: b.num_guests
-      }))
-      
-      setBookings(bookingData)
-      setStats(statsRes.data)
-    } catch (error) {
-      console.error('Error fetching bookings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Sync local state with global state
   useEffect(() => {
-    fetchBookings()
-  }, [filter, searchQuery])
+    setBookings(globalBookings)
+    setStats(globalStats)
+    setLoading(false)
+  }, [globalBookings, globalStats])
 
   // Parse date string in format YYYY-MM-DD as local date
   const parseLocalDate = (dateString: string) => {
@@ -88,27 +59,47 @@ export default function BookingsPage() {
     specialRequests: '',
     status: 'pending'
   })
+  const [submitError, setSubmitError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const totalBookings = bookings.length
-  const now = new Date()
-  const bookingsThisMonth = bookings.filter((booking) => {
-    const checkin = new Date(booking.checkin)
-    return (
-      checkin.getFullYear() === now.getFullYear() &&
-      checkin.getMonth() === now.getMonth()
-    )
-  }).length
-  const pendingBookings = bookings.filter((booking) => booking.status === 'pending').length
-  const checkedInBookings = bookings.filter((booking) => booking.status === 'checked_in').length
-  const revenueThisMonth = bookings
-    .filter((booking) => {
-      const checkin = new Date(booking.checkin)
-      return (
-        checkin.getFullYear() === now.getFullYear() &&
-        checkin.getMonth() === now.getMonth()
-      )
-    })
-    .reduce((sum, booking) => sum + booking.amount, 0)
+  // Auto-focus first field when modal opens
+  useEffect(() => {
+    if (showAddModal) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const firstField = document.querySelector('input[name="guest"]') as HTMLInputElement
+        if (firstField) {
+          firstField.focus()
+        }
+      }, 100)
+    }
+  }, [showAddModal])
+
+  // Handle Enter key navigation between fields
+  const handleKeyDown = (e: React.KeyboardEvent, nextFieldName?: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (nextFieldName) {
+        const nextField = document.querySelector(`input[name="${nextFieldName}"], select[name="${nextFieldName}"]`) as HTMLElement
+        if (nextField) {
+          nextField.focus()
+        }
+      }
+    }
+  }
+
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesStatus = filter === 'all' || booking.status === filter
+    const normalizedSearch = searchQuery.trim().toLowerCase()
+    const matchesSearch =
+      !normalizedSearch ||
+      booking.guest.toLowerCase().includes(normalizedSearch) ||
+      booking.room.toLowerCase().includes(normalizedSearch)
+    const matchesRoom =
+      selectedRoom === 'all' || booking.room.toLowerCase() === selectedRoom.toLowerCase()
+
+    return matchesStatus && matchesSearch && matchesRoom
+  })
 
   const STATUS_CONFIG: any = {
     all: { label: 'All Bookings', color: 'bg-gray-100 text-[#1A2E2B]' },
@@ -119,45 +110,129 @@ export default function BookingsPage() {
     cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
     'vip': { label: 'VIP', color: 'bg-purple-100 text-purple-700' },
   }
+
+  const statusCounts = {
+    all: bookings.length,
+    pending: bookings.filter((b) => b.status === 'pending').length,
+    confirmed: bookings.filter((b) => b.status === 'confirmed').length,
+    checked_in: bookings.filter((b) => b.status === 'checked_in').length,
+    checked_out: bookings.filter((b) => b.status === 'checked_out').length,
+    cancelled: bookings.filter((b) => b.status === 'cancelled').length,
+    vip: bookings.filter((b) => b.status === 'vip').length,
+  }
+  
   
   const handleAddBooking = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitError('')
+    
+    // Validation with focus management
+    const errors: { [key: string]: string } = {}
+    
+    if (!newBooking.guest.trim()) {
+      errors.guest = 'Guest name required'
+    }
+    if (!newBooking.email.trim()) {
+      errors.email = 'Email required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newBooking.email)) {
+      errors.email = 'Invalid email'
+    }
+    if (!newBooking.phone.trim()) {
+      errors.phone = 'Phone required'
+    }
+    if (!newBooking.checkin) {
+      errors.checkin = 'Check-in date required'
+    }
+    if (!newBooking.checkout) {
+      errors.checkout = 'Check-out date required'
+    }
+    if (!newBooking.room) {
+      errors.room = 'Room type required'
+    }
+    
+    if (newBooking.checkin && newBooking.checkout) {
+      const checkinDate = parseLocalDate(newBooking.checkin)
+      const checkoutDate = parseLocalDate(newBooking.checkout)
+      if (checkoutDate <= checkinDate) {
+        errors.checkout = 'Check-out date must be after check-in date'
+      }
+    }
+    
+    // Show errors and focus first invalid field
+    if (Object.keys(errors).length > 0) {
+      console.warn('⚠️ Validation errors:', errors)
+      const errorMsg = Object.values(errors)[0]
+      setSubmitError(errorMsg)
+      
+      const firstError = Object.keys(errors)[0]
+      const elements = document.querySelectorAll('input[name], select[name], textarea[name]')
+      for (const el of Array.from(elements)) {
+        const elem = el as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        if (elem.name === firstError) {
+          elem.focus()
+          elem.style.borderColor = '#ef4444'
+          elem.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)'
+          setTimeout(() => {
+            elem.style.borderColor = ''
+            elem.style.boxShadow = ''
+          }, 3000)
+          break
+        }
+      }
+      setIsSubmitting(false)
+      return
+    }
     
     try {
+      console.log('📤 Submitting booking...', newBooking)
       const checkinDate = parseLocalDate(newBooking.checkin)
       const checkoutDate = parseLocalDate(newBooking.checkout)
       const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
       
-      console.log('Submitting booking:', newBooking)
-      console.log('Nights calculated:', nights)
-      
-      // For now, use mock IDs - in production these would come from selection
-      const bookingData = {
-        guest_id: 1, // TODO: Create guest first or select from dropdown
+      const bookingData: any = {
         hotel_id: 1,
-        room_id: 1, // TODO: Select from available rooms
+        room_id: 1,
+        guest_name: newBooking.guest.trim(),
+        email: newBooking.email.trim(),
+        phone: newBooking.phone.trim(),
+        room_type: newBooking.room,
         check_in_date: newBooking.checkin,
         check_out_date: newBooking.checkout,
-        nights: nights || 1,
-        num_guests: newBooking.guests,
+        nights: nights,
+        num_guests: parseInt(newBooking.guests.toString()),
         room_total: 500,
         addon_total: 0,
         discount_amount: 0,
         tax_amount: 0,
-        total_amount: 500 * (nights || 1),
+        total_amount: 500 * nights,
         status: newBooking.status,
         special_requests: newBooking.specialRequests
       }
 
-      console.log('Sending to API:', bookingData)
-      
+      console.log('📨 API Request:', bookingData)
       const response = await api.post('/api/v1/bookings/', bookingData)
-      console.log('Success:', response.data)
+      console.log('✅ API Response:', response.data)
       
-      alert('✅ Booking created successfully!')
+      const createdBooking = response.data.booking || response.data
+      
+      const newBookingItem: Booking = {
+        id: createdBooking.id || Date.now(),
+        guest: createdBooking.guest_name || newBooking.guest,
+        room: createdBooking.room_type || newBooking.room,
+        checkin: (createdBooking.check_in_date || newBooking.checkin).split('T')[0],
+        checkout: (createdBooking.check_out_date || newBooking.checkout).split('T')[0],
+        nights: createdBooking.nights || nights,
+        amount: parseFloat(createdBooking.total_amount || (500 * nights).toString()),
+        status: createdBooking.status || newBooking.status,
+        guests: createdBooking.num_guests || parseInt(newBooking.guests.toString()),
+      }
+
+      addBookingToLocal(newBookingItem)
       setShowAddModal(false)
-      fetchBookings() // Refresh list
       
+      setTimeout(() => refreshBookings(), 500)
+
       setNewBooking({
         guest: '',
         email: '',
@@ -169,37 +244,55 @@ export default function BookingsPage() {
         specialRequests: '',
         status: 'pending'
       })
+      setSubmitError('')
     } catch (err: any) {
-      console.error('Error creating booking:', err)
-      console.error('Error response:', err.response?.data)
-      console.error('Error status:', err.response?.status)
-      console.error('Error code:', err.code)
+      console.error('❌ Booking submission error:', err)
       
-      // Check if it's an authentication issue
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        alert('❌ You are not logged in! Please login first.')
-        router.push('/login')
-        return
-      }
+      let errorMsg = 'Failed to create booking'
       
-      const errorDetail = err.response?.data?.detail
-      if (Array.isArray(errorDetail)) {
-        const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
-        alert(`❌ Validation Error: ${messages}`)
-      } else {
-        const errorMsg = errorDetail || err.message || 'Unknown error'
-        if (errorMsg.includes('Network Error') || err.code === 'ERR_NETWORK') {
-          alert('❌ Network Error - Please check:\n1. Backend is running (port 8000)\n2. You are logged in\n3. Check browser console (F12) for details')
-        } else if (errorMsg.includes('Tenant')) {
-          alert('❌ Tenant Configuration Error: Your user account does not have a tenant associated. Please contact support.')
+      // Try different error formats from backend
+      if (err.response?.data?.detail) {
+        // FastAPI validation or custom error
+        if (Array.isArray(err.response.data.detail)) {
+          errorMsg = err.response.data.detail.map((e: any) => `${e.loc[1] || e.loc[0]}: ${e.msg}`).join(', ')
         } else {
-          alert(`❌ Failed to create booking: ${errorMsg}`)
+          errorMsg = err.response.data.detail
         }
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message
+      } else if (err.response?.data?.error) {
+        errorMsg = err.response.data.error
+      } else if (err.message === 'Network Error') {
+        errorMsg = 'Network error - Backend server may not be running'
+      } else if (err.code === 'ECONNABORTED') {
+        errorMsg = 'Request timeout - Server took too long to respond'
+      } else if (err.code === 'ECONNREFUSED') {
+        errorMsg = 'Connection refused - Backend server is not running'
+      } else if (err.message) {
+        errorMsg = err.message
       }
+      
+      setSubmitError(errorMsg)
+      
+      console.error('📋 Full error details:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        message: err.message,
+        code: err.code
+      })
+      
+      // Handle unauthorized
+      const token = localStorage.getItem('access_token')
+      if (!token || err.response?.status === 401) {
+        setSubmitError('Session expired. Please login again.')
+        setTimeout(() => router.push('/login'), 1500)
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
-  
+
   const handleViewBooking = (booking: Booking) => {
     setSelectedBooking(booking)
     setShowViewModal(true)
@@ -215,24 +308,24 @@ export default function BookingsPage() {
     if (!selectedBooking) return
   
     try {
-      const response = await api.put(`/api/v1/bookings/${selectedBooking.id}`, {
+      await api.put(`/api/v1/bookings/${selectedBooking.id}`, {
         status: selectedBooking.status,
         // other fields if needed
       })
       setShowEditModal(false)
-      fetchBookings()
+      refreshBookings()
     } catch (err: any) {
       console.error('Error updating booking:', err)
       const errorDetail = err.response?.data?.detail
       if (Array.isArray(errorDetail)) {
         const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
-        alert(`Validation Error: ${messages}`)
+        console.error('Validation Error:', messages)
       } else {
-        alert(errorDetail || 'Failed to update booking')
+        console.error(errorDetail || 'Failed to update booking')
       }
     }
   }
-  
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -261,11 +354,15 @@ export default function BookingsPage() {
                 <span>New Booking</span>
               </button>
               <button 
+                onClick={() => refreshBookings()}
+                className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                title="Refresh bookings from server"
+              >
+                🔄 Refresh
+              </button>
+              <button 
                 onClick={() => {
-                  const confirmExport = confirm('Export all bookings to CSV?');
-                  if (confirmExport) {
-                    // Export logic would go here
-                  }
+                  console.log('Export bookings requested')
                 }}
                 className="glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 cursor-pointer"
               >
@@ -286,13 +383,14 @@ export default function BookingsPage() {
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                  className={`px-4 py-3 rounded-2xl font-semibold transition-all ${
                     filter === key
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
-                      : 'glass hover:bg-gray-50 text-[#1A2E2B]'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                      : 'glass text-[#1A2E2B] hover:bg-gray-100'
                   }`}
                 >
-                  {config.label}
+                  <div className="text-sm">{config.label}</div>
+                  <div className="text-xl font-bold">{statusCounts[key as keyof typeof statusCounts]}</div>
                 </button>
               ))}
             </div>
@@ -323,45 +421,6 @@ export default function BookingsPage() {
           </div>
         </div>
 
-        {/* Stats Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 slide-up" style={{ animationDelay: '0.1s' }}>
-          <StatCard
-            label="Total Bookings"
-            value={loading ? '...' : (stats?.bookings_this_month || 0)}
-            icon="📖"
-            color="blue"
-            subtext="This month"
-            onClick={() => setFilter('all')}
-            isActive={filter === 'all'}
-          />
-          <StatCard
-            label="Pending"
-            value={loading ? '...' : (stats?.pending_count || 0)}
-            icon="⏳"
-            color="orange"
-            subtext="Awaiting confirmation"
-            onClick={() => setFilter('pending')}
-            isActive={filter === 'pending'}
-          />
-          <StatCard
-            label="Checked In"
-            value={loading ? '...' : (stats?.checked_in_count || 0)}
-            icon="✅"
-            color="green"
-            subtext="Currently staying"
-            onClick={() => setFilter('checked_in')}
-            isActive={filter === 'checked_in'}
-          />
-          <StatCard
-            label="Revenue"
-            value={loading ? '...' : `$${stats?.revenue_this_month?.toLocaleString() || '0'}`}
-            icon="💵"
-            color="purple"
-            subtext="Monthly total"
-            onClick={() => setBookingStatsFilter('revenue')}
-            isActive={bookingStatsFilter === 'revenue'}
-          />
-        </div>
 
         {/* Bookings Table */}
         <div className="glass-card rounded-2xl p-8 slide-up" style={{ animationDelay: '0.2s' }}>
@@ -415,14 +474,14 @@ export default function BookingsPage() {
                         Loading bookings...
                       </td>
                     </tr>
-                  ) : bookings.length === 0 ? (
+                  ) : filteredBookings.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="text-center py-12 text-[#2D4A42]">
                         📭 No bookings found
                       </td>
                     </tr>
                   ) : (
-                    bookings.map((booking, idx) => (
+                    filteredBookings.map((booking, idx) => (
                       <tr 
                         key={booking.id} 
                         className="hover:bg-gray-50 transition-colors slide-up"
@@ -505,6 +564,11 @@ export default function BookingsPage() {
             </div>
 
             <form onSubmit={handleAddBooking} className="space-y-6">
+              {submitError && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-700 font-semibold">
+                  ❌ {submitError}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
@@ -512,9 +576,11 @@ export default function BookingsPage() {
                   </label>
                   <input
                     type="text"
+                    name="guest"
                     required
                     value={newBooking.guest}
                     onChange={(e) => setNewBooking({...newBooking, guest: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'email')}
                     placeholder="John Doe"
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -526,9 +592,11 @@ export default function BookingsPage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
                     required
                     value={newBooking.email}
                     onChange={(e) => setNewBooking({...newBooking, email: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'phone')}
                     placeholder="john@example.com"
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -540,9 +608,11 @@ export default function BookingsPage() {
                   </label>
                   <input
                     type="tel"
+                    name="phone"
                     required
                     value={newBooking.phone}
                     onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'guests')}
                     placeholder="+1 555 123 4567"
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -559,6 +629,7 @@ export default function BookingsPage() {
                     required
                     value={newBooking.guests}
                     onChange={(e) => setNewBooking({...newBooking, guests: parseInt(e.target.value)})}
+                    onKeyDown={(e) => handleKeyDown(e, 'checkin')}
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -569,9 +640,11 @@ export default function BookingsPage() {
                   </label>
                   <input
                     type="date"
+                    name="checkin"
                     required
                     value={newBooking.checkin}
                     onChange={(e) => setNewBooking({...newBooking, checkin: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'checkout')}
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -582,9 +655,11 @@ export default function BookingsPage() {
                   </label>
                   <input
                     type="date"
+                    name="checkout"
                     required
                     value={newBooking.checkout}
                     onChange={(e) => setNewBooking({...newBooking, checkout: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'room')}
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -594,9 +669,11 @@ export default function BookingsPage() {
                     Room Type *
                   </label>
                   <select
+                    name="room"
                     required
                     value={newBooking.room}
                     onChange={(e) => setNewBooking({...newBooking, room: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'status')}
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a room type</option>
@@ -617,6 +694,7 @@ export default function BookingsPage() {
                     required
                     value={newBooking.status}
                     onChange={(e) => setNewBooking({...newBooking, status: e.target.value})}
+                    onKeyDown={(e) => handleKeyDown(e, 'specialRequests')}
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="pending">Pending</option>
@@ -636,6 +714,14 @@ export default function BookingsPage() {
                     rows={3}
                     value={newBooking.specialRequests}
                     onChange={(e) => setNewBooking({...newBooking, specialRequests: e.target.value})}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        // Submit the form when Enter is pressed in the last field
+                        const form = document.querySelector('form') as HTMLFormElement
+                        if (form) form.requestSubmit()
+                      }
+                    }}
                     placeholder="Any special requirements..."
                     className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
@@ -645,14 +731,20 @@ export default function BookingsPage() {
               <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  className="btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer hover:scale-105 transition-transform"
+                  disabled={isSubmitting}
+                  className={`btn-primary px-8 py-4 rounded-xl font-semibold text-lg cursor-pointer ${
+                    isSubmitting 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:scale-105 transition-transform'
+                  }`}
                 >
-                  ✓ Create Booking
+                  {isSubmitting ? '⏳ Creating...' : '✓ Create Booking'}
                 </button>
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => setShowAddModal(false)}
-                  className="glass px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all cursor-pointer"
+                  className="glass px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>

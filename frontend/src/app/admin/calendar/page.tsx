@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import apiClient from '../../../services/apiClient'
+import { useBookings } from '../../../context/BookingsContext'
 
 interface Booking {
   id: number
@@ -17,45 +17,24 @@ interface Booking {
 }
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 15)) // March 2026
+  const [currentDate, setCurrentDate] = useState(new Date()) // Current date
   const [viewMode, setViewMode] = useState('month')
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'vip'>('all')
   const router = useRouter()
 
-  // Fetch real bookings from API
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setLoading(true)
-        const response = await apiClient.get('/api/v1/bookings/')
-        
-        // Map API response to our Booking interface
-        const bookingData = response.data.bookings.map((b: any) => ({
-          id: b.id,
-          guest: b.guest_name || `${b.guest?.first_name || 'Unknown'} ${b.guest?.last_name || ''}`.trim(),
-          room: b.room_type || b.rooms?.[0]?.room?.room_type || 'Unknown',
-          checkin: b.check_in_date.split('T')[0],
-          checkout: b.check_out_date.split('T')[0],
-          nights: b.nights,
-          amount: parseFloat(b.total_amount || 0),
-          status: b.status,
-          guests: b.num_guests
-        }))
-        
-        setBookings(bookingData)
-        console.log('Calendar bookings loaded:', bookingData.length)
-      } catch (error) {
-        console.error('Error fetching bookings for calendar:', error)
-        // Only show empty state - no mock data
-        setBookings([])
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Use global bookings context
+  const { bookings: globalBookings, refreshBookings, loading } = useBookings()
+  const [bookings, setBookings] = useState<Booking[]>(globalBookings)
 
-    fetchBookings()
-  }, [])
+  // Sync local state with global state
+  useEffect(() => {
+    setBookings(globalBookings)
+  }, [globalBookings])
+
+  // Initial load
+  useEffect(() => {
+    refreshBookings()
+  }, [refreshBookings])
 
   const getSampleBookings = () => {
     return [] // No more mock data - only show real bookings from API
@@ -74,7 +53,20 @@ export default function CalendarPage() {
     return new Date(year, month - 1, day)
   }
 
-  // Process bookings for calendar display
+  const filteredBookings = bookings.filter((booking) => {
+    return statusFilter === 'all' || booking.status === statusFilter
+  })
+
+  const statusCounts = {
+    all: bookings.length,
+    pending: bookings.filter((b) => b.status === 'pending').length,
+    confirmed: bookings.filter((b) => b.status === 'confirmed').length,
+    checked_in: bookings.filter((b) => b.status === 'checked_in').length,
+    checked_out: bookings.filter((b) => b.status === 'checked_out').length,
+    cancelled: bookings.filter((b) => b.status === 'cancelled').length,
+    vip: bookings.filter((b) => b.status === 'vip').length,
+  }
+
   const getBookingsForDay = (day: number) => {
     const currentMonth = currentDate.getMonth()
     const currentYear = currentDate.getFullYear()
@@ -83,7 +75,7 @@ export default function CalendarPage() {
 
     const dayBookings: any[] = []
 
-    bookings.forEach(booking => {
+    filteredBookings.forEach(booking => {
       const checkinDate = parseLocalDate(booking.checkin)
       const checkoutDate = parseLocalDate(booking.checkout)
       const checkinStr = formatDate(checkinDate)
@@ -221,13 +213,13 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <button 
-                onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}
+                onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
                 className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all font-semibold"
               >
                 ← Previous
               </button>
               <button 
-                onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))}
+                onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
                 className="glass px-4 py-2 rounded-xl hover:bg-gray-50 transition-all font-semibold"
               >
                 Next →
@@ -271,6 +263,35 @@ export default function CalendarPage() {
             </div>
           </div>
         </div>
+
+        {/* Status Filters */}
+        <div className="glass-card rounded-2xl p-6 mb-8 slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="flex flex-wrap items-center gap-3">
+            {[
+              { key: 'all', label: 'All Bookings' },
+              { key: 'pending', label: 'Pending' },
+              { key: 'confirmed', label: 'Confirmed' },
+              { key: 'checked_in', label: 'Checked In' },
+              { key: 'checked_out', label: 'Checked Out' },
+              { key: 'cancelled', label: 'Cancelled' },
+              { key: 'vip', label: 'VIP' },
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setStatusFilter(item.key as any)}
+                className={`px-4 py-3 rounded-2xl font-semibold transition-all ${
+                  statusFilter === item.key
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                    : 'glass text-[#1A2E2B] hover:bg-gray-100'
+                }`}
+              >
+                <div className="text-sm">{item.label}</div>
+                <div className="text-xl font-bold">{statusCounts[item.key as keyof typeof statusCounts]}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
 
         {/* Legend */}
         <div className="glass-card rounded-2xl p-6 mb-8 slide-up" style={{ animationDelay: '0.1s' }}>
@@ -319,7 +340,7 @@ export default function CalendarPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
                 <p className="text-[#2D4A42] mt-4">Loading bookings...</p>
               </div>
-            ) : bookings.length === 0 ? (
+            ) : filteredBookings.length === 0 ? (
               <div className="col-span-7 text-center py-20">
                 <div className="text-6xl mb-4">📅</div>
                 <h3 className="text-2xl font-bold gradient-text mb-2">No Bookings Yet</h3>

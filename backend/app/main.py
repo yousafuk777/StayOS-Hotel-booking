@@ -7,6 +7,8 @@ from app.middleware.tenant import TenantMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine, async_session_maker
 from app.seed_db import seed_super_admin
+from fastapi.responses import RedirectResponse
+from sqlalchemy import text
 
 os.makedirs("uploads/rooms", exist_ok=True)
 
@@ -33,18 +35,44 @@ app.include_router(api_router, prefix="/api/v1")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
+async def ensure_users_is_vip_column(conn):
+    result = await conn.execute(text(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name='users' AND column_name='is_vip'"
+    ))
+    if result.scalar_one_or_none() is None:
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_vip BOOLEAN DEFAULT FALSE;"))
+
+async def ensure_rooms_housekeeping_columns(conn):
+    housekeeping_columns = {
+        "housekeeping_status": "VARCHAR(20) NOT NULL DEFAULT 'clean'",
+        "housekeeping_priority": "VARCHAR(20) NOT NULL DEFAULT 'normal'",
+        "housekeeping_progress": "INTEGER DEFAULT 100",
+        "assigned_staff_id": "INTEGER",
+        "housekeeping_task": "VARCHAR(100) DEFAULT 'Clean room'",
+    }
+
+    for column_name, column_type in housekeeping_columns.items():
+        result = await conn.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name='rooms' AND column_name = :column_name"
+        ), {"column_name": column_name})
+        if result.scalar_one_or_none() is None:
+            await conn.execute(text(
+                f"ALTER TABLE rooms ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
+            ))
+
 @app.on_event("startup")
 async def startup_db_client():
     """Create database tables and seed initial data on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await ensure_users_is_vip_column(conn)
+        await ensure_rooms_housekeeping_columns(conn)
     
     # Create super-admin if they don't exist
     async with async_session_maker() as session:
         await seed_super_admin(session)
-
-
-from fastapi.responses import RedirectResponse
 
 @app.get("/health")
 async def health_check():

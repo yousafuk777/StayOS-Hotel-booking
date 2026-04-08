@@ -30,6 +30,10 @@ class BookingCreate(BookingBase):
 
 
 class BookingUpdate(BaseModel):
+    check_in_date: Optional[Union[date, datetime]] = None
+    check_out_date: Optional[Union[date, datetime]] = None
+    nights: Optional[int] = None
+    num_guests: Optional[int] = None
     status: Optional[str] = None
     special_requests: Optional[str] = None
     cancellation_reason: Optional[str] = None
@@ -76,4 +80,4 @@ class BookingStats(BaseModel):
     bookings_this_month: int
     pending_count: int
     checked_in_count: int
-    occupancy_rate: float
+    occupancy_rate: float

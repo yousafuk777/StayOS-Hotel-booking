@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_db
 from app.repositories.booking_repo import BookingRepository
-from app.schemas.booking import BookingResponse, BookingListResponse, BookingStats, BookingCreate
+from app.schemas.booking import BookingResponse, BookingListResponse, BookingStats, BookingCreate, BookingUpdate
 from app.core.permissions import RequireHotelAdmin
 from app.models.user import User
 
@@ -109,24 +109,71 @@ async def create_booking(
     current_user: User = Depends(RequireHotelAdmin)
 ):
     """Create a new booking manually from the admin panel."""
+    print('🚀 [API] create_booking endpoint called!')
+    try:
+        print('📤 [Booking Creation] Starting...')
+        print(f'📤 [Booking Creation] Input data: {booking_in.model_dump()}')
+        print(f'📤 [Booking Creation] Current user: {current_user.id}, Tenant: {current_user.tenant_id}')
+        
+        tenant_id = request.state.tenant_id or current_user.tenant_id
+        print(f'📤 [Booking Creation] Using tenant_id: {tenant_id}')
+        
+        # If still no tenant_id and we have a hotel_id, we can fallback to finding it
+        if tenant_id is None and booking_in.hotel_id:
+            from app.models.hotel import Hotel
+            hotel = await db.get(Hotel, booking_in.hotel_id)
+            if hotel:
+                tenant_id = hotel.tenant_id
+                print(f'📤 [Booking Creation] Found tenant_id from hotel: {tenant_id}')
+
+        if tenant_id is None:
+            print('❌ [Booking Creation] No tenant context found')
+            raise HTTPException(status_code=400, detail="Tenant context missing - unable to determine hotel/tenant")
+
+        print(f'📤 [Booking Creation] Calling repository...')
+        booking = await BookingRepository.create_booking(
+            db, 
+            tenant_id=tenant_id, 
+            booking_data=booking_in.model_dump()
+        )
+        print(f'✅ [Booking Creation] Created booking ID: {booking.id}')
+        
+        # Format response with guest and room details for frontend consumption
+        formatted = format_booking_response(booking)
+        print(f'✅ [Booking Creation] Returning formatted response')
+        return formatted
+    except HTTPException as http_err:
+        print(f'❌ [Booking Creation] HTTP Error: {http_err.detail}')
+        raise
+    except ValueError as val_err:
+        print(f'❌ [Booking Creation] Validation Error: {val_err}')
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as e:
+        print(f'❌ [Booking Creation] Unexpected error: {type(e).__name__}: {str(e)}')
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Failed to create booking: {str(e)}")
+
+
+@router.put("/{booking_id}", response_model=BookingResponse)
+async def update_booking(
+    request: Request,
+    booking_id: int,
+    booking_in: BookingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(RequireHotelAdmin)
+):
+    """Update a booking's details."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
-    
-    # If still no tenant_id and we have a hotel_id, we can fallback to finding it
-    if tenant_id is None and booking_in.hotel_id:
-        from app.models.hotel import Hotel
-        hotel = await db.get(Hotel, booking_in.hotel_id)
-        if hotel:
-            tenant_id = hotel.tenant_id
-
-    if tenant_id is None:
-        raise HTTPException(status_code=400, detail="Tenant context missing")
-
-    booking = await BookingRepository.create_booking(
-        db, 
-        tenant_id=tenant_id, 
-        booking_data=booking_in.model_dump()
+    booking = await BookingRepository.update_booking(
+        db,
+        tenant_id=tenant_id,
+        booking_id=booking_id,
+        update_data=booking_in.model_dump(exclude_unset=True)
     )
-    return booking
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found or not updatable")
+    return format_booking_response(booking)
 
 
 @router.put("/{booking_id}/confirm")
@@ -164,4 +211,4 @@ async def decline_booking(
     )
     if not success:
         raise HTTPException(status_code=404, detail="Booking not found or cannot be declined")
-    return {"message": "Booking declined and removed successfully"}
+    return {"message": "Booking declined and removed successfully"}

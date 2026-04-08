@@ -17,7 +17,6 @@ interface Guest {
 }
 
 export default function GuestsPage() {
-  const [filter, setFilter] = useState('all')
   const [guestsFilter, setGuestsFilter] = useState<'all' | 'vip' | 'frequent' | 'avg_spend'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -281,8 +280,8 @@ export default function GuestsPage() {
                 ].map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setFilter(item.id)}
-                    className={`px-3 md:px-4 py-2 rounded-xl font-medium text-sm transition-all ${filter === item.id
+                    onClick={() => setGuestsFilter(item.id as any)}
+                    className={`px-3 md:px-4 py-2 rounded-xl font-medium text-sm transition-all ${guestsFilter === item.id
                         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
                         : 'glass hover:bg-gray-50 text-[#1A2E2B]'
                       }`}

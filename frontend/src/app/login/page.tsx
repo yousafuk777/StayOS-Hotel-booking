@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
 export default function LoginPage() {
   const router = useRouter()

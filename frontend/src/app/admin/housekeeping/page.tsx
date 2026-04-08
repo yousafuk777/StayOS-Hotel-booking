@@ -28,23 +28,36 @@ export default function HousekeepingPage() {
     try {
       // Fetch Rooms
       const roomsRes = await apiClient.get('/api/v1/rooms')
-      const mappedRooms = roomsRes.data.map((room: any) => ({
-        id: room.id,
-        number: room.room_number,
-        type: room.category?.name || 'Standard',
-        floor: room.floor || 1,
-        status: room.housekeeping_status || 'clean',
-        priority: room.housekeeping_priority || 'normal',
-        assignedTo: room.assigned_staff ? `${room.assigned_staff.first_name} ${room.assigned_staff.last_name}` : null,
-        assignedToId: room.assigned_staff_id,
-        progress: room.housekeeping_progress || 0,
-        task: room.housekeeping_task || 'Clean room'
-      }))
-      setRooms(mappedRooms)
+      
+      // Ensure rooms data is an array before mapping
+      if (!Array.isArray(roomsRes.data)) {
+        console.error('Expected rooms data to be an array')
+        setRooms([])
+      } else {
+        const mappedRooms = roomsRes.data.map((room: any) => ({
+          id: room.id,
+          number: room.room_number,
+          type: room.category?.name || 'Standard',
+          floor: room.floor || 1,
+          status: room.housekeeping_status || 'clean',
+          priority: room.housekeeping_priority || 'normal',
+          assignedTo: room.assigned_staff ? `${room.assigned_staff.first_name} ${room.assigned_staff.last_name}` : null,
+          assignedToId: room.assigned_staff_id,
+          progress: room.housekeeping_progress || 0,
+          task: room.housekeeping_task || 'Clean room'
+        }))
+        setRooms(mappedRooms)
+      }
 
       // Fetch Staff
       const staffRes = await apiClient.get('/api/v1/staff')
-      setStaffList(staffRes.data)
+      // Ensure staff data is an array before setting
+      if (Array.isArray(staffRes.data)) {
+        setStaffList(staffRes.data)
+      } else {
+        console.error('Expected staff data to be an array')
+        setStaffList([])
+      }
       
       setError(null)
     } catch (err: any) {
