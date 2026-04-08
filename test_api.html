@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Booking API Test</title>
+    <style>
+        body { font-family: monospace; max-width: 1000px; margin: 20px; }
+        #log { border: 1px solid #ccc; padding: 10px; min-height: 300px; background: #f5f5f5; margin: 20px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        input, button { padding: 8px; margin: 5px; }
+        button { cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Hotel Booking API Diagnostic</h1>
+    
+    <div>
+        <h2>Step 1: Test Connection</h2>
+        <button onclick="testConnection()">Test Backend Connection</button>
+    </div>
+    
+    <div>
+        <h2>Step 2: Login</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@stayos.com">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">Login</button>
+    </div>
+    
+    <div>
+        <h2>Step 3: Create Booking</h2>
+        <input type="email" id="guestEmail" placeholder="Guest Email" value="">
+        <button onclick="testBooking()">Create Booking</button>
+    </div>
+    
+    <h2>📋 Log Output:</h2>
+    <div id="log"></div>
+    
+    <script>
+        const LOG = document.getElementById('log');
+        let authToken = null;
+        let guestCounter = 0;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            LOG.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            LOG.scrollTop = LOG.scrollHeight;
+        }
+        
+        async function testConnection() {
+            log('🔗 Testing connection to http://localhost:8000/health...');
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Connection successful! Backend status: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ Backend returned status ${response.status}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Connection failed: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log(`🔐 Attempting to login as ${email}...`);
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', email);
+                formData.append('password', password);
+                
+                const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    log(`✅ Login successful! Token: ${authToken.substring(0, 30)}...`, 'success');
+                    log(`👤 User: ${data.user.email} (${data.user.role})`, 'success');
+                    log(`🏢 Tenant ID: ${data.user.tenant_id}`, 'success');
+                } else {
+                    const error = await response.json();
+                    log(`❌ Login failed (${response.status}): ${JSON.stringify(error)}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Login error: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testBooking() {
+            if (!authToken) {
+                log('❌ Please login first!', 'error');
+                return;
+            }
+            
+            guestCounter++;
+            const guestEmail = `testguest${guestCounter}@example.com`;
+            
+            log(`📝 Creating booking for guest ${guestEmail}...`);
+            
+            const bookingData = {
+                hotel_id: 1,
+                guest_name: `Guest ${guestCounter}`,
+                email: guestEmail,
+                phone: "+1234567890",
+                room_type: "Deluxe Suite",
+                check_in_date: "2026-04-20",
+                check_out_date: "2026-04-22",
+                nights: 2,
+                num_guests: 1,
+                room_total: 500,
+                addon_total: 0,
+                discount_amount: 0,
+                tax_amount: 0,
+                total_amount: 1000,
+                status: "pending"
+            };
+            
+            try {
+                log(`📨 Sending to /api/v1/bookings/...`);
+                const response = await fetch('http://localhost:8000/api/v1/bookings/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Booking created! ID: ${data.id}, Status: ${data.status}`, 'success');
+                    log(`👤 Guest: ${data.guest_name}`, 'success');
+                    log(`📍 Room: ${data.room_type}`, 'success');
+                } else {
+                    log(`❌ Booking creation failed (${response.status})`, 'error');
+                    log(`📋 Error details: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Booking error: ${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import NoopDialogs from '../components/NoopDialogs'
 
 export const metadata: Metadata = {
   title: 'StayOS - Hotel Booking Platform',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <NoopDialogs />
+        {children}
+      </body>
     </html>
   )
 }
