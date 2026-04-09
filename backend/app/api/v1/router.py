@@ -13,6 +13,7 @@ api_router.include_router(bookings.router, prefix="/bookings", tags=["Bookings"]
 api_router.include_router(rooms.router, prefix="/rooms", tags=["Rooms"])
 api_router.include_router(staff.router, prefix="/staff", tags=["Staff"])
 api_router.include_router(guests.router, prefix="/guests", tags=["Guests"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 
 # Include platform management and discovery routes
 api_router.include_router(super_admin.router, prefix="/super-admin", tags=["Super Admin"])

@@ -1,123 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import axios from 'axios'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
-
-interface Hotel {
-  id: number
-  name: string
-  slug: string
-  city: string | null
-  country: string | null
-  star_rating: number | null
-  description: string | null
-  starting_price: number
-  image_url?: string | null
-}
+import Navbar from '../components/Navbar'
 
 export default function LandingPage() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [hotels, setHotels] = useState<Hotel[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Handle scroll for sticky navbar shadow
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const fetchHotels = async () => {
-      try {
-        setLoading(true)
-        const { data } = await axios.get(`${API_BASE_URL}/api/v1/hotels/`)
-        setHotels(data)
-      } catch (err: any) {
-        console.error('Error fetching hotels:', err)
-        setError('Failed to load hotels. Please try again later.')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchHotels()
-  }, [])
-
   return (
     <main className="min-h-screen relative overflow-hidden bg-lightBg">
-      {/* NAVBAR */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0F6E56] ${
-          isScrolled ? 'shadow-md py-3' : 'py-5'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/" className="text-2xl font-black text-white/90 transition-colors hover:text-white">
-              Stay<span className="text-accent">OS</span>
-            </Link>
-          </div>
-
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8 font-semibold text-white/85">
-            <Link href="/" className="transition-colors hover:text-white">Home</Link>
-            <Link href="#hotels" className="transition-colors hover:text-white">Our Hotels</Link>
-            <Link href="#rooms" className="transition-colors hover:text-white">Rooms & Suites</Link>
-            <Link href="#amenities" className="transition-colors hover:text-white">Amenities</Link>
-            <Link href="#about" className="transition-colors hover:text-white">About Us</Link>
-            <Link href="#contact" className="transition-colors hover:text-white">Contact</Link>
-          </div>
-
-          {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="font-semibold text-white/85 hover:text-white transition-colors">
-              Login
-            </Link>
-            <Link href="/register" className="bg-[#C8941A] text-white px-6 py-2 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity">
-              Register
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="focus:outline-none text-white/85 hover:text-white transition-colors"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu dropdown */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-[#0F6E56] border-t border-white/10 mt-3 absolute w-full left-0 slide-down p-6 flex flex-col gap-4 text-white/85 text-center">
-            <Link href="/" className="font-semibold py-2 border-b border-white/10 mx-4">Home</Link>
-            <Link href="#hotels" className="font-semibold py-2 border-b border-white/10 mx-4">Our Hotels</Link>
-            <Link href="#rooms" className="font-semibold py-2 border-b border-white/10 mx-4">Rooms & Suites</Link>
-            <Link href="#amenities" className="font-semibold py-2 border-b border-white/10 mx-4">Amenities</Link>
-            <Link href="#about" className="font-semibold py-2 border-b border-white/10 mx-4">About Us</Link>
-            <Link href="#contact" className="font-semibold py-2 mx-4 border-b border-white/10">Contact</Link>
-            <Link href="/login" className="font-semibold py-2 mx-4 text-white hover:text-white transition-colors">Login</Link>
-            <Link href="/register" className="bg-[#C8941A] text-white w-full max-w-[200px] mx-auto py-3 rounded-xl font-semibold mt-2 hover:opacity-90 transition-opacity">
-              Register
-            </Link>
-          </div>
-        )}
-      </nav>
+      <Navbar />
 
       {/* HERO SECTION */}
       <section className="relative pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
@@ -139,7 +28,7 @@ export default function LandingPage() {
         </div>
 
         {/* Floating Search Bar */}
-        <div className="mt-16 w-full max-w-5xl glass-card rounded-2xl p-4 md:p-6 slide-up shadow-xl" style={{ animationDelay: '0.2s' }}>
+        <div id="search" className="mt-16 w-full max-w-5xl glass-card rounded-2xl p-4 md:p-6 slide-up shadow-xl" style={{ animationDelay: '0.2s' }}>
           <form className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 flex flex-col items-start gap-1">
               <label className="form-label ml-1">Check-in</label>
@@ -270,7 +159,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section className="py-20 relative bg-surface">
+      <section id="amenities" className="py-20 relative bg-surface">
         <div className="absolute inset-0 bg-primary-50/20 -z-10"></div>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 fade-in">
@@ -295,6 +184,40 @@ export default function LandingPage() {
                 <p className="text-mutedText leading-relaxed font-light">{feature.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT US */}
+      <section id="about" className="px-6 py-20 bg-lightBg">
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          <div className="space-y-6">
+            <p className="text-accent font-semibold uppercase tracking-[0.3em]">About Us</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-darkText">A hospitality platform built for modern travelers.</h2>
+            <p className="text-mutedText text-lg leading-relaxed max-w-2xl">
+              StayOS combines curated hotel stays, fast booking, and personalized support across premium properties worldwide.
+              We help travelers discover unforgettable experiences with trusted partners, real-time availability, and smart pricing.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="glass-card rounded-3xl p-6 border border-brandBorder">
+                <h3 className="font-bold text-darkText mb-2">Trusted Stays</h3>
+                <p className="text-mutedText text-sm leading-relaxed">Every hotel is reviewed and selected for comfort, design, and service.</p>
+              </div>
+              <div className="glass-card rounded-3xl p-6 border border-brandBorder">
+                <h3 className="font-bold text-darkText mb-2">Effortless Booking</h3>
+                <p className="text-mutedText text-sm leading-relaxed">Simple search, flexible dates, and fast checkout for every guest.</p>
+              </div>
+            </div>
+          </div>
+          <div className="glass-card rounded-[2rem] overflow-hidden border border-brandBorder shadow-xl">
+            <div className="h-full bg-[radial-gradient(circle_at_top,_rgba(15,110,86,0.2),_transparent_45%)] p-8">
+              <div className="rounded-3xl bg-primary-500/10 p-10 backdrop-blur-sm">
+                <p className="text-lg text-darkText leading-relaxed">
+                  Since day one, StayOS has focused on creating stays that feel premium without the premium hassle.
+                  Our journey is powered by hospitality experts, thoughtful design, and a commitment to guest delight.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -329,6 +252,47 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" className="px-6 py-20 bg-surface">
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[0.9fr_1.1fr] items-center">
+          <div className="space-y-6">
+            <p className="text-accent font-semibold uppercase tracking-[0.3em]">Contact</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-darkText">Let us help plan your stay.</h2>
+            <p className="text-mutedText text-lg leading-relaxed max-w-2xl">
+              Have a question about rooms, availability, or group bookings? Send us a message and our team will respond quickly.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="glass-card rounded-3xl p-6 border border-brandBorder">
+                <p className="font-bold text-darkText mb-2">Email</p>
+                <p className="text-mutedText text-sm">support@stayos.com</p>
+              </div>
+              <div className="glass-card rounded-3xl p-6 border border-brandBorder">
+                <p className="font-bold text-darkText mb-2">Phone</p>
+                <p className="text-mutedText text-sm">+1 (555) 123-4567</p>
+              </div>
+            </div>
+          </div>
+
+          <form className="glass-card rounded-[2rem] border border-brandBorder p-8 shadow-xl bg-white">
+            <div className="grid gap-4">
+              <label className="form-label">Name</label>
+              <input type="text" placeholder="Your name" className="input-field w-full rounded-2xl px-4 py-3" />
+            </div>
+            <div className="grid gap-4 mt-4">
+              <label className="form-label">Email</label>
+              <input type="email" placeholder="you@example.com" className="input-field w-full rounded-2xl px-4 py-3" />
+            </div>
+            <div className="grid gap-4 mt-4">
+              <label className="form-label">Message</label>
+              <textarea placeholder="Tell us what you'd like help with" className="input-field w-full rounded-2xl px-4 py-3 resize-none min-h-[150px]"></textarea>
+            </div>
+            <button type="button" className="btn-primary mt-6 w-full rounded-2xl px-6 py-4 font-semibold text-lg">
+              Send Message
+            </button>
+          </form>
         </div>
       </section>
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function NotificationsPage() {
   const router = useRouter()
+  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -73,6 +74,14 @@ export default function NotificationsPage() {
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
+  const readCount = notifications.filter(n => n.read).length
+  const totalCount = notifications.length
+
+  const filteredNotifications = notifications.filter(notification => {
+    if (filter === 'unread') return !notification.read
+    if (filter === 'read') return notification.read
+    return true // 'all'
+  })
 
   return (
     <div className="space-y-8">
@@ -83,17 +92,27 @@ export default function NotificationsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-blue-500">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <button
+          onClick={() => setFilter('all')}
+          className={`glass-card rounded-2xl p-6 card-hover border-l-4 transition-all cursor-pointer ${
+            filter === 'all' ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-200' : 'border-blue-500'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#2D4A42] font-medium mb-2">Total Notifications</p>
-              <p className="text-4xl font-bold gradient-text">{notifications.length}</p>
+              <p className="text-4xl font-bold gradient-text">{totalCount}</p>
             </div>
             <div className="text-5xl">🔔</div>
           </div>
-        </div>
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-red-500">
+        </button>
+        <button
+          onClick={() => setFilter('unread')}
+          className={`glass-card rounded-2xl p-6 card-hover border-l-4 transition-all cursor-pointer ${
+            filter === 'unread' ? 'border-red-500 bg-red-50/50 ring-2 ring-red-200' : 'border-red-500'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#2D4A42] font-medium mb-2">Unread</p>
@@ -101,21 +120,41 @@ export default function NotificationsPage() {
             </div>
             <div className="text-5xl">📩</div>
           </div>
-        </div>
-        <div className="glass-card rounded-2xl p-6 card-hover border-l-4 border-green-500">
+        </button>
+        <button
+          onClick={() => setFilter('read')}
+          className={`glass-card rounded-2xl p-6 card-hover border-l-4 transition-all cursor-pointer ${
+            filter === 'read' ? 'border-green-500 bg-green-50/50 ring-2 ring-green-200' : 'border-green-500'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#2D4A42] font-medium mb-2">Read</p>
-              <p className="text-4xl font-bold gradient-text">{notifications.filter(n => n.read).length}</p>
+              <p className="text-4xl font-bold gradient-text">{readCount}</p>
             </div>
             <div className="text-5xl">✓</div>
           </div>
-        </div>
+        </button>
+        <button
+          onClick={markAllAsRead}
+          className="glass-card rounded-2xl p-6 card-hover border-l-4 border-purple-500 hover:bg-purple-50/50 transition-all cursor-pointer"
+        >
+          <div className="flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-[#2D4A42] font-medium mb-2">Mark All as Read</p>
+              <div className="text-5xl">📖</div>
+            </div>
+          </div>
+        </button>
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold gradient-text">All Notifications</h2>
+        <h2 className="text-2xl font-bold gradient-text">
+          {filter === 'all' ? 'All Notifications' : 
+           filter === 'unread' ? 'Unread Notifications' : 
+           'Read Notifications'} ({filteredNotifications.length})
+        </h2>
         <button
           onClick={markAllAsRead}
           className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
@@ -127,7 +166,7 @@ export default function NotificationsPage() {
       {/* Notifications List */}
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="divide-y divide-gray-100">
-          {notifications.map((notification) => (
+          {filteredNotifications.map((notification) => (
             <div
               key={notification.id}
               onClick={() => markAsRead(notification.id)}
