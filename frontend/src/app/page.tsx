@@ -90,37 +90,65 @@ export default function LandingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { name: 'Grand Resort & Spa', location: 'Maldives', price: '$450', rating: '5.0' },
-            { name: 'Urban Boutique Hotel', location: 'New York, USA', price: '$250', rating: '4.8' },
-            { name: 'Mountain Retreat', location: 'Swiss Alps', price: '$350', rating: '4.9' }
-          ].map((hotel, i) => (
-            <div key={i} className="glass-card rounded-3xl overflow-hidden card-hover slide-up flex flex-col border border-brandBorder" style={{ animationDelay: `${0.2 + i * 0.1}s` }}>
-              <div className="h-56 bg-brandBorder relative">
-                <div className="absolute inset-0 bg-primary-600 opacity-20"></div>
-                <div className="absolute inset-0 flex items-center justify-center text-primary-500/50 text-5xl">🏨</div>
-                <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-bold text-darkText shadow-md">
-                  ⭐ {hotel.rating}
+          {loading ? (
+            // Skeleton loaders
+            [1, 2, 3].map((n) => (
+              <div key={n} className="glass-card rounded-3xl overflow-hidden animate-pulse">
+                <div className="h-56 bg-gray-200" />
+                <div className="p-6 space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-10 bg-gray-200 rounded mt-4" />
                 </div>
               </div>
-              <div className="p-6 flex-1 flex flex-col bg-surface">
-                <h3 className="text-2xl font-bold text-darkText mb-1">{hotel.name}</h3>
-                <p className="text-mutedText mb-4 flex items-center gap-1 font-medium">
-                  <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                  {hotel.location}
-                </p>
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-brandBorder">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-mutedText font-bold uppercase tracking-wider">Per night</span>
-                    <span className="text-2xl font-extrabold text-primary-500">{hotel.price}</span>
-                  </div>
-                  <button className="btn-primary px-5 py-2.5 rounded-xl font-bold shadow-md text-sm">
-                    View Details
-                  </button>
-                </div>
-              </div>
+            ))
+          ) : error ? (
+            <div className="col-span-full py-20 text-center glass-card rounded-3xl">
+              <span className="text-4xl mb-4 block">⚠️</span>
+              <p className="text-mutedText font-medium">{error}</p>
             </div>
-          ))}
+          ) : hotels.length === 0 ? (
+            <div className="col-span-full py-20 text-center glass-card rounded-3xl">
+              <span className="text-4xl mb-4 block">🏨</span>
+              <p className="text-mutedText font-medium">No hotels currently available. Check back soon!</p>
+            </div>
+          ) : (
+            hotels.map((hotel, i) => (
+              <div key={hotel.id} className="glass-card rounded-3xl overflow-hidden card-hover slide-up flex flex-col border border-brandBorder" style={{ animationDelay: `${0.2 + i * 0.1}s` }}>
+                <div className="h-56 bg-brandBorder relative overflow-hidden group">
+                  {hotel.image_url ? (
+                    <img 
+                      src={`${API_BASE_URL}${hotel.image_url}`} 
+                      alt={hotel.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-primary-800/10 flex items-center justify-center text-primary-500/50 text-5xl">🏨</div>
+                  )}
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300"></div>
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-sm font-bold text-darkText shadow-md">
+                    ⭐ {hotel.star_rating?.toFixed(1) || 'N/A'}
+                  </div>
+                </div>
+                <div className="p-6 flex-1 flex flex-col bg-surface">
+                  <h3 className="text-2xl font-bold text-darkText mb-1">{hotel.name}</h3>
+                  <p className="text-mutedText mb-4 flex items-center gap-1 font-medium line-clamp-1">
+                    <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    {hotel.city}, {hotel.country}
+                  </p>
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-brandBorder">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-mutedText font-bold uppercase tracking-wider">Starting From</span>
+                      <span className="text-2xl font-extrabold text-primary-500">${hotel.starting_price.toLocaleString()}</span>
+                    </div>
+                    <Link href={`/${hotel.slug}`} className="btn-primary px-5 py-2.5 rounded-xl font-bold shadow-md text-sm">
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
         
         <div className="mt-10 text-center md:hidden">
@@ -298,14 +326,14 @@ export default function LandingPage() {
             <Link href="/" className="text-3xl font-black text-white inline-block mb-2">
               Stay<span className="text-accent">OS</span>
             </Link>
-            <p className="text-[#4A6B63] font-light leading-relaxed">
+            <p className="text-gray-300 font-light leading-relaxed">
               Your trusted partner for finding the perfect accommodation, anywhere in the world.
             </p>
           </div>
           
           <div>
             <h4 className="text-white font-bold mb-6 tracking-wider uppercase text-sm">Quick Links</h4>
-            <ul className="space-y-3 text-[#4A6B63]">
+            <ul className="space-y-3 text-gray-400">
               <li><Link href="/" className="hover:text-accent transition-colors">Home</Link></li>
               <li><Link href="#hotels" className="hover:text-accent transition-colors">Our Hotels</Link></li>
               <li><Link href="#rooms" className="hover:text-accent transition-colors">Rooms & Suites</Link></li>
@@ -315,7 +343,7 @@ export default function LandingPage() {
 
           <div>
             <h4 className="text-white font-bold mb-6 tracking-wider uppercase text-sm">Support</h4>
-            <ul className="space-y-3 text-[#4A6B63]">
+            <ul className="space-y-3 text-gray-400">
               <li><Link href="#" className="hover:text-accent transition-colors">FAQ</Link></li>
               <li><Link href="#" className="hover:text-accent transition-colors">Booking Guide</Link></li>
               <li><Link href="#" className="hover:text-accent transition-colors">Cancellation Policy</Link></li>
@@ -325,7 +353,7 @@ export default function LandingPage() {
 
           <div>
             <h4 className="text-white font-bold mb-6 tracking-wider uppercase text-sm">Contact Info</h4>
-            <ul className="space-y-3 text-[#4A6B63]">
+            <ul className="space-y-3 text-gray-400">
               <li className="flex items-center gap-3">
                 <span className="text-accent">📧</span> support@stayos.com
               </li>
@@ -339,7 +367,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-[#4A6B63] text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-gray-400 text-sm">
           <p>© 2026 StayOS. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0 font-bold transition-all">
             <Link href="#" className="hover:text-white transition-colors">Twitter</Link>

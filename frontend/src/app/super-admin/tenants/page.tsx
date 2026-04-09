@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import api from '@/services/api'
 import OnboardTenantModal from '@/components/super-admin/OnboardTenantModal'
+import EditTenantModal from '@/components/super-admin/EditTenantModal'
 
 export default function TenantsPage() {
   const [filter, setFilter] = useState('all')
@@ -12,6 +13,9 @@ export default function TenantsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
   const [processingId, setProcessingId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingHotelId, setUploadingHotelId] = useState<number | null>(null)
+  const [selectedTenantForEdit, setSelectedTenantForEdit] = useState<any>(null)
 
   const fetchTenants = useCallback(async () => {
     setLoading(true)
@@ -31,6 +35,25 @@ export default function TenantsPage() {
   useEffect(() => {
     fetchTenants()
   }, [fetchTenants])
+
+  const handleImageUpload = async (hotelId: number, file: File) => {
+    setUploadingHotelId(hotelId)
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      await api.post(`/api/v1/hotels/${hotelId}/image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      alert('Success! Image updated successfully.')
+      fetchTenants()
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('Failed to upload image.')
+    } finally {
+      setUploadingHotelId(null)
+      setActiveDropdown(null)
+    }
+  }
 
   const handleDeleteTenant = async (id: number, name: string) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? This action is irreversible.`)) return
@@ -78,7 +101,7 @@ export default function TenantsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between fade-in">
+      <div className="flex items-center justify-between fade-in p-2">
         <div>
           <h1 className="text-4xl font-bold gradient-text">Tenant Management</h1>
           <p className="text-[#2D4A42]">Manage all hotel tenants on the platform</p>
@@ -93,7 +116,7 @@ export default function TenantsPage() {
         </button>
       </div>
 
-      <div>
+      <div className="p-2">
         {/* Platform Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 slide-up">
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
@@ -109,7 +132,7 @@ export default function TenantsPage() {
               <span className="font-semibold text-sm">Real-time update</span>
             </div>
           </div>
-          {/* ... keeping other stats for aesthetic as requested ... */}
+
           <div className="glass-card rounded-2xl p-6 card-hover border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -145,7 +168,7 @@ export default function TenantsPage() {
         </div>
 
         {/* Filters */}
-        <div className="glass-card rounded-2xl p-4 md:p-6 mb-8 slide-up border border-gray-200" style={{ animationDelay: '0.1s' }}>
+        <div className="glass-card rounded-2xl p-4 md:p-6 mb-8 slide-up border border-gray-200">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2 flex-wrap">
               {Object.entries(STATUS_CONFIG).map(([key, config]: any) => (
@@ -173,14 +196,14 @@ export default function TenantsPage() {
         </div>
 
         {/* Tenants Table */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 slide-up border border-gray-200" style={{ animationDelay: '0.2s' }}>
+        <div className="glass-card rounded-2xl p-6 md:p-8 slide-up border border-gray-200 overflow-visible" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold gradient-text">
               {STATUS_CONFIG[filter]?.label || 'All Tenants'}
             </h2>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-visible">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -190,7 +213,7 @@ export default function TenantsPage() {
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Commission</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Joined</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
-                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B] text-right pr-12">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -213,13 +236,15 @@ export default function TenantsPage() {
                   filteredTenants.map((tenant, index) => (
                     <tr
                       key={tenant.id}
-                      className="hover:bg-gray-50 transition-colors animate-in slide-in-from-bottom-2 duration-300"
+                      className="hover:bg-gray-50/50 transition-colors animate-in slide-in-from-bottom-2 duration-300"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="text-3xl">🏨</div>
-                          <h3 className="font-semibold text-[#1A2E2B]">{tenant.name}</h3>
+                          <h3 className="font-semibold text-[#1A2E2B]">
+                            {tenant.hotels?.[0]?.name || tenant.name}
+                          </h3>
                         </div>
                       </td>
                       <td className="py-4 px-4 font-medium text-blue-600">{tenant.slug}.stayos.com</td>
@@ -240,75 +265,104 @@ export default function TenantsPage() {
                           tenant.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {tenant.status.toUpperCase()}
+                          {tenant.status?.toUpperCase() || 'UNKNOWN'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 relative">
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDropdown(activeDropdown === tenant.id ? null : tenant.id);
-                            }}
-                            className={`glass px-4 py-2 rounded-lg hover:bg-gray-100 transition-all text-sm font-medium flex items-center gap-2 ${
-                              activeDropdown === tenant.id ? 'bg-gray-100 ring-2 ring-blue-500/20' : 'text-[#1A2E2B]'
-                            }`}
-                          >
-                            <span>{activeDropdown === tenant.id ? '✕' : '⚙️'}</span>
-                            <span>Actions</span>
-                          </button>
+                      <td className="py-4 px-4 relative text-right">
+                        <div className="flex items-center justify-end pr-4">
+                          <div className="relative inline-block text-left">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDropdown(activeDropdown === tenant.id ? null : tenant.id);
+                              }}
+                              className={`glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-bold flex items-center gap-2 ${
+                                activeDropdown === tenant.id ? 'bg-gray-100 ring-4 ring-blue-500/10' : 'text-[#1A2E2B]'
+                              }`}
+                            >
+                              <span>{activeDropdown === tenant.id ? '✕' : '⚙️'}</span>
+                              <span>Actions</span>
+                            </button>
 
-                          {/* Action Dropdown */}
-                          {activeDropdown === tenant.id && (
-                            <>
-                              <div 
-                                className="fixed inset-0 z-10" 
-                                onClick={() => setActiveDropdown(null)}
-                              ></div>
-                              <div className="absolute right-4 top-full mt-2 w-48 glass-card border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                <div className="p-1">
-                                  <button 
-                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#1A2E2B] hover:bg-gray-50 rounded-lg flex items-center gap-3 transition-colors"
-                                    onClick={() => alert('Editing details coming soon')}
-                                  >
-                                    <span>📝</span> Edit Details
-                                  </button>
-                                  
-                                  <button 
-                                    className={`w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg flex items-center gap-3 transition-colors ${
-                                      tenant.status === 'active' 
-                                        ? 'text-amber-600 hover:bg-amber-50' 
-                                        : 'text-emerald-600 hover:bg-emerald-50'
-                                    }`}
-                                    onClick={() => handleToggleStatus(tenant)}
-                                    disabled={processingId === tenant.id}
-                                  >
-                                    {processingId === tenant.id ? (
-                                      <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
-                                    ) : (
-                                      <span>{tenant.status === 'active' ? '⏸' : '▶️'}</span>
-                                    )}
-                                    {tenant.status === 'active' ? 'Suspend Hotel' : 'Activate Hotel'}
-                                  </button>
+                            {/* Action Dropdown */}
+                            {activeDropdown === tenant.id && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-10" 
+                                  onClick={() => setActiveDropdown(null)}
+                                ></div>
+                                <div className="absolute right-0 top-full mt-3 w-56 glass-card border border-white/20 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top-right">
+                                  <div className="p-1.5 space-y-0.5">
+                                    <button 
+                                      className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1A2E2B] hover:bg-white/50 rounded-xl flex items-center gap-3 transition-colors"
+                                      onClick={() => {
+                                        setSelectedTenantForEdit(tenant);
+                                        setActiveDropdown(null);
+                                      }}
+                                    >
+                                      <span className="text-xl">📝</span> Edit Details
+                                    </button>
+                                    
+                                    <button 
+                                      className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1A2E2B] hover:bg-white/50 rounded-xl flex items-center gap-3 transition-colors"
+                                      onClick={() => {
+                                        const input = document.createElement('input')
+                                        input.type = 'file'
+                                        input.accept = 'image/*'
+                                        input.onchange = (e: any) => {
+                                          const file = e.target.files[0]
+                                          if (file && tenant.hotels?.[0]?.id) {
+                                            handleImageUpload(tenant.hotels[0].id, file)
+                                          }
+                                        }
+                                        input.click()
+                                      }}
+                                      disabled={uploadingHotelId !== null}
+                                    >
+                                      {uploadingHotelId === (tenant.hotels?.[0]?.id) ? (
+                                        <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                                      ) : (
+                                        <span className="text-xl">🖼️</span>
+                                      )}
+                                      Upload Property Image
+                                    </button>
 
-                                  <div className="h-px bg-gray-100 my-1"></div>
+                                    <button 
+                                      className={`w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3 transition-colors ${
+                                        tenant.status === 'active' 
+                                          ? 'text-amber-600 hover:bg-amber-50/50' 
+                                          : 'text-emerald-600 hover:bg-emerald-50/50'
+                                      }`}
+                                      onClick={() => handleToggleStatus(tenant)}
+                                      disabled={processingId === tenant.id}
+                                    >
+                                      {processingId === tenant.id ? (
+                                        <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
+                                      ) : (
+                                        <span className="text-xl">{tenant.status === 'active' ? '⏸' : '▶️'}</span>
+                                      )}
+                                      {tenant.status === 'active' ? 'Suspend Hotel' : 'Activate Hotel'}
+                                    </button>
 
-                                  <button 
-                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-3 transition-colors"
-                                    onClick={() => handleDeleteTenant(tenant.id, tenant.name)}
-                                    disabled={processingId === tenant.id}
-                                  >
-                                    {processingId === tenant.id ? (
-                                      <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full"></div>
-                                    ) : (
-                                      <span>🗑️</span>
-                                    )}
-                                    Delete Hotel
-                                  </button>
+                                    <div className="h-px bg-gray-200/50 my-1 mx-2"></div>
+
+                                    <button 
+                                      className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 rounded-xl flex items-center gap-3 transition-colors"
+                                      onClick={() => handleDeleteTenant(tenant.id, tenant.name)}
+                                      disabled={processingId === tenant.id}
+                                    >
+                                      {processingId === tenant.id ? (
+                                        <div className="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full"></div>
+                                      ) : (
+                                        <span className="text-xl">🗑️</span>
+                                      )}
+                                      Delete Hotel
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            </>
-                          )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -324,6 +378,13 @@ export default function TenantsPage() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchTenants}
+      />
+
+      <EditTenantModal 
+        isOpen={!!selectedTenantForEdit}
+        onClose={() => setSelectedTenantForEdit(null)}
+        onSuccess={fetchTenants}
+        tenant={selectedTenantForEdit}
       />
     </div>
   )

@@ -24,7 +24,13 @@ class UserRepository(TenantScopedRepository):
         result = await db.execute(
             select(User)
             .options(selectinload(User.tenant))
-            .where(and_(User.tenant_id == tenant_id, User.email == email))
+            .where(
+                and_(
+                    User.tenant_id == tenant_id, 
+                    User.email == email,
+                    User.is_deleted == False
+                )
+            )
         )
         return result.scalars().first()
 
@@ -34,6 +40,7 @@ class UserRepository(TenantScopedRepository):
         # Prioritize Super Admins (tenant_id IS NULL)
         result = await db.execute(
             select(User)
+            .options(selectinload(User.tenant))
             .where(User.email == email, User.is_deleted == False)
             .order_by(User.tenant_id.is_not(None)) # NULLs first (False < True)
         )

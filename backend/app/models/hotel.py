@@ -22,6 +22,7 @@ class Hotel(BaseModel):
     email = Column(String(255))
     website = Column(String(255))
     is_active = Column(Boolean, nullable=False, default=True)
+    image_url = Column(String(500), nullable=True)
 
     # Relationships
     tenant = relationship("Tenant", back_populates="hotels")

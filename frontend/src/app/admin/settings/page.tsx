@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import apiClient from '../../../services/apiClient'
 
 interface HotelSettings {
   general: {
@@ -155,6 +156,63 @@ export default function SettingsPage() {
   }
 
   const isEmpty = !settings.general.name && !settings.contact.email && settings.amenities.length === 0
+
+  useEffect(() => {
+    fetchHotel()
+  }, [])
+
+  const fetchHotel = async () => {
+    try {
+      setLoading(true)
+      const { data } = await apiClient.get('/api/v1/hotels/mine')
+      setHotel(data)
+    } catch (error) {
+      console.error('Error fetching hotel:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateHotel = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setSaving(true)
+      await apiClient.patch('/api/v1/hotels/mine', {
+        name: hotel.name,
+        description: hotel.description,
+        address_line1: hotel.address_line1,
+        phone: hotel.phone,
+        email: hotel.email,
+        website: hotel.website
+      })
+      setToast('Settings saved successfully!')
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      alert('Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      setSaving(true)
+      const { data } = await apiClient.post(`/api/v1/hotels/${hotel.id}/image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setHotel({ ...hotel, image_url: data.image_url })
+      setToast('Logo updated!')
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('Failed to upload image')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">

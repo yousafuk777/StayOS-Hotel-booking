@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from app.schemas.hotel import HotelDiscoveryResponse, HotelMinimalResponse
 
 
 class TenantPlan(str, Enum):
@@ -35,6 +36,8 @@ class TenantUpdate(BaseModel):
     plan: Optional[TenantPlan] = None
     status: Optional[TenantStatus] = None
     commission_rate: Optional[Decimal] = None
+    hotel_name: Optional[str] = Field(None, min_length=2, max_length=200)
+    star_rating: Optional[int] = Field(None, ge=1, le=5)
 
 
 class TenantResponse(TenantBase):
@@ -42,6 +45,7 @@ class TenantResponse(TenantBase):
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
+    hotels: List[HotelMinimalResponse] = []
 
     class Config:
         from_attributes = True

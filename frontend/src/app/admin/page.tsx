@@ -21,14 +21,14 @@ export default function AdminPage() {
     try {
       const arrivalsRes = await api.get('/api/v1/bookings/arrivals').catch(() => ({ data: { bookings: [] } }))
       const roomStatusRes = await api.get('/api/v1/rooms/dashboard-summary').catch(() => ({ data: null }))
-      
+
       // Safely extract arrivals - ensure it's an array
       const arrivalsData = Array.isArray(arrivalsRes.data?.bookings) ? arrivalsRes.data.bookings : []
       setArrivals(arrivalsData)
-      
+
       // Safely extract room status - ensure it's an object with expected structure
-      const roomStatusData = roomStatusRes.data && typeof roomStatusRes.data === 'object' && 'status_counts' in roomStatusRes.data 
-        ? roomStatusRes.data 
+      const roomStatusData = roomStatusRes.data && typeof roomStatusRes.data === 'object' && 'status_counts' in roomStatusRes.data
+        ? roomStatusRes.data
         : null
       setRoomStatus(roomStatusData)
     } catch (error) {
@@ -196,13 +196,13 @@ export default function AdminPage() {
           isActive={dashboardFilter === 'checkins'}
         />
         <StatCard
-          label="Revenue"
-          value={loading ? '...' : `$${bookings.reduce((sum, b) => sum + b.amount, 0).toLocaleString()}`}
-          icon="💵"
-          color="green"
-          subtext="Total from all bookings"
-          onClick={() => setDashboardFilter('revenue')}
-          isActive={dashboardFilter === 'revenue'}
+          label="Occupancy Rate"
+          value={loading ? '...' : `${Number(stats?.occupancy_rate || 0).toFixed(1)}%`}
+          icon="📊"
+          color="orange"
+          subtext="All rooms"
+          onClick={() => setDashboardFilter('all')}
+          isActive={dashboardFilter === 'all'}
         />
       </div>
 
@@ -212,7 +212,7 @@ export default function AdminPage() {
           <h2 className="text-2xl font-bold gradient-text flex items-center gap-3">
             📋 Pending Bookings ({pendingBookings.length})
           </h2>
-          <button 
+          <button
             onClick={() => router.push('/admin/bookings')}
             className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer"
           >
@@ -261,23 +261,22 @@ export default function AdminPage() {
                     <td className="py-4 px-4 text-[#1A2E2B]">{booking.nights}</td>
                     <td className="py-4 px-4 font-semibold text-[#1A2E2B]">${booking.amount.toLocaleString()}</td>
                     <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        booking.status === 'vip'
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${booking.status === 'vip'
                           ? 'bg-purple-100 text-purple-700'
                           : 'bg-yellow-100 text-yellow-700'
-                      }`}>
+                        }`}>
                         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => handleConfirmBooking(booking)}
                           className="glass px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer"
                         >
                           ✓ Confirm
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeclineBooking(booking)}
                           className="glass px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-sm font-medium text-red-600 cursor-pointer"
                         >
@@ -303,7 +302,7 @@ export default function AdminPage() {
             </h2>
             <span className="text-sm text-[#2D4A42] font-medium">{arrivals.length} guests</span>
           </div>
-          
+
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {arrivals.length === 0 ? (
               <div className="text-center py-12 glass rounded-xl text-[#2D4A42]">
@@ -326,7 +325,7 @@ export default function AdminPage() {
                     <p className="font-semibold text-[#1A2E2B]">
                       {new Date(arrival.check_in_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
-                    <button 
+                    <button
                       onClick={() => router.push(`/admin/bookings?id=${arrival.id}`)}
                       className="text-xs text-blue-600 font-medium hover:underline cursor-pointer"
                     >
@@ -345,14 +344,14 @@ export default function AdminPage() {
             <h2 className="text-2xl font-bold gradient-text flex items-center gap-3">
               🧹 Room Status Board
             </h2>
-            <button 
+            <button
               onClick={() => router.push('/admin/housekeeping')}
               className="text-sm text-blue-600 font-medium hover:underline cursor-pointer"
             >
               View All →
             </button>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-4">
             {[
               { status: 'Clean', count: roomStatus?.status_counts?.Clean || 0, color: 'from-green-500 to-green-600', icon: '✓' },

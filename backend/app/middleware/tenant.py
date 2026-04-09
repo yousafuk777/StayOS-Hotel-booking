@@ -2,7 +2,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.core.database import async_sessionmaker, create_async_engine
+from app.core.database import async_session_maker
 from app.models.tenant import Tenant
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -14,7 +14,7 @@ class TenantMiddleware(BaseHTTPMiddleware):
     Priority: Header > Host (Subdomain) > Dev Fallback (if APP_DEBUG=True).
     """
 
-    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/redoc", "/api/v1/super-admin", "/api/v1/auth"]
+    EXEMPT_PATHS = ["/health", "/docs", "/openapi.json", "/redoc", "/api/v1/super-admin", "/api/v1/auth", "/api/v1/hotels", "/uploads"]
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
@@ -69,15 +69,14 @@ class TenantMiddleware(BaseHTTPMiddleware):
 
     async def _get_tenant(self, id: str = None, slug: str = None) -> Tenant | None:
         """Fetch tenant from DB by ID or Slug."""
-        engine = create_async_engine(settings.DATABASE_URL)
-        async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-        
-        async with async_session() as session:
+        async with async_session_maker() as session:
             if id:
-                result = await session.execute(select(Tenant).where(Tenant.id == int(id)))
+                try:
+                    result = await session.execute(select(Tenant).where(Tenant.id == int(id)))
+                except (ValueError, TypeError):
+                    return None
             else:
                 result = await session.execute(select(Tenant).where(Tenant.slug == slug))
             tenant = result.scalar_one_or_none()
             
-        await engine.dispose()
         return tenant

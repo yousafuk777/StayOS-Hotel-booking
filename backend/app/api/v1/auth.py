@@ -44,27 +44,15 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """Login and get access token."""
-    # For login, first find the user without tenant constraint
-    from app.repositories.user_repo import UserRepository
-    from sqlalchemy import select
-    from app.models.user import User
-    
-    # First try to find user by email (without tenant filter), including tenant details
-    result = await db.execute(
-        select(User)
-        .options(selectinload(User.tenant))
-        .where(User.email == form_data.username)
-    )
-    user = result.scalar_one_or_none()
-    
-    if not user:
+    # Authenticate globally first (Central Login)
+    try:
+        tokens, user = await AuthService.authenticate(
+            db, None, form_data.username, form_data.password
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Use the user's tenant_id for authentication
-    tenant_id = user.tenant_id
-    tokens, user = await AuthService.authenticate(
-        db, tenant_id, form_data.username, form_data.password
-    )
 
     # Set refresh token as httpOnly cookie
     response.set_cookie(

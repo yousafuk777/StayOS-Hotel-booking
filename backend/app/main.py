@@ -10,7 +10,9 @@ from app.seed_db import seed_super_admin
 from fastapi.responses import RedirectResponse
 from sqlalchemy import text
 
-os.makedirs("uploads/rooms", exist_ok=True)
+# Ensure upload directories exist
+for folder in ["rooms", "hotels"]:
+    os.makedirs(f"uploads/{folder}", exist_ok=True)
 
 app = FastAPI(
     title="StayOS API",
