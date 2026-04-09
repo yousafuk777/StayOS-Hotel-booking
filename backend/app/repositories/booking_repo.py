@@ -177,6 +177,58 @@ class BookingRepository(TenantScopedRepository):
         return result.rowcount > 0
 
     @classmethod
+    async def update_booking(cls, db: AsyncSession, tenant_id: int, booking_id: int, update_data: dict):
+        """Update an existing booking."""
+        if not update_data:
+            raise ValueError("No update fields provided")
+
+        # Load existing booking to verify tenant and support date/nights handling.
+        existing_booking = await db.get(Booking, booking_id)
+        if not existing_booking or existing_booking.tenant_id != tenant_id or existing_booking.is_deleted:
+            return None
+
+        if 'check_in_date' in update_data or 'check_out_date' in update_data:
+            check_in_date = update_data.get('check_in_date', existing_booking.check_in_date)
+            check_out_date = update_data.get('check_out_date', existing_booking.check_out_date)
+
+            if isinstance(check_in_date, str):
+                check_in_date = datetime.fromisoformat(check_in_date)
+            if isinstance(check_out_date, str):
+                check_out_date = datetime.fromisoformat(check_out_date)
+
+            if check_out_date <= check_in_date:
+                raise ValueError("check_out_date must be after check_in_date")
+
+            update_data['nights'] = (check_out_date - check_in_date).days
+
+        stmt = (
+            update(Booking)
+            .where(
+                Booking.id == booking_id,
+                Booking.tenant_id == tenant_id,
+                Booking.is_deleted == False
+            )
+            .values(**update_data)
+        )
+        result = await db.execute(stmt)
+        if result.rowcount == 0:
+            await db.rollback()
+            return None
+
+        await db.commit()
+
+        stmt = (
+            select(Booking)
+            .options(
+                selectinload(Booking.guest),
+                selectinload(Booking.rooms).selectinload(BookingRoom.room).selectinload(Room.category)
+            )
+            .where(Booking.id == booking_id)
+        )
+        refreshed = await db.execute(stmt)
+        return refreshed.scalar_one_or_none()
+
+    @classmethod
     async def decline_booking(cls, db: AsyncSession, tenant_id: int, booking_id: int):
         """Decline a booking by deleting it permanently."""
         stmt = (
@@ -196,64 +248,140 @@ class BookingRepository(TenantScopedRepository):
     async def create_booking(cls, db: AsyncSession, tenant_id: int, booking_data: dict):
         """Create a new booking and associate a room if provided."""
         import uuid
-        # Generate a unique reference number
-        ref = f"BKG-{uuid.uuid4().hex[:8].upper()}"
+        from datetime import datetime
+        import sys
         
-        # Extract room_id from data if present
-        room_id = booking_data.pop("room_id", None)
-        
-        # Extract dynamic guest data
-        guest_name = booking_data.pop("guest_name", None)
-        email = booking_data.pop("email", None)
-        phone = booking_data.pop("phone", None)
-        room_type = booking_data.pop("room_type", None)
-        
-        # If guest_id is missing but we have a name, create a dummy guest account
-        if not booking_data.get("guest_id") and guest_name:
-            from app.models.user import User, UserRole
-            from app.core.security import hash_password
+        print('🔥 [BookingRepo] create_booking method called!', flush=True)
+        sys.stdout.flush()
+        try:
+            print(f'💾 [BookingRepo] Starting create_booking for tenant {tenant_id}', flush=True)
+            sys.stdout.flush()
+            print(f'💾 [BookingRepo] Input booking_data keys: {list(booking_data.keys())}', flush=True)
+            sys.stdout.flush()
             
-            parts = guest_name.strip().split(" ", 1)
-            first_name = parts[0]
-            last_name = parts[1] if len(parts) > 1 else ""
+            # Generate a unique reference number
+            ref = f"BKG-{uuid.uuid4().hex[:8].upper()}"
             
-            guest = User(
+            # Extract room_id from data if present
+            room_id = booking_data.pop("room_id", None)
+            
+            # Extract dynamic guest data
+            guest_name = booking_data.pop("guest_name", None)
+            email = booking_data.pop("email", None)
+            phone = booking_data.pop("phone", None)
+            room_type = booking_data.pop("room_type", None)
+            
+            print(f'💾 [BookingRepo] Guest info: name={guest_name}, email={email}, phone={phone}')
+            
+            # Validate required fields
+            if not booking_data.get('check_in_date'):
+                raise ValueError("check_in_date is required")
+            if not booking_data.get('check_out_date'):
+                raise ValueError("check_out_date is required")
+            if not booking_data.get('hotel_id'):
+                raise ValueError("hotel_id is required")
+            
+            # If guest_id is missing but we have a name, create a dummy guest account
+            if not booking_data.get("guest_id") and guest_name:
+                from app.models.user import User, UserRole
+                from app.core.security import hash_password
+                
+                print(f'� [BookingRepo] About to check for existing user: tenant_id={tenant_id}, email="{email}"', flush=True)
+                import sys
+                sys.stdout.flush()
+                
+                # Check if a user with this email already exists (case-insensitive)
+                existing_user = await db.execute(
+                    select(User).where(
+                        User.tenant_id == tenant_id,
+                        User.email.ilike(email)  # Case-insensitive search
+                    )
+                )
+                existing_user = existing_user.scalar_one_or_none()
+                
+                print(f'🔍 [BookingRepo] Query result: {existing_user is not None}', flush=True)
+                sys.stdout.flush()
+                
+                if existing_user:
+                    print(f'✅ [BookingRepo] Reusing existing user ID: {existing_user.id} (role: {existing_user.role})', flush=True)
+                    sys.stdout.flush()
+                    # Use existing user
+                    booking_data["guest_id"] = existing_user.id
+                else:
+                    print(f'🆕 [BookingRepo] Creating new user for email: {email}', flush=True)
+                    sys.stdout.flush()
+                    # Create new guest user
+                    parts = guest_name.strip().split(" ", 1)
+                    first_name = parts[0]
+                    last_name = parts[1] if len(parts) > 1 else ""
+                    
+                    print(f'💾 [BookingRepo] Creating new guest user: {first_name} {last_name} with email: {email}')
+                    
+                    guest = User(
+                        tenant_id=tenant_id,
+                        first_name=first_name,
+                        last_name=last_name,
+                        email=email or f"guest_{uuid.uuid4().hex[:6]}@example.com",
+                        phone=phone or "",
+                        hashed_password=hash_password("guest_auto_pass_123"),
+                        role=UserRole.guest,
+                        is_active=True,
+                        is_verified=True
+                    )
+                    db.add(guest)
+                    await db.flush()
+                    booking_data["guest_id"] = guest.id
+                    print(f'💾 [BookingRepo] Created new guest with ID: {guest.id}')
+            elif not booking_data.get("guest_id"):
+                # Fallback for completely empty guest
+                print(f'💾 [BookingRepo] No guest provided, using fallback ID 1')
+                booking_data["guest_id"] = 1
+            
+            print(f'💾 [BookingRepo] Creating booking with data: {booking_data}')
+            
+            booking = Booking(
                 tenant_id=tenant_id,
-                first_name=first_name,
-                last_name=last_name,
-                email=email or f"guest_{uuid.uuid4().hex[:6]}@example.com",
-                phone=phone or "",
-                hashed_password=hash_password("guest_auto_pass_123"),
-                role=UserRole.guest,
-                is_active=True,
-                is_verified=True
+                reference_number=ref,
+                **booking_data
             )
-            db.add(guest)
-            await db.flush()
-            booking_data["guest_id"] = guest.id
-        elif not booking_data.get("guest_id"):
-            # Fallback for completely empty guest
-            booking_data["guest_id"] = 1
-        
-        booking = Booking(
-            tenant_id=tenant_id,
-            reference_number=ref,
-            **booking_data
-        )
-        db.add(booking)
-        
-        # If room_id is provided, create the BookingRoom link
-        if room_id:
-            # We flush to get booking.id
-            await db.flush()
-            booking_room = BookingRoom(
-                booking_id=booking.id,
-                room_id=room_id,
-                nightly_rate=booking.room_total / booking.nights if booking.nights > 0 else booking.room_total
-            )
-            db.add(booking_room)
+            db.add(booking)
             
-        await db.commit()
-        await db.refresh(booking)
-        return booking
-
+            # If room_id is provided, create the BookingRoom link
+            if room_id:
+                # We flush to get booking.id
+                await db.flush()
+                booking_room = BookingRoom(
+                    booking_id=booking.id,
+                    room_id=room_id,
+                    nightly_rate=booking.room_total / booking.nights if booking.nights > 0 else booking.room_total
+                )
+                db.add(booking_room)
+                
+            await db.commit()
+            await db.refresh(booking)
+
+            # Eagerly load relationships needed by the API response to avoid async lazy-loading
+            stmt = (
+                select(Booking)
+                .options(
+                    selectinload(Booking.guest),
+                    selectinload(Booking.rooms).selectinload(BookingRoom.room).selectinload(Room.category)
+                )
+                .where(Booking.id == booking.id)
+            )
+            result = await db.execute(stmt)
+            booking = result.scalar_one()
+
+            print(f'✅ [BookingRepo] Successfully created booking ID: {booking.id} with ref: {ref}')
+            return booking
+        except ValueError as ve:
+            print(f'❌ [BookingRepo] Validation error: {str(ve)}')
+            await db.rollback()
+            raise
+        except Exception as e:
+            print(f'❌ [BookingRepo] Unexpected error: {type(e).__name__}: {str(e)}')
+            import traceback
+            traceback.print_exc()
+            await db.rollback()
+            raise
+

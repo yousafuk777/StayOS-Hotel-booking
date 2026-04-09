@@ -51,6 +51,14 @@ export default function RoomsPage() {
     try {
       setLoading(true)
       const { data } = await apiClient.get('/api/v1/rooms/')
+      
+      // Ensure data is an array before mapping
+      if (!Array.isArray(data)) {
+        console.error('Expected rooms data to be an array, got:', typeof data)
+        setRooms([])
+        return
+      }
+      
       const mappedRooms = data.map((r: any) => ({
         id: r.id,
         number: r.room_number,
@@ -68,6 +76,7 @@ export default function RoomsPage() {
       setRooms(mappedRooms)
     } catch (error) {
       console.error('Error fetching rooms:', error)
+      setRooms([])
     } finally {
       setLoading(false)
     }
