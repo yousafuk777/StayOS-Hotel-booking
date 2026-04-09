@@ -154,26 +154,81 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Enhanced */}
         <div className="glass-card rounded-3xl p-8 slide-up" style={{ animationDelay: '1s' }}>
-          <h2 className="text-3xl font-bold gradient-text mb-6 text-center">⚡ Quick Actions</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold gradient-text flex items-center gap-3">⚡ Quick Actions</h2>
+            <p className="text-sm text-[#2D4A42]">Get things done in seconds</p>
+          </div>
+          
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="/search" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
-              <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">🔍</div>
-              <p className="font-semibold text-[#1A2E2B]">Search Hotels</p>
+            {/* Search Hotels */}
+            <a 
+              href="/search" 
+              className="group relative glass p-6 rounded-2xl card-hover cursor-pointer text-center overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative">
+                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">🔍</div>
+                <p className="font-semibold text-[#1A2E2B] group-hover:text-blue-600 transition-colors">Search Hotels</p>
+                <p className="text-xs text-[#2D4A42] opacity-0 group-hover:opacity-100 transition-opacity mt-2">Find your next stay</p>
+              </div>
             </a>
-            <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
-              <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">📅</div>
-              <p className="font-semibold text-[#1A2E2B]">My Bookings</p>
+
+            {/* My Bookings */}
+            <a 
+              href="#" 
+              className="group relative glass p-6 rounded-2xl card-hover cursor-pointer text-center overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative">
+                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">📅</div>
+                <p className="font-semibold text-[#1A2E2B] group-hover:text-green-600 transition-colors">My Bookings</p>
+                <p className="text-xs text-[#2D4A42] opacity-0 group-hover:opacity-100 transition-opacity mt-2">Manage reservations</p>
+              </div>
             </a>
-            <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
-              <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⭐</div>
-              <p className="font-semibold text-[#1A2E2B]">Reviews</p>
+
+            {/* Reviews */}
+            <a 
+              href="#" 
+              className="group relative glass p-6 rounded-2xl card-hover cursor-pointer text-center overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative">
+                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⭐</div>
+                <p className="font-semibold text-[#1A2E2B] group-hover:text-purple-600 transition-colors">Reviews</p>
+                <p className="text-xs text-[#2D4A42] opacity-0 group-hover:opacity-100 transition-opacity mt-2">Share your experience</p>
+              </div>
             </a>
-            <a href="#" className="group glass p-6 rounded-2xl card-hover cursor-pointer text-center">
-              <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⚙️</div>
-              <p className="font-semibold text-[#1A2E2B]">Settings</p>
+
+            {/* Settings */}
+            <a 
+              href="#" 
+              className="group relative glass p-6 rounded-2xl card-hover cursor-pointer text-center overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative">
+                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform inline-block">⚙️</div>
+                <p className="font-semibold text-[#1A2E2B] group-hover:text-orange-600 transition-colors">Settings</p>
+                <p className="text-xs text-[#2D4A42] opacity-0 group-hover:opacity-100 transition-opacity mt-2">Customize profile</p>
+              </div>
             </a>
+          </div>
+
+          {/* Additional Quick Actions Row */}
+          <div className="mt-8 pt-8 border-t border-white/20">
+            <p className="text-sm text-[#2D4A42] mb-4 font-medium">More Actions</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <button className="glass px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-center text-sm font-medium text-[#1A2E2B]">
+                🎁 Loyalty Rewards
+              </button>
+              <button className="glass px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-center text-sm font-medium text-[#1A2E2B]">
+                🆘 Support & Help
+              </button>
+              <button className="glass px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-center text-sm font-medium text-[#1A2E2B]">
+                📱 Download App
+              </button>
+            </div>
           </div>
         </div>
 

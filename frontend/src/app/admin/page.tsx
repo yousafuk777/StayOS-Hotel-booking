@@ -84,6 +84,88 @@ export default function AdminPage() {
         </p>
       </div>
 
+      {/* Quick Actions */}
+      <div className="glass-card rounded-3xl p-8 slide-up" style={{ animationDelay: '0.05s' }}>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold gradient-text flex items-center gap-3">⚡ Quick Actions</h2>
+          <p className="text-sm text-[#2D4A42]">Get things done faster</p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* New Booking */}
+          <button 
+            onClick={() => router.push('/admin/new-booking')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">📝</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">New Booking</p>
+            </div>
+          </button>
+
+          {/* Check In */}
+          <button 
+            onClick={() => router.push('/admin/bookings')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">✓</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">Check In</p>
+            </div>
+          </button>
+
+          {/* Rooms */}
+          <button 
+            onClick={() => router.push('/admin/rooms')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">🛏️</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">Rooms</p>
+            </div>
+          </button>
+
+          {/* Housekeeping */}
+          <button 
+            onClick={() => router.push('/admin/housekeeping')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">🧹</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">Housekeeping</p>
+            </div>
+          </button>
+
+          {/* Staff */}
+          <button 
+            onClick={() => router.push('/admin/staff')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">👥</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">Staff</p>
+            </div>
+          </button>
+
+          {/* Settings */}
+          <button 
+            onClick={() => router.push('/admin/settings')}
+            className="group relative glass p-5 rounded-2xl card-hover cursor-pointer text-center overflow-hidden transition-all hover:shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform inline-block">⚙️</div>
+              <p className="font-semibold text-[#1A2E2B] text-sm">Settings</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Today's Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 slide-up" style={{ animationDelay: '0.1s' }}>
         <StatCard
