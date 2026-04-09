@@ -1,9 +1,33 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../components/Navbar'
+import api from '../services/api'
+import { API_BASE_URL } from '../services/apiClient'
 
 export default function LandingPage() {
+  const [hotels, setHotels] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        setLoading(true)
+        const response = await api.get('/api/v1/hotels/')
+        setHotels(response.data)
+        setError(null)
+      } catch (err: any) {
+        console.error('Error fetching hotels:', err)
+        setError('Failed to load hotels. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchHotels()
+  }, [])
   return (
     <main className="min-h-screen relative overflow-hidden bg-lightBg">
       <Navbar />

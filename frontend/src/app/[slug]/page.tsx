@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import axios from 'axios'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+import { API_BASE_URL } from '../../services/apiClient'
+import api from '../../services/api'
 
 interface RoomCategory {
   id: number
@@ -45,7 +44,7 @@ export default function HotelLandingPage() {
     const fetchHotelDetails = async () => {
       try {
         setLoading(true)
-        const { data } = await axios.get(`${API_BASE_URL}/api/v1/hotels/${slug}`)
+        const { data } = await api.get(`/api/v1/hotels/${slug}`)
         setHotel(data)
       } catch (err: any) {
         console.error('Error fetching hotel details:', err)
