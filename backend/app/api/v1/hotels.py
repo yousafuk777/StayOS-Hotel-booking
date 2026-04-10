@@ -60,18 +60,27 @@ async def get_public_hotel_details(
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed information for a specific hotel by its slug."""
+    # First, get the tenant to verify the slug exists
+    tenant_query = select(Tenant).where(Tenant.slug == slug)
+    tenant_result = await db.execute(tenant_query)
+    tenant = tenant_result.scalar_one_or_none()
+    
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+    
+    # Now get the first active hotel for this tenant with all its associations
     query = (
         select(Hotel)
-        .join(Tenant, Hotel.tenant_id == Tenant.id)
-        .where(Tenant.slug == slug, Hotel.is_active == True)
+        .where(Hotel.tenant_id == tenant.id, Hotel.is_active == True)
         .options(
             selectinload(Hotel.room_categories)
             .selectinload(RoomCategory.rooms)
             .selectinload(Room.images)
         )
+        .limit(1)
     )
     result = await db.execute(query)
-    hotel = result.scalar_one_or_none()
+    hotel = result.unique().scalar_one_or_none()
 
     if not hotel:
         raise HTTPException(status_code=404, detail="Hotel not found")
@@ -99,9 +108,23 @@ async def get_public_hotel_details(
                 "name": rc.name,
                 "description": rc.description,
                 "base_price": float(rc.base_price),
-                "capacity": rc.capacity,
-                "bed_type": rc.bed_type,
-                "image_url": rc.rooms[0].images[0].url if rc.rooms and rc.rooms[0].images else None
+                "max_occupancy": rc.capacity,
+                "rooms": [
+                    {
+                        "id": room.id,
+                        "room_number": room.room_number,
+                        "status": room.status,
+                        "images": [
+                            {
+                                "id": img.id,
+                                "image_url": img.url,
+                                "is_primary": idx == 0
+                            }
+                            for idx, img in enumerate(room.images)
+                        ]
+                    }
+                    for room in rc.rooms
+                ]
             }
             for rc in hotel.room_categories if rc.is_active
         ]
