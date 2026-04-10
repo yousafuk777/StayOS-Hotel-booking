@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1 import (
     auth, super_admin, rooms, staff, 
-    bookings, guests, hotels
+    bookings, guests, hotels, notifications
 )
 
 # Create main API router

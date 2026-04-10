@@ -62,6 +62,7 @@ const config: Config = {
       },
       fontFamily: {
         heading: ['Syne', 'sans-serif'],
+        display: ['Playfair Display', 'serif'],
         body: ['Outfit', 'sans-serif'],
         sans: ['Outfit', 'sans-serif'],
       },
