@@ -62,6 +62,7 @@ class UserRepository(TenantScopedRepository):
         """Get all users across all tenants (super-admin use)."""
         result = await db.execute(
             select(User)
+            .options(selectinload(User.tenant))
             .where(User.is_deleted == False)
             .order_by(User.created_at.desc())
             .offset(skip)
@@ -129,10 +130,10 @@ class UserRepository(TenantScopedRepository):
 
     @classmethod
     async def delete_global(cls, db: AsyncSession, user_id: int):
-        """Soft delete user record globally (Super Admin)."""
+        """Hard delete user record globally from the database (Super Admin)."""
         user = await cls.get_by_id(db, user_id)
         if user:
-            user.is_deleted = True
+            await db.delete(user)
             await db.commit()
             return True
         return False

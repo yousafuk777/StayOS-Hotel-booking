@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import api from '@/services/api'
-import UserFormModal from '@/components/super-admin/UserFormModal'
+import api from '../../../services/api'
+import UserFormModal from '../../../components/super-admin/UserFormModal'
+import { Trash2, Edit, UserPlus, Search, Filter } from 'lucide-react'
 
 interface User {
   id: number
@@ -11,6 +12,7 @@ interface User {
   last_name: string | null
   role: string
   tenant_id: number | null
+  tenant_name: string | null
   is_active: boolean
   is_verified: boolean
   created_at: string
@@ -33,6 +35,7 @@ export default function UsersPage() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<number | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -65,12 +68,17 @@ export default function UsersPage() {
   }
 
   const handleDelete = async (user: User) => {
-    if (!window.confirm(`Are you sure you want to delete ${user.email}? This action cannot be easily undone.`)) return
     try {
+      setLoading(true)
       await api.delete(`/api/v1/super-admin/users/${user.id}`)
-      fetchData() // Refresh list
-    } catch (err) {
-      alert('Failed to delete user')
+      await fetchData()
+      setDeletingUserId(null)
+      alert("User removed from database.")
+    } catch (err: any) {
+      console.error('Delete failed:', err)
+      alert("Error deleting user: " + (err.response?.data?.detail || err.message))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -212,7 +220,7 @@ export default function UsersPage() {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">User</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Role</th>
-                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant ID</th>
+                  <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Joined</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
                   <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
@@ -258,7 +266,7 @@ export default function UsersPage() {
                       </td>
                       <td className="py-4 px-4">
                         <span className="text-sm text-[#2D4A42] font-medium">
-                          {user.tenant_id ? `#${user.tenant_id}` : 'Platform Level'}
+                          {user.tenant_name || (user.role.toLowerCase().includes('super_admin') ? 'Platform Level' : '—')}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm text-[#2D4A42]">
@@ -275,21 +283,43 @@ export default function UsersPage() {
                         </button>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <button 
+                            type="button"
                             onClick={() => openEditModal(user)}
-                            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                            className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                             title="Edit User"
                           >
-                            ✏️
+                            <Edit size={14} />
                           </button>
-                          <button 
-                            onClick={() => handleDelete(user)}
-                            className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                            title="Delete User"
-                          >
-                            🗑️
-                          </button>
+                          
+                          {deletingUserId === user.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(user)}
+                                className="px-2 py-1 bg-red-600 text-white text-[10px] font-bold rounded hover:bg-red-700 animate-pulse"
+                              >
+                                CONFIRM
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletingUserId(null)}
+                                className="px-2 py-1 bg-gray-200 text-gray-700 text-[10px] font-bold rounded hover:bg-gray-300"
+                              >
+                                X
+                              </button>
+                            </div>
+                          ) : (
+                            <button 
+                              type="button"
+                              onClick={() => setDeletingUserId(user.id)}
+                              className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                              title="Delete User"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

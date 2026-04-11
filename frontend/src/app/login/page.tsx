@@ -64,8 +64,8 @@ export default function LoginPage() {
       } else if (['admin', 'hotel_admin', 'hotel_manager', 'staff'].includes(role)) {
         router.replace('/admin')
       } else {
-        // Default destination for guests or customers
-        router.replace('/dashboard')
+        // Default destination for guests or customers (New Landing Page)
+        router.replace('/')
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.')

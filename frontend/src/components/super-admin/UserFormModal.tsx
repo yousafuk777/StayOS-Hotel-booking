@@ -152,7 +152,6 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Role</label>
                 <select {...register('role')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
-                  <option value="super_admin">Super Admin</option>
                   <option value="hotel_admin">Hotel Admin</option>
                   <option value="hotel_manager">Hotel Manager</option>
                   <option value="front_desk">Front Desk</option>

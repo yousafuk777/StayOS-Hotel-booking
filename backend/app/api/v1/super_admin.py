@@ -228,6 +228,7 @@ async def list_users(
                 "last_name": u.last_name,
                 "role": u.role,
                 "tenant_id": u.tenant_id,
+                "tenant_name": u.tenant.name if u.tenant else None,
                 "is_active": u.is_active,
                 "is_verified": u.is_verified,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
@@ -274,6 +275,13 @@ async def update_user(
     current_user=Depends(get_current_super_admin),
 ):
     """Update user details globally."""
+    # FIX: Guard against Super Admin assignment through UI/API
+    if data.role == UserRole.super_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Super Admin role cannot be assigned through the UI. This must be done directly at the database level."
+        )
+
     user_data = data.model_dump(exclude_unset=True)
     if "password" in user_data and user_data["password"]:
         user_data["hashed_password"] = hash_password(user_data.pop("password"))
