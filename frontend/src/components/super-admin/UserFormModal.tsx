@@ -26,9 +26,11 @@ interface UserFormModalProps {
   onClose: () => void
   onSuccess: () => void
   user?: any // If provided, we are in Edit mode
+  fixedTenantId?: number | null
+  fixedTenantName?: string
 }
 
-export default function UserFormModal({ isOpen, onClose, onSuccess, user }: UserFormModalProps) {
+export default function UserFormModal({ isOpen, onClose, onSuccess, user, fixedTenantId, fixedTenantName }: UserFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tenants, setTenants] = useState<any[]>([])
@@ -74,11 +76,11 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
         last_name: '',
         role: 'guest',
         is_active: true,
-        tenant_id: null,
+        tenant_id: fixedTenantId || null,
         password: '',
       })
     }
-  }, [user, reset, isOpen])
+  }, [user, reset, isOpen, fixedTenantId])
 
   if (!isOpen) return null
 
@@ -152,6 +154,9 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-[#1A2E2B] ml-1">Role</label>
                 <select {...register('role')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
+                  {(!fixedTenantId || user?.role === 'super_admin') && (
+                    <option value="super_admin">Super Admin</option>
+                  )}
                   <option value="hotel_admin">Hotel Admin</option>
                   <option value="hotel_manager">Hotel Manager</option>
                   <option value="front_desk">Front Desk</option>
@@ -164,11 +169,21 @@ export default function UserFormModal({ isOpen, onClose, onSuccess, user }: User
                   Assign to Hotel (Tenant)
                   <span className="text-xs text-[#2D4A42] font-normal ml-2 italic">(Required for Staff)</span>
                 </label>
-                <select {...register('tenant_id')} className="input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white">
-                  <option value="">Platform (No Tenant)</option>
-                  {tenants.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
+                <select 
+                  {...register('tenant_id')} 
+                  disabled={!!fixedTenantId}
+                  className={`input-field w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white ${fixedTenantId ? 'bg-gray-50 opacity-70' : ''}`}
+                >
+                  {fixedTenantId ? (
+                    <option value={fixedTenantId}>{fixedTenantName || 'Selected Hotel'}</option>
+                  ) : (
+                    <>
+                      <option value="">Platform (No Tenant)</option>
+                      {tenants.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </>
+                  )}
                 </select>
                 {errors.tenant_id && <p className="text-xs text-red-500 ml-1">{errors.tenant_id.message}</p>}
               </div>

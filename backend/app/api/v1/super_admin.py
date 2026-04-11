@@ -11,7 +11,11 @@ from app.models.user import UserRole
 from app.config.plans import PLAN_CONFIG
 from app.schemas.plan import PlanUpgradeRequest
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+from sqlalchemy import select, func, and_, or_
+from app.models.tenant import Tenant
+from app.models.user import User
+from app.utils.plan_limits import check_user_limit
 
 router = APIRouter()
 
@@ -239,6 +243,113 @@ async def list_users(
     }
 
 
+@router.get("/users/hotels-overview")
+async def get_hotels_user_overview(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_super_admin)
+):
+    """Returns all tenants with their user counts broken down by role."""
+    result = await db.execute(
+        select(
+            Tenant.id,
+            Tenant.name,
+            Tenant.plan,
+            Tenant.status,
+            Tenant.created_at,
+            func.count(User.id).label("total_users")
+        )
+        .outerjoin(User, and_(
+            User.tenant_id == Tenant.id,
+            User.is_deleted == False
+        ))
+        .where(Tenant.is_deleted == False)
+        .group_by(Tenant.id, Tenant.name, Tenant.plan, Tenant.status, Tenant.created_at)
+        .order_by(Tenant.name)
+    )
+    hotels = result.all()
+
+    return [
+        {
+            "tenant_id": h.id,
+            "tenant_name": h.name,
+            "plan": h.plan,
+            "status": h.status,
+            "total_users": h.total_users,
+            "joined_at": h.created_at.isoformat() if h.created_at else None
+        }
+        for h in hotels
+    ]
+
+
+@router.get("/users/by-hotel/{tenant_id}")
+async def get_users_by_hotel(
+    tenant_id: int,
+    role: Optional[str] = None,
+    search: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_super_admin)
+):
+    """Returns all users belonging to a specific tenant only."""
+    query = select(User).where(
+        User.tenant_id == tenant_id,
+        User.is_deleted == False
+    )
+
+    if role and role != "all":
+        query = query.where(User.role == role)
+
+    if search:
+        query = query.where(
+            or_(
+                User.first_name.ilike(f"%{search}%"),
+                User.last_name.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%")
+            )
+        )
+
+    result = await db.execute(query.order_by(User.created_at.desc()))
+    users = result.scalars().all()
+
+    return [
+        {
+            "id": u.id,
+            "full_name": f"{u.first_name} {u.last_name}".strip(),
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in users
+    ]
+
+
+@router.get("/users/platform-level")
+async def get_platform_users(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_super_admin)
+):
+    """Returns only super_admin users — not tied to any hotel."""
+    result = await db.execute(
+        select(User).where(
+            User.role == UserRole.super_admin,
+            User.is_deleted == False
+        ).order_by(User.created_at.desc())
+    )
+    users = result.scalars().all()
+
+    return [
+        {
+            "id": u.id,
+            "full_name": f"{u.first_name} {u.last_name}".strip(),
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in users
+    ]
+
+
 @router.post("/users", status_code=201)
 async def create_user(
     data: UserCreate,
@@ -262,6 +373,13 @@ async def create_user(
     
     # 2. Auto-verify all users created by Super Admin
     user_data["is_verified"] = True
+    
+    # 3. Check Plan Limits for hotel-level users
+    if data.tenant_id:
+        tenant = await TenantRepository.get_by_id(db, data.tenant_id)
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Hotel not found")
+        await check_user_limit(tenant, db)
     
     user = await UserRepository.create(db, tenant_id=data.tenant_id, data=user_data)
     return user
