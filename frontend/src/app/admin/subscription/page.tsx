@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
                           {all_plans[pk].features[fKey] ? (
                             <Check size={18} className="text-green-500" />
                           ) : (
-                            <X size={18} className="text-gray-200" />
+                            <X size={18} className="text-red-500" />
                           )}
                         </td>
                       ))}
