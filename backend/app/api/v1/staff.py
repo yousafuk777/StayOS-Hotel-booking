@@ -1,13 +1,17 @@
 from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, get_current_tenant
 from app.models.user import User, UserRole
+from app.models.tenant import Tenant
+from app.utils.plan_limits import check_user_limit
 from app.schemas.staff import StaffCreate, StaffUpdate, StaffResponse
 from app.repositories.user_repo import UserRepository
 from app.core.security import hash_password
 
-router = APIRouter()
+from app.dependencies.plan_guard import require_feature
+
+router = APIRouter(dependencies=[require_feature("staff_management")])
 
 @router.get("/", response_model=List[StaffResponse])
 async def read_staff(
@@ -35,10 +39,14 @@ async def create_staff(
     db: AsyncSession = Depends(get_db),
     staff_in: StaffCreate,
     current_user: User = Depends(get_current_user),
+    current_tenant: Tenant = Depends(get_current_tenant),
 ) -> Any:
     """
     Create new staff member.
     """
+    # Plan limit check
+    await check_user_limit(current_tenant, db)
+
     if current_user.role not in [UserRole.hotel_admin, UserRole.hotel_manager, UserRole.super_admin]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

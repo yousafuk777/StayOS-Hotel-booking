@@ -56,3 +56,18 @@ async def get_current_super_admin(current_user=Depends(get_current_active_user))
             detail="The user does not have enough privileges"
         )
     return current_user
+
+
+from app.models.tenant import Tenant
+
+async def get_current_tenant(request: Request) -> Tenant:
+    """
+    Get current tenant from request state (set by TenantMiddleware).
+    """
+    tenant = getattr(request.state, "tenant", None)
+    if not tenant:
+        raise HTTPException(
+            status_code=400, 
+            detail="Tenant context not found. X-Tenant-ID header or subdomain required."
+        )
+    return tenant

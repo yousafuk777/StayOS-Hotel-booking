@@ -8,6 +8,9 @@ from app.repositories.tenant_repo import TenantRepository
 from app.repositories.user_repo import UserRepository
 from app.core.security import verify_password, create_access_token, create_refresh_token, hash_password
 from app.models.user import UserRole
+from app.config.plans import PLAN_CONFIG
+from app.schemas.plan import PlanUpgradeRequest
+from datetime import datetime
 from typing import List
 
 router = APIRouter()
@@ -156,6 +159,39 @@ async def delete_tenant(
     if not success:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return {"message": "Tenant deleted successfully"}
+
+
+@router.patch("/tenants/{tenant_id}/plan")
+async def upgrade_tenant_plan(
+    tenant_id: int,
+    payload: PlanUpgradeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_super_admin),
+):
+    """
+    Manually upgrade/downgrade a tenant's plan (Super-Admin only).
+    Currently simulated — updates the DB enum immediately.
+    """
+    tenant = await TenantRepository.get_by_id(db, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    if payload.plan not in PLAN_CONFIG:
+        raise HTTPException(status_code=400, detail="Invalid plan key")
+    
+    # Update plan directly
+    updated_tenant = await TenantRepository.update(
+        db, 
+        tenant_id, 
+        {"plan": payload.plan, "updated_at": datetime.utcnow()}
+    )
+    
+    return {
+        "success": True, 
+        "tenant_id": tenant_id, 
+        "new_plan": payload.plan,
+        "tenant_name": updated_tenant.name
+    }
 
 
 @router.get("/tenants", response_model=TenantListResponse)

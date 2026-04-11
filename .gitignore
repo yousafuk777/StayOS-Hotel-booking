@@ -13,4 +13,4 @@ env/
 # Frontend
 node_modules/
 .next/
-
+*.md

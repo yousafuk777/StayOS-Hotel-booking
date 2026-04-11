@@ -1,38 +1,84 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import api from '../../../services/api'
+import { Check, ArrowUpRight, ArrowDownRight, Loader2, Info } from 'lucide-react'
 
 export default function SubscriptionsPage() {
   const router = useRouter()
   const [activeFilter, setActiveFilter] = useState('all')
+  const [tenants, setTenants] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedTenant, setSelectedTenant] = useState<any>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; plan: string; price: number } | null>(null)
 
-  const subscriptions = [
-    { id: 1, plan: 'Enterprise', tenant: 'Grand Plaza Hotel', users: 50, price: 499, status: 'active', renewal: '2024-12-31', features: ['Unlimited Rooms', 'Advanced Analytics', 'Priority Support', 'Custom Integrations'] },
-    { id: 2, plan: 'Professional', tenant: 'Seaside Resort', users: 25, price: 299, status: 'active', renewal: '2024-11-15', features: ['Up to 100 Rooms', 'Basic Analytics', 'Email Support', 'API Access'] },
-    { id: 3, plan: 'Starter', tenant: 'City Inn', users: 10, price: 99, status: 'active', renewal: '2024-10-20', features: ['Up to 30 Rooms', 'Basic Reporting', 'Standard Support'] },
-    { id: 4, plan: 'Enterprise', tenant: 'Mountain View Lodge', users: 45, price: 499, status: 'trial', renewal: '2024-09-30', features: ['Unlimited Rooms', 'Advanced Analytics', 'Priority Support', 'Custom Integrations'] },
-    { id: 5, plan: 'Professional', tenant: 'Downtown Suites', users: 20, price: 299, status: 'expired', renewal: '2024-08-15', features: ['Up to 100 Rooms', 'Basic Analytics', 'Email Support', 'API Access'] },
-  ]
-
-  const filteredSubs = activeFilter === 'all' 
-    ? subscriptions 
-    : subscriptions.filter(sub => sub.status === activeFilter)
-
-  const handleRenew = async (id: number) => {
-    setIsProcessing(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    alert('Subscription renewed successfully!')
-    setIsProcessing(false)
+  const fetchTenants = async () => {
+    try {
+      setIsLoading(true)
+      const response = await api.get('/api/v1/super-admin/tenants')
+      setTenants(response.data.tenants)
+      // Auto-select first tenant if none selected
+      if (response.data.tenants.length > 0 && !selectedTenant) {
+        setSelectedTenant(response.data.tenants[0])
+      }
+    } catch (error) {
+      console.error('Error fetching tenants:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const stats = [
-    { label: 'Active Subscriptions', value: subscriptions.filter(s => s.status === 'active').length, icon: '💳', color: 'blue' },
-    { label: 'Trial Accounts', value: subscriptions.filter(s => s.status === 'trial').length, icon: '🎯', color: 'purple' },
-    { label: 'Expired', value: subscriptions.filter(s => s.status === 'expired').length, icon: '⚠️', color: 'red' },
-    { label: 'Monthly Revenue', value: '$12,450', icon: '💰', color: 'green' }
+  useEffect(() => {
+    fetchTenants()
+  }, [])
+
+  const filteredTenants = activeFilter === 'all' 
+    ? tenants 
+    : tenants.filter(t => t.status === activeFilter)
+
+  const handlePlanChange = async (planKey: string) => {
+    if (!selectedTenant) return
+    
+    setIsProcessing(true)
+    try {
+      // 1.5s simulated delay as per plan
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      await api.patch(`/api/v1/super-admin/tenants/${selectedTenant.id}/plan`, {
+        plan: planKey
+      })
+      
+      // Update local state
+      await fetchTenants()
+      // Refresh selected tenant info
+      const updated = tenants.find(t => t.id === selectedTenant.id)
+      setSelectedTenant({ ...selectedTenant, plan: planKey })
+      
+      setConfirmModal(null)
+      alert(`Successfully switched ${selectedTenant.name} to ${planKey} plan!`)
+    } catch (error) {
+      console.error('Error upgrading plan:', error)
+      alert('Failed to update plan. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const plans = [
+    { key: 'starter', name: 'Starter', price: 99, features: ['Up to 5 Rooms', 'Basic Reporting', '2 Staff Members'], color: 'gray' },
+    { key: 'professional', name: 'Professional', price: 299, features: ['Up to 100 Rooms', 'Advanced Analytics', '25 Staff Members', 'Staff Management'], color: 'green' },
+    { key: 'enterprise', name: 'Enterprise', price: 499, features: ['Unlimited Rooms', 'Custom Colors', 'Unlimited Staff', 'Theme & Branding'], color: 'amber' }
   ]
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-600" size={48} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen p-6">
@@ -41,116 +87,55 @@ export default function SubscriptionsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">💳 Subscription Management</h1>
-            <p className="text-[#2D4A42]">Manage hotel subscription plans and billing</p>
+            <p className="text-[#2D4A42]">Manage hotel subscription plans and billing limits</p>
           </div>
-          <button className="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer">
-            ➕ Create New Subscription
-          </button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 slide-up">
-        {stats.map((stat, index) => (
-          <div key={index} className="glass-card rounded-2xl p-6 card-hover border border-gray-200 slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-4xl">{stat.icon}</div>
-              <span className={`text-3xl font-bold ${
-                stat.color === 'blue' ? 'text-blue-600' :
-                stat.color === 'purple' ? 'text-purple-600' :
-                stat.color === 'red' ? 'text-red-600' :
-                'text-green-600'
-              }`}>
-                {stat.value}
-              </span>
-            </div>
-            <p className="text-sm text-[#2D4A42] font-semibold">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="glass-card rounded-2xl p-2 mb-6">
-        <div className="flex gap-2 overflow-x-auto">
-          {[
-            { id: 'all', label: 'All', icon: '📊' },
-            { id: 'active', label: 'Active', icon: '✓' },
-            { id: 'trial', label: 'Trial', icon: '🎯' },
-            { id: 'expired', label: 'Expired', icon: '⚠️' }
-          ].map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setActiveFilter(filter.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
-                activeFilter === filter.id
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                  : 'glass hover:bg-gray-50 text-[#1A2E2B]'
-              }`}
-            >
-              <span>{filter.icon}</span>
-              <span>{filter.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Subscriptions Table */}
-      <div className="glass-card rounded-2xl p-6 slide-up">
-        <h2 className="text-2xl font-bold gradient-text mb-6">📋 Active Subscriptions</h2>
+      {/* Tenant Selection Table */}
+      <div className="glass-card rounded-2xl p-6 mb-8 slide-up">
+        <h2 className="text-2xl font-bold text-[#1A2E2B] mb-6 flex items-center gap-2">
+          <Info size={24} className="text-blue-500" /> Select a Hotel to Manage
+        </h2>
         
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Tenant</th>
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Plan</th>
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Users</th>
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Price/Month</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Hotel Name</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Current Plan</th>
                 <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Status</th>
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Renewal Date</th>
-                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Actions</th>
+                <th className="text-left py-4 px-4 font-semibold text-[#1A2E2B]">Action</th>
               </tr>
             </thead>
             <tbody>
-              {filteredSubs.map((sub) => (
-                <tr key={sub.id} className="border-b border-gray-100 hover:bg-gray-50">
+              {filteredTenants.map((tenant) => (
+                <tr 
+                  key={tenant.id} 
+                  className={`border-b border-gray-100 cursor-pointer transition-all ${
+                    selectedTenant?.id === tenant.id ? 'bg-blue-50/50' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedTenant(tenant)}
+                >
+                  <td className="py-4 px-4 font-semibold text-[#1A2E2B]">{tenant.name}</td>
                   <td className="py-4 px-4">
-                    <span className="font-semibold text-[#1A2E2B]">{sub.tenant}</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="font-medium text-blue-600">{sub.plan}</span>
-                  </td>
-                  <td className="py-4 px-4 text-[#2D4A42]">{sub.users}</td>
-                  <td className="py-4 px-4">
-                    <span className="font-bold text-[#1A2E2B]">${sub.price}</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      sub.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : sub.status === 'trial'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-red-100 text-red-700'
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${
+                      tenant.plan === 'enterprise' ? 'bg-amber-100 text-amber-700' :
+                      tenant.plan === 'professional' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
                     }`}>
-                      {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                      {tenant.plan}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-[#2D4A42]">{sub.renewal}</td>
+                  <td className="py-4 px-4 font-medium capitalize">{tenant.status}</td>
                   <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <button className="glass px-3 py-1 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-blue-600 cursor-pointer">
-                        👁️ View
-                      </button>
-                      {sub.status === 'expired' && (
-                        <button 
-                          onClick={() => handleRenew(sub.id)}
-                          disabled={isProcessing}
-                          className="btn-primary px-3 py-1 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-                        >
-                          🔄 Renew
-                        </button>
-                      )}
-                    </div>
+                    <button className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      selectedTenant?.id === tenant.id 
+                        ? 'bg-blue-600 text-white shadow-md' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {selectedTenant?.id === tenant.id ? 'Managing' : 'Select'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -159,44 +144,112 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
-      {/* Plans Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 slide-up" style={{ animationDelay: '0.3s' }}>
-        {[
-          { name: 'Starter', price: 99, features: ['Up to 30 Rooms', 'Basic Reporting', 'Standard Support', '5 Users'], popular: false },
-          { name: 'Professional', price: 299, features: ['Up to 100 Rooms', 'Advanced Analytics', 'Priority Support', '25 Users', 'API Access'], popular: true },
-          { name: 'Enterprise', price: 499, features: ['Unlimited Rooms', 'Custom Integrations', '24/7 Support', 'Unlimited Users', 'White Label'], popular: false }
-        ].map((plan, index) => (
-          <div key={index} className={`glass-card rounded-2xl p-6 card-hover border-2 ${
-            plan.popular ? 'border-blue-500 scale-105' : 'border-gray-200'
-          }`}>
-            {plan.popular && (
-              <div className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3">
-                MOST POPULAR
-              </div>
-            )}
-            <h3 className="text-2xl font-bold text-[#1A2E2B] mb-2">{plan.name}</h3>
-            <div className="mb-4">
-              <span className="text-4xl font-bold gradient-text">${plan.price}</span>
-              <span className="text-[#2D4A42]">/month</span>
+      {/* Plan Management Section */}
+      {selectedTenant && (
+        <div className="slide-up">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold gradient-text">
+              Plan Options for: <span className="text-[#1A2E2B]">{selectedTenant.name}</span>
+            </h2>
+            <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full border border-gray-100">
+              Current: <span className="font-bold uppercase text-blue-600 tracking-wider ml-1">{selectedTenant.plan}</span>
             </div>
-            <ul className="space-y-2 mb-6">
-              {plan.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-[#1A2E2B]">
-                  <span className="text-green-500">✓</span>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <button className={`w-full py-3 rounded-xl font-semibold cursor-pointer ${
-              plan.popular 
-                ? 'btn-primary text-white' 
-                : 'glass hover:bg-gray-50 text-[#1A2E2B]'
-            }`}>
-              {plan.popular ? '✓ Current Plan' : 'Upgrade'}
-            </button>
           </div>
-        ))}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan) => {
+              const isCurrent = selectedTenant.plan === plan.key
+              const isUpgrade = plan.price > (plans.find(p => p.key === selectedTenant.plan)?.price || 0)
+              
+              return (
+                <div key={plan.key} className={`glass-card rounded-3xl p-8 border-2 transition-all duration-500 relative overflow-hidden flex flex-col ${
+                  isCurrent ? 'border-blue-500 shadow-xl' : 'border-gray-100 hover:border-gray-200 shadow-sm'
+                }`}>
+                  {isCurrent && (
+                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-widest">
+                      Active Plan
+                    </div>
+                  )}
+                  
+                  <h3 className="text-2xl font-black text-[#1A2E2B] mb-1">{plan.name}</h3>
+                  <div className="mb-6">
+                    <span className="text-5xl font-black gradient-text">${plan.price}</span>
+                    <span className="text-gray-400 font-medium ml-1">/mo</span>
+                  </div>
+
+                  <ul className="space-y-4 mb-8 flex-1">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm font-medium text-gray-600">
+                        <div className="mt-0.5 bg-green-500/10 p-0.5 rounded-full">
+                          <Check size={14} className="text-green-600" />
+                        </div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button 
+                    disabled={isCurrent || isProcessing}
+                    onClick={() => setConfirmModal({ isOpen: true, plan: plan.key, price: plan.price })}
+                    className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                      isCurrent 
+                        ? 'bg-blue-50 text-blue-400 cursor-default shadow-none border border-blue-100' 
+                        : isUpgrade
+                          ? 'bg-[#1A2E2B] text-white hover:bg-[#2D4541] shadow-lg'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                    }`}
+                  >
+                    {isCurrent ? (
+                      <><Check size={18} /> Current Plan</>
+                    ) : (
+                      <>
+                        {isUpgrade ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+                        {isUpgrade ? 'Upgrade Plan' : 'Downgrade Plan'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isProcessing && setConfirmModal(null)} />
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden p-8 text-center animate-in zoom-in duration-300">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Confirm Plan Change</h3>
+            <p className="text-gray-600 mb-8">
+              Switch <span className="font-bold text-[#1A2E2B]">{selectedTenant?.name}</span> to the 
+              <span className="font-bold text-blue-600"> {confirmModal.plan.toUpperCase()}</span> plan for 
+              <span className="font-bold text-[#1A2E2B]"> ${confirmModal.price}/month</span>?
+            </p>
+            
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setConfirmModal(null)}
+                disabled={isProcessing}
+                className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handlePlanChange(confirmModal.plan)}
+                disabled={isProcessing}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center gap-2"
+              >
+                {isProcessing ? (
+                  <><Loader2 className="animate-spin" size={18} /> Processing...</>
+                ) : (
+                  'Confirm Change'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

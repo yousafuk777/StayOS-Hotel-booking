@@ -7,8 +7,10 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, get_current_tenant
 from app.models.user import User
+from app.models.tenant import Tenant
+from app.utils.plan_limits import check_room_limit
 from app.schemas.room import RoomCreate, RoomUpdate, RoomResponse, RoomCategoryResponse, RoomCategoryUpdate
 from app.repositories.room_repo import RoomRepository, RoomCategoryRepository
 from sqlalchemy import select
@@ -69,10 +71,14 @@ async def create_room(
     db: AsyncSession = Depends(get_db),
     room_in: RoomCreate,
     current_user: User = Depends(get_current_user),
+    current_tenant: Tenant = Depends(get_current_tenant),
 ) -> Any:
     """
     Create new room.
     """
+    # Plan limit check
+    await check_room_limit(current_tenant, db)
+
     if current_user.tenant_id is None:
         raise HTTPException(status_code=403, detail="Super Admin must select a tenant to create rooms.")
 
