@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.api.deps import get_db
 from app.repositories.booking_repo import BookingRepository
 from app.schemas.booking import BookingResponse, BookingListResponse, BookingStats, BookingCreate, BookingUpdate
 from app.core.permissions import RequireHotelAdmin
 from app.models.user import User
+from app.models.hotel import Hotel
+from datetime import datetime
 
 router = APIRouter()
 
@@ -212,3 +215,112 @@ async def decline_booking(
     if not success:
         raise HTTPException(status_code=404, detail="Booking not found or cannot be declined")
     return {"message": "Booking declined and removed successfully"}
+
+
+@router.post("/public/bookings")
+async def create_public_booking(
+    booking_data: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a booking from the public website (no authentication required)."""
+    try:
+        print('🌐 [Public Booking] Creating booking from public website...')
+        print(f'📥 [Public Booking] Data: {booking_data}')
+        
+        # Extract data
+        hotel_id = booking_data.get('hotel_id')
+        guest_name = booking_data.get('guest_name')
+        email = booking_data.get('email')
+        phone = booking_data.get('phone')
+        check_in = booking_data.get('check_in_date')
+        check_out = booking_data.get('check_out_date')
+        nights = booking_data.get('nights', 1)
+        num_guests = booking_data.get('num_guests', 1)
+        special_requests = booking_data.get('special_requests', '')
+        
+        # Validate required fields
+        if not all([hotel_id, guest_name, email, phone, check_in, check_out]):
+            raise HTTPException(status_code=400, detail="Missing required fields")
+        
+        # Get hotel to find tenant_id
+        hotel = await db.get(Hotel, hotel_id)
+        if not hotel or not hotel.is_active:
+            raise HTTPException(status_code=404, detail="Hotel not found or inactive")
+        
+        tenant_id = hotel.tenant_id
+        
+        # Create or find guest user
+        # Split name into first and last
+        name_parts = guest_name.strip().split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Check if user/guest exists by email
+        user_query = select(User).where(User.email == email)
+        user_result = await db.execute(user_query)
+        guest = user_result.scalar_one_or_none()
+        
+        if not guest:
+            # Create new guest user with minimal info
+            from app.core.security import get_password_hash
+            guest = User(
+                tenant_id=tenant_id,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone,
+                hashed_password=get_password_hash("guest_temp_123"),  # Temporary password
+                is_active=True
+            )
+            db.add(guest)
+            await db.flush()
+            print(f'✅ [Public Booking] Created new guest user ID: {guest.id}')
+        else:
+            print(f'✅ [Public Booking] Found existing guest user ID: {guest.id}')
+        
+        # Prepare booking data
+        booking_create = BookingCreate(
+            guest_id=guest.id,
+            hotel_id=hotel_id,
+            check_in_date=datetime.fromisoformat(check_in.replace('Z', '+00:00')) if isinstance(check_in, str) else check_in,
+            check_out_date=datetime.fromisoformat(check_out.replace('Z', '+00:00')) if isinstance(check_out, str) else check_out,
+            nights=nights,
+            num_guests=num_guests,
+            room_total=0,  # Will be calculated later
+            addon_total=0,
+            discount_amount=0,
+            tax_amount=0,
+            total_amount=0,
+            status='pending',
+            special_requests=special_requests,
+            guest_name=guest_name,
+            email=email,
+            phone=phone
+        )
+        
+        # Create booking
+        booking = await BookingRepository.create_booking(
+            db,
+            tenant_id=tenant_id,
+            booking_data=booking_create.model_dump()
+        )
+        
+        await db.commit()
+        
+        print(f'✅ [Public Booking] Booking created successfully! ID: {booking.id}')
+        print(f'✅ [Public Booking] Reference: {booking.reference_number}')
+        
+        return {
+            "success": True,
+            "message": "Booking created successfully",
+            "booking_id": booking.id,
+            "reference_number": booking.reference_number
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f'❌ [Public Booking] Error: {str(e)}')
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to create booking: {str(e)}")

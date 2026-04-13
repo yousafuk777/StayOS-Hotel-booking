@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   StarIcon, MapPinIcon, WifiIcon, TruckIcon, CakeIcon, UserGroupIcon, 
   PhoneIcon, EnvelopeIcon, ClockIcon, ArrowRightIcon, CameraIcon,
-  ShieldCheckIcon, SparklesIcon, GiftIcon
+  ShieldCheckIcon, SparklesIcon, GiftIcon,
+  Bars3Icon, XMarkIcon, HomeIcon, CalendarDaysIcon, ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import api from '../../services/api'
@@ -64,8 +65,31 @@ export default function RoomsPageClient() {
   const [checkInDate, setCheckInDate] = useState('')
   const [checkOutDate, setCheckOutDate] = useState('')
   const [guests, setGuests] = useState('2 Guests')
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('All Rooms')
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [clickCount, setClickCount] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [showBookingForm, setShowBookingForm] = useState(false)
+  const [bookingSubmitting, setBookingSubmitting] = useState(false)
+  const [bookingForm, setBookingForm] = useState({
+    guestName: '',
+    email: '',
+    phone: '',
+    checkIn: '',
+    checkOut: '',
+    guests: 2,
+    specialRequests: ''
+  })
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (hotelSlug) {
@@ -100,6 +124,7 @@ export default function RoomsPageClient() {
   }
 
   const handleCheckAvailability = () => {
+    console.log('Check Availability clicked', { checkInDate, checkOutDate, guests })
     if (!checkInDate || !checkOutDate) {
       setToastMessage('⚠️ Please select both check-in and check-out dates')
       setTimeout(() => setToastMessage(null), 4000)
@@ -113,9 +138,92 @@ export default function RoomsPageClient() {
     }
   }
 
-  const handleBookNow = (roomId: number, categoryName: string, price: number) => {
-    setToastMessage(`🎉 Booking ${categoryName} - $${price}/night`)
-    setTimeout(() => setToastMessage(null), 3000)
+  const handleBookRoom = (roomId: number, categoryName: string, price: number) => {
+    // Pre-fill the form with room info
+    setBookingForm(prev => ({
+      ...prev,
+      checkIn: checkInDate || '',
+      checkOut: checkOutDate || ''
+    }))
+    setShowBookingForm(true)
+  }
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validation
+    if (!bookingForm.guestName || !bookingForm.email || !bookingForm.phone) {
+      setToastMessage('⚠️ Please fill in all required fields')
+      setTimeout(() => setToastMessage(null), 4000)
+      return
+    }
+
+    if (!bookingForm.checkIn || !bookingForm.checkOut) {
+      setToastMessage('⚠️ Please select check-in and check-out dates')
+      setTimeout(() => setToastMessage(null), 4000)
+      return
+    }
+
+    // Calculate nights
+    const checkIn = new Date(bookingForm.checkIn)
+    const checkOut = new Date(bookingForm.checkOut)
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (nights <= 0) {
+      setToastMessage('⚠️ Check-out date must be after check-in date')
+      setTimeout(() => setToastMessage(null), 4000)
+      return
+    }
+
+    setBookingSubmitting(true)
+
+    try {
+      // Prepare booking data
+      const bookingData = {
+        guest_name: bookingForm.guestName,
+        email: bookingForm.email,
+        phone: bookingForm.phone,
+        check_in_date: bookingForm.checkIn,
+        check_out_date: bookingForm.checkOut,
+        nights: nights,
+        num_guests: bookingForm.guests,
+        special_requests: bookingForm.specialRequests,
+        hotel_id: hotel.id,
+        room_total: 0, // Will be calculated by backend
+        total_amount: 0,
+        status: 'pending'
+      }
+
+      console.log('Submitting booking:', bookingData)
+
+      // Submit to backend
+      const response = await api.post('/api/v1/public/bookings', bookingData)
+
+      console.log('Booking response:', response.data)
+
+      setToastMessage('✅ Booking submitted successfully! Check your email for confirmation.')
+      setShowBookingForm(false)
+      
+      // Reset form
+      setBookingForm({
+        guestName: '',
+        email: '',
+        phone: '',
+        checkIn: '',
+        checkOut: '',
+        guests: 2,
+        specialRequests: ''
+      })
+
+      setTimeout(() => setToastMessage(null), 6000)
+    } catch (error: any) {
+      console.error('Booking submission error:', error)
+      console.error('Error response:', error.response?.data)
+      setToastMessage(`❌ Booking failed: ${error.response?.data?.detail || 'Please try again'}`)
+      setTimeout(() => setToastMessage(null), 6000)
+    } finally {
+      setBookingSubmitting(false)
+    }
   }
 
   if (loading) {
@@ -154,6 +262,172 @@ export default function RoomsPageClient() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* HOTEL-SPECIFIC NAVBAR */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-white/95 backdrop-blur-xl shadow-lg'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Left: Logo & Hotel Name */}
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/" 
+                className="flex items-center gap-2 group"
+              >
+                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform">
+                  S
+                </div>
+                <div className="hidden sm:block">
+                  <div className={`font-bold text-lg ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+                    StayOS
+                  </div>
+                  <div className={`text-xs ${scrolled ? 'text-gray-600' : 'text-white/80'}`}>
+                    {hotel.name}
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Center: Navigation Links (Desktop) */}
+            <nav className="hidden md:flex items-center gap-6">
+              <a 
+                href="#rooms-section" 
+                className={`text-sm font-semibold transition hover:text-primary-600 ${
+                  scrolled ? 'text-gray-700' : 'text-white/90'
+                }`}
+              >
+                Rooms
+              </a>
+              <a 
+                href="#amenities-section" 
+                className={`text-sm font-semibold transition hover:text-primary-600 ${
+                  scrolled ? 'text-gray-700' : 'text-white/90'
+                }`}
+              >
+                Amenities
+              </a>
+              <a 
+                href="#gallery-section" 
+                className={`text-sm font-semibold transition hover:text-primary-600 ${
+                  scrolled ? 'text-gray-700' : 'text-white/90'
+                }`}
+              >
+                Gallery
+              </a>
+              <a 
+                href="#reviews-section" 
+                className={`text-sm font-semibold transition hover:text-primary-600 ${
+                  scrolled ? 'text-gray-700' : 'text-white/90'
+                }`}
+              >
+                Reviews
+              </a>
+              <a 
+                href="#location-section" 
+                className={`text-sm font-semibold transition hover:text-primary-600 ${
+                  scrolled ? 'text-gray-700' : 'text-white/90'
+                }`}
+              >
+                Location
+              </a>
+            </nav>
+
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowBookingForm(true)}
+                className="hidden sm:inline-flex bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition cursor-pointer active:scale-95"
+              >
+                Book Now
+              </button>
+              
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className={`md:hidden p-2 rounded-lg transition cursor-pointer ${
+                  scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="w-6 h-6" />
+                ) : (
+                  <Bars3Icon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden bg-white border-t"
+            >
+              <div className="px-4 py-4 space-y-3">
+                <a 
+                  href="#rooms-section" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold"
+                >
+                  Rooms & Suites
+                </a>
+                <a 
+                  href="#amenities-section" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold"
+                >
+                  Amenities
+                </a>
+                <a 
+                  href="#gallery-section" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold"
+                >
+                  Photo Gallery
+                </a>
+                <a 
+                  href="#reviews-section" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold"
+                >
+                  Guest Reviews
+                </a>
+                <a 
+                  href="#location-section" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold"
+                >
+                  Location & Contact
+                </a>
+                <div className="pt-3 border-t">
+                  <button
+                    onClick={() => {
+                      document.getElementById('rooms-section')?.scrollIntoView({ behavior: 'smooth' })
+                      setMobileMenuOpen(false)
+                    }}
+                    className="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg font-bold cursor-pointer active:scale-95"
+                  >
+                    Book Your Room Now
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
@@ -168,8 +442,15 @@ export default function RoomsPageClient() {
         )}
       </AnimatePresence>
 
+      {/* DEBUG: Click Counter */}
+      {false && clickCount > 0 && (
+        <div className="fixed top-20 right-4 z-[99998] bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg font-bold">
+          Button clicked {clickCount} times!
+        </div>
+      )}
+
       {/* IMMERSIVE HERO HEADER */}
-      <section className="relative h-screen min-h-[700px] overflow-hidden">
+      <section className="relative h-screen min-h-[700px] overflow-hidden pt-16">
         <div className="absolute inset-0">
           <img
             src={getHotelImage()}
@@ -219,32 +500,32 @@ export default function RoomsPageClient() {
           transition={{ delay: 0.5, duration: 0.6 }}
           className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl"
         >
-          <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
               <div className="flex flex-col">
-                <label className="text-gray-700 text-sm font-semibold mb-2">Check-in</label>
+                <label className="text-gray-700 text-xs md:text-sm font-semibold mb-2">Check-in</label>
                 <input 
                   type="date" 
                   value={checkInDate}
                   onChange={(e) => setCheckInDate(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base"
                 />
               </div>
               <div className="flex flex-col">
-                <label className="text-gray-700 text-sm font-semibold mb-2">Check-out</label>
+                <label className="text-gray-700 text-xs md:text-sm font-semibold mb-2">Check-out</label>
                 <input 
                   type="date" 
                   value={checkOutDate}
                   onChange={(e) => setCheckOutDate(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base"
                 />
               </div>
               <div className="flex flex-col">
-                <label className="text-gray-700 text-sm font-semibold mb-2">Guests</label>
+                <label className="text-gray-700 text-xs md:text-sm font-semibold mb-2">Guests</label>
                 <select 
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition cursor-pointer"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition cursor-pointer text-sm md:text-base"
                 >
                   <option>1 Guest</option>
                   <option>2 Guests</option>
@@ -254,18 +535,38 @@ export default function RoomsPageClient() {
                 </select>
               </div>
               <div className="flex flex-col">
-                <label className="text-gray-700 text-sm font-semibold mb-2">Room Type</label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition cursor-pointer">
+                <label className="text-gray-700 text-xs md:text-sm font-semibold mb-2">Room Type</label>
+                <select 
+                  value={selectedRoomType}
+                  onChange={(e) => {
+                    setSelectedRoomType(e.target.value)
+                    if (e.target.value === 'All Rooms') {
+                      setSelectedCategory(null)
+                    } else {
+                      const category = hotel.room_categories.find(cat => cat.name === e.target.value)
+                      if (category) {
+                        setSelectedCategory(category.id)
+                      }
+                    }
+                  }}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition cursor-pointer text-sm md:text-base"
+                >
                   <option>All Rooms</option>
                   {hotel.room_categories.map(cat => (
-                    <option key={cat.id}>{cat.name}</option>
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <button 
-                  onClick={handleCheckAvailability}
-                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-lg font-bold text-lg transition hover:shadow-lg"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleCheckAvailability()
+                  }}
+                  type="button"
+                  className="w-full bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-bold transition hover:shadow-lg active:scale-95 select-none cursor-pointer rounded-lg py-3 text-base sm:py-3.5 sm:text-lg"
+                  style={{ cursor: 'pointer' }}
                 >
                   Check Availability
                 </button>
@@ -320,10 +621,13 @@ export default function RoomsPageClient() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
             <button 
-              onClick={() => setSelectedCategory(null)}
-              className={`px-6 py-3 rounded-full font-semibold transition ${
+              onClick={() => {
+                setSelectedCategory(null)
+                setSelectedRoomType('All Rooms')
+              }}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-sm md:text-base transition active:scale-95 cursor-pointer select-none whitespace-nowrap ${
                 selectedCategory === null
                   ? 'bg-primary-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -334,8 +638,11 @@ export default function RoomsPageClient() {
             {hotel.room_categories.map((category) => (
               <button
                 key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-6 py-3 rounded-full font-semibold transition ${
+                onClick={() => {
+                  setSelectedCategory(category.id)
+                  setSelectedRoomType(category.name)
+                }}
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-sm md:text-base transition active:scale-95 cursor-pointer select-none whitespace-nowrap ${
                   selectedCategory === category.id
                     ? 'bg-primary-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -409,8 +716,12 @@ export default function RoomsPageClient() {
                     </div>
 
                     <button 
-                      onClick={() => handleBookNow(room.id, category.name, category.base_price)}
-                      className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-lg font-semibold transition hover:shadow-lg"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleBookRoom(room.id, category.name, category.base_price)
+                      }}
+                      type="button"
+                      className="w-full bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold transition hover:shadow-lg active:scale-95 cursor-pointer select-none rounded-lg py-3 text-sm sm:py-3.5 sm:text-base"
                     >
                       Book Now
                     </button>
@@ -432,7 +743,7 @@ export default function RoomsPageClient() {
       </section>
 
       {/* LUXURY AMENITIES GRID */}
-      <section className="py-20 md:py-24 bg-gray-50">
+      <section id="amenities-section" className="py-20 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl md:text-5xl text-gray-900 mb-4">
@@ -475,7 +786,7 @@ export default function RoomsPageClient() {
       </section>
 
       {/* VISUAL GALLERY - BENTO GRID */}
-      <section className="py-20 md:py-24">
+      <section id="gallery-section" className="py-20 md:py-24">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl md:text-5xl text-gray-900 mb-4">
@@ -513,7 +824,7 @@ export default function RoomsPageClient() {
       </section>
 
       {/* GUEST REVIEWS / TESTIMONIALS */}
-      <section className="py-20 md:py-24 bg-gray-50">
+      <section id="reviews-section" className="py-20 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl md:text-5xl text-gray-900 mb-4">
@@ -560,7 +871,7 @@ export default function RoomsPageClient() {
       </section>
 
       {/* LOCATION & SURROUNDINGS */}
-      <section className="py-20 md:py-24">
+      <section id="location-section" className="py-20 md:py-24">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
@@ -648,8 +959,12 @@ export default function RoomsPageClient() {
             Book your stay today and create unforgettable memories
           </p>
           <button 
-            onClick={() => document.getElementById('rooms-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="bg-white text-primary-600 px-12 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition hover:shadow-xl"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById('rooms-section')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            type="button"
+            className="bg-white text-primary-600 font-bold transition hover:shadow-xl active:scale-95 cursor-pointer select-none rounded-lg px-8 py-3 text-base sm:px-12 sm:py-4 sm:text-lg hover:bg-gray-100"
           >
             Book Your Room Now
           </button>
@@ -703,7 +1018,7 @@ export default function RoomsPageClient() {
                   placeholder="Your email"
                   className="flex-1 px-4 py-2 rounded-l-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-primary-600"
                 />
-                <button className="bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-r-lg transition">
+                <button className="bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-r-lg transition cursor-pointer" type="button">
                   <ArrowRightIcon className="w-5 h-5" />
                 </button>
               </div>
@@ -715,6 +1030,179 @@ export default function RoomsPageClient() {
           </div>
         </div>
       </footer>
+
+      {/* BOOKING FORM MODAL */}
+      <AnimatePresence>
+        {showBookingForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+            onClick={() => setShowBookingForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Book Your Room</h2>
+                  <p className="text-sm text-gray-600 mt-1">{hotel.name}</p>
+                </div>
+                <button
+                  onClick={() => setShowBookingForm(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                >
+                  <XMarkIcon className="w-6 h-6 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <form onSubmit={handleBookingSubmit} className="p-6 space-y-5">
+                {/* Guest Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingForm.guestName}
+                    onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
+                    placeholder="John Doe"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={bookingForm.email}
+                    onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                    placeholder="john@example.com"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={bookingForm.phone}
+                    onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                    placeholder="+1 234 567 8900"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Check-in & Check-out */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Check-in <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={bookingForm.checkIn}
+                      onChange={(e) => setBookingForm({ ...bookingForm, checkIn: e.target.value })}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Check-out <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={bookingForm.checkOut}
+                      onChange={(e) => setBookingForm({ ...bookingForm, checkOut: e.target.value })}
+                      min={bookingForm.checkIn || new Date().toISOString().split('T')[0]}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Number of Guests */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Number of Guests
+                  </label>
+                  <select
+                    value={bookingForm.guests}
+                    onChange={(e) => setBookingForm({ ...bookingForm, guests: parseInt(e.target.value) })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Special Requests */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Special Requests (Optional)
+                  </label>
+                  <textarea
+                    value={bookingForm.specialRequests}
+                    onChange={(e) => setBookingForm({ ...bookingForm, specialRequests: e.target.value })}
+                    placeholder="Any special requirements or preferences..."
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition resize-none"
+                  />
+                </div>
+
+                {/* Submit Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowBookingForm(false)}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition cursor-pointer active:scale-95"
+                    disabled={bookingSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={bookingSubmitting}
+                    className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {bookingSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Submitting...
+                      </>
+                    ) : (
+                      'Confirm Booking'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
