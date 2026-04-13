@@ -3,19 +3,36 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  ChevronDownIcon,
+  UserCircleIcon,
+  CalendarDaysIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline'
 
 const navItems = [
   { label: 'Home', href: '/' },
-  { label: 'Our Hotels', href: '/#hotels' },
-  { label: 'Rooms & Suites', href: '/rooms' },
-  { label: 'Amenities', href: '/#amenities' },
-  { label: 'About Us', href: '/#about' },
+  { label: 'Hotels', href: '/#hotels' },
+  { label: 'Rooms', href: '/rooms' },
+  { label: 'Offers', href: '/#offers' },
   { label: 'Contact', href: '/#contact' }
 ]
+
+const quickContact = {
+  phone: '+1 234 567 8900',
+  email: 'bookings@stayos.com',
+  location: 'New York, USA'
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +41,27 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('access_token')
+    const userData = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+    if (token && userData) {
+      setIsLoggedIn(true)
+      setUser(JSON.parse(userData))
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('super_admin_user')
+    localStorage.removeItem('tenant_id')
+    setIsLoggedIn(false)
+    setUser(null)
+    setUserMenuOpen(false)
+    window.location.href = '/'
+  }
 
   return (
     <motion.header
