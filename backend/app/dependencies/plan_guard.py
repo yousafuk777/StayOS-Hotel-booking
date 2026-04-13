@@ -15,4 +15,4 @@ def require_feature(feature_key: str):
                 detail=f"'{feature_key}' is not available on your current plan. Please upgrade to unlock it."
             )
         return True
-    return Depends(guard)
+    return guard

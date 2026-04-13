@@ -10,10 +10,11 @@ from app.repositories.user_repo import UserRepository
 from app.core.security import hash_password
 
 from app.dependencies.plan_guard import require_feature
+from app.dependencies.role_guard import require_module_access
 
-router = APIRouter(dependencies=[require_feature("staff_management")])
+router = APIRouter(dependencies=[Depends(require_feature("staff_management"))])
 
-@router.get("/", response_model=List[StaffResponse])
+@router.get("/", response_model=List[StaffResponse], dependencies=[Depends(require_module_access("staff_management"))])
 async def read_staff(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -33,7 +34,7 @@ async def read_staff(
     staff = await UserRepository.get_tenant_staff(db, tenant_id=current_user.tenant_id)
     return staff
 
-@router.post("/", response_model=StaffResponse)
+@router.post("/", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def create_staff(
     *,
     db: AsyncSession = Depends(get_db),
@@ -72,7 +73,7 @@ async def create_staff(
     staff = await UserRepository.create(db, tenant_id=current_user.tenant_id, data=staff_data)
     return staff
 
-@router.put("/{id}", response_model=StaffResponse)
+@router.put("/{id}", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def update_staff(
     *,
     db: AsyncSession = Depends(get_db),
@@ -103,7 +104,7 @@ async def update_staff(
     staff = await UserRepository.update_global(db, user_id=id, data=update_data)
     return staff
 
-@router.delete("/{id}", response_model=StaffResponse)
+@router.delete("/{id}", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def delete_staff(
     *,
     db: AsyncSession = Depends(get_db),

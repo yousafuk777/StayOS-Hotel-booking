@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.api.deps import get_current_tenant, get_db
+from app.dependencies.role_guard import require_module_access
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.models.tenant import Tenant
@@ -10,7 +11,7 @@ from app.schemas.plan import PlanInfoResponse, SubscriptionResponse
 
 router = APIRouter()
 
-@router.get("/me/plan", response_model=PlanInfoResponse)
+@router.get("/me/plan", response_model=PlanInfoResponse, dependencies=[Depends(require_module_access("subscription"))])
 async def get_my_plan(current_tenant: Tenant = Depends(get_current_tenant)):
     """
     Fetch the full plan configuration for the current tenant.
@@ -28,7 +29,7 @@ async def get_my_plan(current_tenant: Tenant = Depends(get_current_tenant)):
         "features": config["features"]
     }
 
-@router.get("/me/subscription", response_model=SubscriptionResponse)
+@router.get("/me/subscription", response_model=SubscriptionResponse, dependencies=[Depends(require_module_access("subscription"))])
 async def get_my_subscription(
     current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)

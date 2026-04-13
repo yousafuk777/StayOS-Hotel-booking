@@ -16,6 +16,7 @@ from app.repositories.room_repo import RoomRepository, RoomCategoryRepository
 from sqlalchemy import select
 from app.models.hotel import Hotel
 from app.models.room import RoomImage
+from app.dependencies.role_guard import require_module_access
 
 async def get_user_hotel_id(db: AsyncSession, tenant_id: int) -> int:
     if tenant_id is None:
@@ -65,7 +66,7 @@ async def read_rooms(
     )
     return rooms
 
-@router.post("/", response_model=RoomResponse)
+@router.post("/", response_model=RoomResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
 async def create_room(
     *,
     db: AsyncSession = Depends(get_db),
@@ -126,7 +127,7 @@ async def create_room(
     room = await RoomRepository.create_with_relations(db, tenant_id=current_user.tenant_id, data=room_data)
     return room
 
-@router.put("/{id}", response_model=RoomResponse)
+@router.put("/{id}", response_model=RoomResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
 async def update_room(
     *,
     db: AsyncSession = Depends(get_db),
@@ -189,7 +190,7 @@ async def update_room(
         room = await RoomRepository.update_with_relations(db, tenant_id=current_user.tenant_id, room_id=id, data=update_data)
     return room
 
-@router.delete("/{id}", response_model=RoomResponse)
+@router.delete("/{id}", response_model=RoomResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
 async def delete_room(
     *,
     db: AsyncSession = Depends(get_db),
@@ -212,7 +213,7 @@ async def delete_room(
     await RoomRepository.delete(db, tenant_id=room.tenant_id, record_id=id)
     return room
 
-@router.post("/{id}/image", response_model=RoomResponse)
+@router.post("/{id}/image", response_model=RoomResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
 async def upload_room_image(
     *,
     db: AsyncSession = Depends(get_db),
@@ -288,7 +289,7 @@ async def read_categories(
     # Filter by hotel_id manually if repository doesn't support hotel_id in get_multi
     return [c for c in categories if c.hotel_id == hotel_id]
 
-@router.put("/categories/{id}", response_model=RoomCategoryResponse)
+@router.put("/categories/{id}", response_model=RoomCategoryResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
 async def update_category(
     *,
     db: AsyncSession = Depends(get_db),

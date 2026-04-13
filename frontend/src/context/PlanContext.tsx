@@ -33,20 +33,25 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       const tenantId = user.tenant_id
 
       if (!tenantId) {
-        // Super Admin might not have a tenant_id, but they also don't need gating usually
-        // However, if they are viewing a tenant dashboard, we might need a different logic
+        // Fallback for Super Admin viewing a specific hotel from state
+        // In a real scenario, we might pull this from the URL or a shared state
         setIsLoading(false)
         return
       }
 
+      // Ensure tenantId is sent as a string/integer correctly
       const response = await api.get('/api/v1/tenants/me/plan', {
         headers: {
-          'X-Tenant-ID': tenantId
+          'X-Tenant-ID': String(tenantId)
         }
       })
-      setPlanData(response.data)
-    } catch (error) {
-      console.error('Error fetching plan:', error)
+      
+      if (response.data) {
+        setPlanData(response.data)
+      }
+    } catch (error: any) {
+      console.error('Plan Context Error:', error.response?.data?.detail || error.message)
+      // Do not clear planData here to avoid flickering to Starter
     } finally {
       setIsLoading(false)
     }

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from app.api.deps import get_db, get_current_super_admin, get_current_user
+from app.dependencies.role_guard import require_module_access
 from app.models.user import User
 from app.models.hotel import Hotel
 from app.models.tenant import Tenant
@@ -183,7 +184,7 @@ async def upload_hotel_image(
         "starting_price": float(min_price)
     }
 
-@router.get("/mine", response_model=HotelDetailResponse)
+@router.get("/mine", response_model=HotelDetailResponse, dependencies=[Depends(require_module_access("hotel_settings"))])
 async def get_my_hotel_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -220,7 +221,7 @@ async def get_my_hotel_details(
         "room_categories": [] # To be populated if needed
     }
 
-@router.patch("/mine", response_model=HotelDiscoveryResponse)
+@router.patch("/mine", response_model=HotelDiscoveryResponse, dependencies=[Depends(require_module_access("hotel_settings", require_write=True))])
 async def update_my_hotel(
     data: dict, # Simplified update for now
     db: AsyncSession = Depends(get_db),

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { canAccess } from '@/config/permissions'
 
 interface AnalyticsData {
   totalRevenue: number
@@ -33,6 +34,22 @@ export default function AnalyticsPage() {
   const [analyticsFilter, setAnalyticsFilter] = useState<'all' | 'revenue' | 'occupancy' | 'adr' | 'revpar'>('all')
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+
+  // RBAC Fallback Check
+  useEffect(() => {
+    const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+    if (stored) {
+      const user = JSON.parse(stored)
+      if (!canAccess(user.role, 'analytics')) {
+        router.replace('/admin/access-denied')
+      } else {
+        setIsAuthorized(true)
+      }
+    } else {
+      router.replace('/login')
+    }
+  }, [router])
 
   // Load analytics data from localStorage
   useEffect(() => {
@@ -91,6 +108,8 @@ export default function AnalyticsPage() {
     localStorage.removeItem('hotel-analytics-data')
     setAnalyticsData(null)
   }
+
+  if (isAuthorized === null) return null
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">

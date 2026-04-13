@@ -11,6 +11,7 @@ import {
 import api from '../../services/api'
 import { PlanProvider, usePlan } from '../../context/PlanContext'
 import UpgradeModal from './UpgradeModal'
+import { canAccess as hasRoleAccess } from '../../config/permissions'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -39,6 +40,7 @@ function AdminContent({ children }: AdminLayoutProps) {
   const [hotelName, setHotelName] = useState('StayOS Hotel')
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [lockedFeature, setLockedFeature] = useState({ name: '', plan: '' })
+  const [rawRole, setRawRole] = useState('')
 
   const { planKey, displayName, hasFeature } = usePlan()
 
@@ -59,11 +61,13 @@ function AdminContent({ children }: AdminLayoutProps) {
 
       const user = JSON.parse(stored)
 
-      // RBAC: Reject guest or unassigned roles
-      const ALLOWED_ROLES = ['super_admin', 'admin', 'hotel_admin', 'hotel_manager', 'staff']
-      if (!ALLOWED_ROLES.includes(user.role)) {
-        if (user.role === 'guest') {
-          router.replace('/dashboard')
+      // Admin Context Guard: Ensure only staff/admins enter
+      const role = String(user.role || '').toLowerCase()
+      const ALLOWED_ADMIN_ROLES = ['super_admin', 'admin', 'hotel_admin', 'hotel_manager', 'staff', 'front_desk', 'housekeeping']
+      
+      if (!ALLOWED_ADMIN_ROLES.includes(role)) {
+        if (role === 'guest') {
+          router.replace('/') // Redirect guests to public portal
         } else {
           router.replace('/login')
         }
@@ -91,6 +95,7 @@ function AdminContent({ children }: AdminLayoutProps) {
         'staff': 'Staff Member',
         'guest': 'Guest'
       }
+      setRawRole(user.role || '')
       setUserRole(roleMap[user.role] || 'User')
       
     } catch (error) {
@@ -120,20 +125,20 @@ function AdminContent({ children }: AdminLayoutProps) {
   }
 
   const menuItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin", featureKey: null },
-    { label: "Bookings", icon: <Calendar size={20} />, path: "/admin/bookings", featureKey: null },
-    { label: "Calendar", icon: <CalendarDays size={20} />, path: "/admin/calendar", featureKey: null },
-    { label: "Rooms & Inventory", icon: <BedDouble size={20} />, path: "/admin/rooms", featureKey: null },
-    { label: "Housekeeping", icon: <Sparkles size={20} />, path: "/admin/housekeeping", featureKey: null },
-    { label: "Guests", icon: <User size={20} />, path: "/admin/guests", featureKey: null },
-    { label: "Staff Management", icon: <Users size={20} />, path: "/admin/staff", featureKey: "staff_management", requiredPlan: "Professional" },
-    { label: "Analytics & Reports", icon: <LineChart size={20} />, path: "/admin/analytics", featureKey: "analytics", requiredPlan: "Professional" },
-    { label: "Promotions", icon: <Tags size={20} />, path: "/admin/promotions", featureKey: "promotions", requiredPlan: "Professional" },
-    { label: "Reviews", icon: <Star size={20} />, path: "/admin/reviews", featureKey: "reviews", requiredPlan: "Professional" },
-    { label: "Theme & Branding", icon: <Palette size={20} />, path: "/admin/theme", featureKey: "theme_branding", requiredPlan: "Enterprise" },
-    { label: "Subscription & Billing", icon: <CreditCard size={20} />, path: "/admin/subscription", featureKey: null },
-    { label: "Hotel Settings", icon: <Settings size={20} />, path: "/admin/settings", featureKey: null },
-    { label: "Policies", icon: <ClipboardList size={20} />, path: "/admin/policies", featureKey: null },
+    { label: "Dashboard",           icon: <LayoutDashboard size={20} />, path: "/admin",              featureKey: null,              moduleKey: null },
+    { label: "Bookings",            icon: <Calendar size={20} />,        path: "/admin/bookings",     featureKey: null,              moduleKey: "bookings" },
+    { label: "Calendar",            icon: <CalendarDays size={20} />,    path: "/admin/calendar",     featureKey: null,              moduleKey: "calendar" },
+    { label: "Rooms & Inventory",   icon: <BedDouble size={20} />,       path: "/admin/rooms",        featureKey: null,              moduleKey: "rooms" },
+    { label: "Housekeeping",        icon: <Sparkles size={20} />,        path: "/admin/housekeeping", featureKey: null,              moduleKey: "housekeeping" },
+    { label: "Guests",              icon: <User size={20} />,            path: "/admin/guests",       featureKey: null,              moduleKey: "guests" },
+    { label: "Staff Management",    icon: <Users size={20} />,           path: "/admin/staff",        featureKey: "staff_management",moduleKey: "staff_management", requiredPlan: "Professional" },
+    { label: "Analytics & Reports", icon: <LineChart size={20} />,       path: "/admin/analytics",    featureKey: "analytics",       moduleKey: "analytics", requiredPlan: "Professional" },
+    { label: "Promotions",          icon: <Tags size={20} />,            path: "/admin/promotions",   featureKey: "promotions",      moduleKey: "promotions", requiredPlan: "Professional" },
+    { label: "Reviews",             icon: <Star size={20} />,            path: "/admin/reviews",      featureKey: "reviews",         moduleKey: "reviews", requiredPlan: "Professional" },
+    { label: "Theme & Branding",    icon: <Palette size={20} />,         path: "/admin/theme",        featureKey: "theme_branding",  moduleKey: "theme_branding", requiredPlan: "Enterprise" },
+    { label: "Subscription & Billing", icon: <CreditCard size={20} />,   path: "/admin/subscription", featureKey: null,              moduleKey: "subscription" },
+    { label: "Hotel Settings",      icon: <Settings size={20} />,        path: "/admin/settings",     featureKey: null,              moduleKey: "hotel_settings" },
+    { label: "Policies",            icon: <ClipboardList size={20} />,   path: "/admin/policies",     featureKey: null,              moduleKey: "policies" },
   ]
 
   const badgeStyle = {
@@ -143,6 +148,11 @@ function AdminContent({ children }: AdminLayoutProps) {
   }[planKey] || "bg-gray-100 text-gray-600 border-gray-200"
 
   const renderMenuItem = (item: any) => {
+    // Gate 1: Role check (New) - Hide silently
+    const roleAllows = item.moduleKey === null || hasRoleAccess(rawRole, item.moduleKey)
+    if (!roleAllows) return null
+
+    // Gate 2: Plan check (Existing) - Show lock
     const isUnlocked = item.featureKey === null || hasFeature(item.featureKey)
     const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path))
 
