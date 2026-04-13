@@ -65,6 +65,10 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general')
   const [settings, setSettings] = useState<HotelSettings>(defaultSettings)
   const [hasChanges, setHasChanges] = useState(false)
+  const [hotel, setHotel] = useState<any | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   // Load settings from localStorage
   useEffect(() => {
