@@ -431,3 +431,21 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Global cursor pointer for all interactive elements */
+button, 
+[type="button"], 
+[type="submit"], 
+[type="reset"],
+select,
+.cursor-pointer,
+a:hover {
+  cursor: pointer !important;
+}
+
+/* Ensure all clickable elements show pointer */
+button:hover,
+select:hover,
+a[href]:hover {
+  cursor: pointer !important;
+}
