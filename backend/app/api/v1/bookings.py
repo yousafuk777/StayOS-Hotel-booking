@@ -4,7 +4,7 @@ from sqlalchemy import select
 from app.api.deps import get_db
 from app.repositories.booking_repo import BookingRepository
 from app.schemas.booking import BookingResponse, BookingListResponse, BookingStats, BookingCreate, BookingUpdate
-from app.core.permissions import RequireHotelAdmin
+from app.dependencies.role_guard import require_module_access
 from app.models.user import User
 from app.models.hotel import Hotel
 from datetime import datetime
@@ -50,7 +50,7 @@ async def get_bookings(
     status: str = None,
     search: str = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings"))
 ):
     """Get all bookings for the current tenant with optional filtering."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -69,7 +69,7 @@ async def get_bookings(
 async def get_pending_bookings(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings"))
 ):
     """Get all pending bookings for the current tenant."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -83,7 +83,7 @@ async def get_pending_bookings(
 async def get_today_arrivals(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings"))
 ):
     """Get all bookings checking in today for the current tenant."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -97,7 +97,7 @@ async def get_today_arrivals(
 async def get_dashboard_stats(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings"))
 ):
     """Get dashboard statistics for the current tenant."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -109,7 +109,7 @@ async def create_booking(
     request: Request,
     booking_in: BookingCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings", require_write=True))
 ):
     """Create a new booking manually from the admin panel."""
     print('🚀 [API] create_booking endpoint called!')
@@ -164,7 +164,7 @@ async def update_booking(
     booking_id: int,
     booking_in: BookingUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings", require_write=True))
 ):
     """Update a booking's details."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -184,7 +184,7 @@ async def confirm_booking(
     request: Request,
     booking_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings", require_write=True))
 ):
     """Confirm a pending booking."""
     tenant_id = request.state.tenant_id or current_user.tenant_id
@@ -203,7 +203,7 @@ async def decline_booking(
     request: Request,
     booking_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(RequireHotelAdmin)
+    current_user: User = Depends(require_module_access("bookings", require_write=True))
 ):
     """Decline and delete a pending booking."""
     tenant_id = request.state.tenant_id or current_user.tenant_id

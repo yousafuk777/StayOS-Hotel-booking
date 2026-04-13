@@ -58,14 +58,14 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
 
       // Multi-Role Redirection Logic
-      const role = data.user.role
+      const role = String(data.user.role || '').toLowerCase()
       if (role === 'super_admin') {
         router.replace('/super-admin')
-      } else if (['admin', 'hotel_admin', 'hotel_manager', 'staff'].includes(role)) {
+      } else if (['admin', 'hotel_admin', 'hotel_manager', 'staff', 'front_desk', 'housekeeping'].includes(role)) {
         router.replace('/admin')
       } else {
-        // Default destination for guests or customers
-        router.replace('/dashboard')
+        // Default destination for guests or customers (New Landing Page)
+        router.replace('/')
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.')

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { canAccess } from '@/config/permissions'
 
 interface ThemeSettings {
   brand: {
@@ -53,6 +54,7 @@ export default function ThemePage() {
   const router = useRouter()
   const [theme, setTheme] = useState<ThemeSettings>(defaultTheme)
   const [hasChanges, setHasChanges] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
 
   // Load theme from localStorage
   useEffect(() => {
@@ -65,6 +67,21 @@ export default function ThemePage() {
       }
     }
   }, [])
+
+  // RBAC Fallback Check
+  useEffect(() => {
+    const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+    if (stored) {
+      const user = JSON.parse(stored)
+      if (!canAccess(user.role, 'theme_branding')) {
+        router.replace('/admin/access-denied')
+      } else {
+        setIsAuthorized(true)
+      }
+    } else {
+      router.replace('/login')
+    }
+  }, [router])
 
   // Save theme to localStorage
   const saveTheme = () => {
@@ -117,6 +134,8 @@ export default function ThemePage() {
   }
 
   const isEmpty = !theme.brand.primaryColor && !theme.logo.url
+
+  if (isAuthorized === null) return null
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">

@@ -1,15 +1,20 @@
 from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, get_current_tenant
 from app.models.user import User, UserRole
+from app.models.tenant import Tenant
+from app.utils.plan_limits import check_user_limit
 from app.schemas.staff import StaffCreate, StaffUpdate, StaffResponse
 from app.repositories.user_repo import UserRepository
 from app.core.security import hash_password
 
-router = APIRouter()
+from app.dependencies.plan_guard import require_feature
+from app.dependencies.role_guard import require_module_access
 
-@router.get("/", response_model=List[StaffResponse])
+router = APIRouter(dependencies=[Depends(require_feature("staff_management"))])
+
+@router.get("/", response_model=List[StaffResponse], dependencies=[Depends(require_module_access("staff_management"))])
 async def read_staff(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -29,16 +34,20 @@ async def read_staff(
     staff = await UserRepository.get_tenant_staff(db, tenant_id=current_user.tenant_id)
     return staff
 
-@router.post("/", response_model=StaffResponse)
+@router.post("/", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def create_staff(
     *,
     db: AsyncSession = Depends(get_db),
     staff_in: StaffCreate,
     current_user: User = Depends(get_current_user),
+    current_tenant: Tenant = Depends(get_current_tenant),
 ) -> Any:
     """
     Create new staff member.
     """
+    # Plan limit check
+    await check_user_limit(current_tenant, db)
+
     if current_user.role not in [UserRole.hotel_admin, UserRole.hotel_manager, UserRole.super_admin]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -64,7 +73,7 @@ async def create_staff(
     staff = await UserRepository.create(db, tenant_id=current_user.tenant_id, data=staff_data)
     return staff
 
-@router.put("/{id}", response_model=StaffResponse)
+@router.put("/{id}", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def update_staff(
     *,
     db: AsyncSession = Depends(get_db),
@@ -95,7 +104,7 @@ async def update_staff(
     staff = await UserRepository.update_global(db, user_id=id, data=update_data)
     return staff
 
-@router.delete("/{id}", response_model=StaffResponse)
+@router.delete("/{id}", response_model=StaffResponse, dependencies=[Depends(require_module_access("staff_management", require_write=True))])
 async def delete_staff(
     *,
     db: AsyncSession = Depends(get_db),

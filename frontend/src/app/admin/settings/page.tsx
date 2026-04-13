@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import apiClient from '../../../services/apiClient'
+import { canAccess } from '@/config/permissions'
 
 interface HotelSettings {
   general: {
@@ -69,6 +70,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
 
   // Load settings from localStorage
   useEffect(() => {
@@ -81,6 +83,19 @@ export default function SettingsPage() {
       }
     }
   }, [])
+
+  // RBAC Fallback Check
+  useEffect(() => {
+    const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+    if (stored) {
+      const user = JSON.parse(stored)
+      if (!canAccess(user.role, 'hotel_settings')) {
+        router.replace('/admin/access-denied')
+      } else {
+        setIsAuthorized(true)
+      }
+    }
+  }, [router])
 
   // Save settings to localStorage
   const saveSettings = () => {
@@ -217,6 +232,8 @@ export default function SettingsPage() {
       setSaving(false)
     }
   }
+
+  if (isAuthorized === null) return null
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">

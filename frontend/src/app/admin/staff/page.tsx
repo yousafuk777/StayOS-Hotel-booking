@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import StatCard from '../../../components/StatCard'
 import apiClient from '../../../services/apiClient'
+import { canAccess } from '@/config/permissions'
 
 export default function StaffPage() {
+  const router = useRouter()
   const [filter, setFilter] = useState('all')
   const [staffFilter, setStaffFilter] = useState<'all' | 'active' | 'on_leave' | 'new_hires'>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStaff, setSelectedStaff] = useState<any>(null)
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
   
   const [staff, setStaff] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,6 +26,19 @@ export default function StaffPage() {
       return () => clearTimeout(timer)
     }
   }, [toastMessage])
+
+  // RBAC Fallback Check
+  useEffect(() => {
+    const stored = localStorage.getItem('user') || localStorage.getItem('super_admin_user')
+    if (stored) {
+      const user = JSON.parse(stored)
+      if (!canAccess(user.role, 'staff_management')) {
+        router.replace('/admin/access-denied')
+      } else {
+        setIsAuthorized(true)
+      }
+    }
+  }, [router])
   
   const [newStaff, setNewStaff] = useState({
     name: '',
@@ -40,7 +56,6 @@ export default function StaffPage() {
     status: ''
   })
   
-  const router = useRouter()
 
   const ROLE_MAP: Record<string, string> = {
     'Front Desk Agent': 'front_desk',
@@ -127,6 +142,8 @@ export default function StaffPage() {
       setLoading(false)
     }
   }
+
+  if (isAuthorized === null) return null
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
