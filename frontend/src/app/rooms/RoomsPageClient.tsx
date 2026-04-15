@@ -197,7 +197,7 @@ export default function RoomsPageClient() {
       console.log('Submitting booking:', bookingData)
 
       // Submit to backend
-      const response = await api.post('/api/v1/public/bookings', bookingData)
+      const response = await api.post('/api/v1/bookings/public/bookings', bookingData)
 
       console.log('Booking response:', response.data)
 

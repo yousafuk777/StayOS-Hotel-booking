@@ -262,14 +262,14 @@ async def create_public_booking(
         
         if not guest:
             # Create new guest user with minimal info
-            from app.core.security import get_password_hash
+            from app.core.security import hash_password
             guest = User(
                 tenant_id=tenant_id,
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone,
-                hashed_password=get_password_hash("guest_temp_123"),  # Temporary password
+                hashed_password=hash_password("guest_temp_123"),  # Temporary password
                 is_active=True
             )
             db.add(guest)
