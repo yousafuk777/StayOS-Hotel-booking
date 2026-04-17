@@ -34,5 +34,7 @@ def require_module_access(module: str, require_write: bool = False):
                 status_code=403,
                 detail=f"Your role '{role}' does not have {'write' if require_write else 'read'} access to '{module}'."
             )
+        
+        return current_user
 
     return guard

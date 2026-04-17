@@ -18,7 +18,7 @@ class User(BaseModel):
 
     tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="SET NULL"), nullable=True, index=True)
     email = Column(String(255), nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=True)
     first_name = Column(String(100))
     last_name = Column(String(100))
     phone = Column(String(20))

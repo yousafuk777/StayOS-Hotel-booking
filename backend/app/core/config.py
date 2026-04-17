@@ -29,8 +29,19 @@ class Settings(BaseSettings):
     EMAIL_FROM_NAME: str = "StayOS"
 
     STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_PLATFORM_COMMISSION_PERCENT: float = 3.0
+
+    # SMTP Configuration
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "noreply@stayos.com"
+    SMTP_FROM_NAME: str = "StayOS"
+    
+    FRONTEND_URL: str = "http://localhost:3000"
 
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"

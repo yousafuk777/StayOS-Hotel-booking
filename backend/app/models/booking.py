@@ -29,10 +29,23 @@ class Booking(BaseModel):
     cancellation_reason = Column(Text)
     cancelled_at = Column(DateTime)
     confirmed_at = Column(DateTime)
+    
+    # Phase 1 Improvements
+    room_id = Column(Integer, ForeignKey("rooms.id", ondelete="SET NULL"), index=True)
+    guest_access_token = Column(String(255), unique=True, index=True)
+    guest_access_token_expires_at = Column(DateTime)
+    expires_at = Column(DateTime)
+    payment_status = Column(String(20), default="unpaid")
+    
+    # Stripe Payment Fields
+    stripe_payment_intent_id = Column(String(255), index=True)
+    stripe_charge_id = Column(String(255), index=True)
+    currency = Column(String(3), default="usd")
 
     # Relationships
     tenant = relationship("Tenant")
     hotel = relationship("Hotel", back_populates="bookings")
+    room = relationship("Room", foreign_keys=[room_id])
     guest = relationship("User", foreign_keys=[guest_id], back_populates="bookings")
     rooms = relationship("BookingRoom", back_populates="booking", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="booking", cascade="all, delete-orphan")

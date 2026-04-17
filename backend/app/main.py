@@ -9,6 +9,10 @@ from app.core.database import Base, engine, async_session_maker
 from app.seed_db import seed_super_admin
 from fastapi.responses import RedirectResponse
 from sqlalchemy import text
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from app.tasks.expire_bookings import expire_pending_bookings
+
+scheduler = AsyncIOScheduler()
 
 # Ensure upload directories exist
 for folder in ["rooms", "hotels"]:
@@ -64,6 +68,23 @@ async def ensure_rooms_housekeeping_columns(conn):
                 f"ALTER TABLE rooms ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
             ))
 
+async def ensure_booking_payment_columns(conn):
+    payment_columns = {
+        "stripe_payment_intent_id": "VARCHAR(255)",
+        "stripe_charge_id": "VARCHAR(255)",
+        "currency": "VARCHAR(3) DEFAULT 'usd'",
+    }
+
+    for column_name, column_type in payment_columns.items():
+        result = await conn.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name='bookings' AND column_name = :column_name"
+        ), {"column_name": column_name})
+        if result.scalar_one_or_none() is None:
+            await conn.execute(text(
+                f"ALTER TABLE bookings ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
+            ))
+
 @app.on_event("startup")
 async def startup_db_client():
     """Create database tables and seed initial data on startup."""
@@ -71,10 +92,27 @@ async def startup_db_client():
         await conn.run_sync(Base.metadata.create_all)
         await ensure_users_is_vip_column(conn)
         await ensure_rooms_housekeeping_columns(conn)
+        await ensure_booking_payment_columns(conn)
     
     # Create super-admin if they don't exist
     async with async_session_maker() as session:
         await seed_super_admin(session)
+
+    # Start the background scheduler
+    print("[MAIN] Starting background scheduler...")
+    scheduler.add_job(
+        expire_pending_bookings,
+        trigger="interval",
+        minutes=5,
+        id="expire_pending_bookings",
+        replace_existing=True
+    )
+    scheduler.start()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("[MAIN] Shutting down background scheduler...")
+    scheduler.shutdown()
 
 @app.get("/health")
 async def health_check():

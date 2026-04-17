@@ -8,11 +8,18 @@ import {
   StarIcon, MapPinIcon, WifiIcon, TruckIcon, CakeIcon, UserGroupIcon, 
   PhoneIcon, EnvelopeIcon, ClockIcon, ArrowRightIcon, CameraIcon,
   ShieldCheckIcon, SparklesIcon, GiftIcon,
-  Bars3Icon, XMarkIcon, HomeIcon, CalendarDaysIcon, ChatBubbleLeftRightIcon
+  Bars3Icon, XMarkIcon, HomeIcon, CalendarDaysIcon, ChatBubbleLeftRightIcon,
+  ChevronLeftIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements } from '@stripe/react-stripe-js'
 import api from '../../services/api'
 import { API_BASE_URL } from '../../services/apiClient'
+import PaymentStep from '../../components/booking/PaymentStep'
+
+// Initialize Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
 interface Hotel {
   id: number
@@ -80,8 +87,17 @@ export default function RoomsPageClient() {
     checkIn: '',
     checkOut: '',
     guests: 2,
-    specialRequests: ''
+    specialRequests: '',
+    roomId: null as number | null
   })
+  const [bookingStep, setBookingStep] = useState<'details' | 'payment'>('details')
+  const [paymentData, setPaymentData] = useState<{
+    clientSecret: string
+    paymentIntentId: string
+    reference: string
+    amount: number
+    currency: string
+  } | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -143,7 +159,8 @@ export default function RoomsPageClient() {
     setBookingForm(prev => ({
       ...prev,
       checkIn: checkInDate || '',
-      checkOut: checkOutDate || ''
+      checkOut: checkOutDate || '',
+      roomId: roomId
     }))
     setShowBookingForm(true)
   }
@@ -178,6 +195,8 @@ export default function RoomsPageClient() {
     setBookingSubmitting(true)
 
     try {
+      if (!hotel) return
+
       // Prepare booking data
       const bookingData = {
         guest_name: bookingForm.guestName,
@@ -189,20 +208,52 @@ export default function RoomsPageClient() {
         num_guests: bookingForm.guests,
         special_requests: bookingForm.specialRequests,
         hotel_id: hotel.id,
+        room_id: bookingForm.roomId,
         room_total: 0, // Will be calculated by backend
         total_amount: 0,
         status: 'pending'
       }
 
-      console.log('Submitting booking:', bookingData)
-
-      // Submit to backend
+      // 1. Create the booking first (pending/unpaid)
       const response = await api.post('/api/v1/bookings/public/bookings', bookingData)
+      const booking = response.data
 
-      console.log('Booking response:', response.data)
+      // 2. Fetch Payment Intent for this booking
+      const payResponse = await api.post(`/api/v1/bookings/public/bookings/${booking.reference_number}/create-payment-intent`)
+      
+      setPaymentData({
+        clientSecret: payResponse.data.client_secret,
+        paymentIntentId: payResponse.data.payment_intent_id,
+        reference: booking.reference_number,
+        amount: payResponse.data.amount,
+        currency: payResponse.data.currency
+      })
 
-      setToastMessage('✅ Booking submitted successfully! Check your email for confirmation.')
+      setBookingStep('payment')
+      setToastMessage('✅ Details saved! Please complete payment authorization.')
+      setTimeout(() => setToastMessage(null), 3000)
+    } catch (error: any) {
+      console.error('Booking step 1 error:', error)
+      setToastMessage(`❌ Failed to start booking: ${error.response?.data?.detail || 'Try again'}`)
+      setTimeout(() => setToastMessage(null), 5000)
+    } finally {
+      setBookingSubmitting(false)
+    }
+  }
+
+  const handlePaymentSuccess = async () => {
+    try {
+      if (paymentData) {
+        // Confirm the payment on our backend to trigger status update & emails
+        await api.post(`/api/v1/bookings/public/bookings/${paymentData.reference}/confirm-payment`, {
+          payment_intent_id: paymentData.paymentIntentId
+        })
+      }
+      
+      setToastMessage('✅ Payment authorized! Your booking is confirmed.')
       setShowBookingForm(false)
+      setBookingStep('details')
+      setPaymentData(null)
       
       // Reset form
       setBookingForm({
@@ -212,18 +263,16 @@ export default function RoomsPageClient() {
         checkIn: '',
         checkOut: '',
         guests: 2,
-        specialRequests: ''
+        specialRequests: '',
+        roomId: null
       })
-
-      setTimeout(() => setToastMessage(null), 6000)
-    } catch (error: any) {
-      console.error('Booking submission error:', error)
-      console.error('Error response:', error.response?.data)
-      setToastMessage(`❌ Booking failed: ${error.response?.data?.detail || 'Please try again'}`)
-      setTimeout(() => setToastMessage(null), 6000)
-    } finally {
-      setBookingSubmitting(false)
+    } catch (error) {
+      console.error('Confirmation error:', error)
+      setToastMessage('✅ Booking complete! (Note: Confirmation notification delayed)')
+      setShowBookingForm(false)
     }
+
+    setTimeout(() => setToastMessage(null), 6000)
   }
 
   if (loading) {
@@ -1064,141 +1113,178 @@ export default function RoomsPageClient() {
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleBookingSubmit} className="p-6 space-y-5">
-                {/* Guest Name */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={bookingForm.guestName}
-                    onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-                    placeholder="John Doe"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                  />
-                </div>
+              <div className="p-6">
+                {bookingStep === 'details' ? (
+                  <form onSubmit={handleBookingSubmit} className="space-y-5">
+                    {/* Guest Name */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={bookingForm.guestName}
+                        onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
+                        placeholder="John Doe"
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      />
+                    </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={bookingForm.email}
-                    onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
-                    placeholder="john@example.com"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                  />
-                </div>
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={bookingForm.email}
+                        onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                        placeholder="john@example.com"
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      />
+                    </div>
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={bookingForm.phone}
-                    onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                    placeholder="+1 234 567 8900"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                  />
-                </div>
+                    {/* Phone */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={bookingForm.phone}
+                        onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                        placeholder="+1 234 567 8900"
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      />
+                    </div>
 
-                {/* Check-in & Check-out */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Check-in <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={bookingForm.checkIn}
-                      onChange={(e) => setBookingForm({ ...bookingForm, checkIn: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Check-out <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={bookingForm.checkOut}
-                      onChange={(e) => setBookingForm({ ...bookingForm, checkOut: e.target.value })}
-                      min={bookingForm.checkIn || new Date().toISOString().split('T')[0]}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                    />
-                  </div>
-                </div>
+                    {/* Check-in & Check-out */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Check-in <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingForm.checkIn}
+                          onChange={(e) => setBookingForm({ ...bookingForm, checkIn: e.target.value })}
+                          min={new Date().toISOString().split('T')[0]}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Check-out <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingForm.checkOut}
+                          onChange={(e) => setBookingForm({ ...bookingForm, checkOut: e.target.value })}
+                          min={bookingForm.checkIn || new Date().toISOString().split('T')[0]}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        />
+                      </div>
+                    </div>
 
-                {/* Number of Guests */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Number of Guests
-                  </label>
-                  <select
-                    value={bookingForm.guests}
-                    onChange={(e) => setBookingForm({ ...bookingForm, guests: parseInt(e.target.value) })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition cursor-pointer"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(num => (
-                      <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Number of Guests */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Number of Guests
+                      </label>
+                      <select
+                        value={bookingForm.guests}
+                        onChange={(e) => setBookingForm({ ...bookingForm, guests: parseInt(e.target.value) })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition cursor-pointer"
+                      >
+                        {[1, 2, 3, 4, 5, 6].map(num => (
+                          <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                {/* Special Requests */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Special Requests (Optional)
-                  </label>
-                  <textarea
-                    value={bookingForm.specialRequests}
-                    onChange={(e) => setBookingForm({ ...bookingForm, specialRequests: e.target.value })}
-                    placeholder="Any special requirements or preferences..."
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition resize-none"
-                  />
-                </div>
+                    {/* Special Requests */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Special Requests (Optional)
+                      </label>
+                      <textarea
+                        value={bookingForm.specialRequests}
+                        onChange={(e) => setBookingForm({ ...bookingForm, specialRequests: e.target.value })}
+                        placeholder="Any special requirements or preferences..."
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition resize-none"
+                      />
+                    </div>
 
-                {/* Submit Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowBookingForm(false)}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition cursor-pointer active:scale-95"
-                    disabled={bookingSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={bookingSubmitting}
-                    className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {bookingSubmitting ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        Submitting...
-                      </>
+                    {/* Submit Buttons */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowBookingForm(false)}
+                        className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition cursor-pointer active:scale-95"
+                        disabled={bookingSubmitting}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={bookingSubmitting}
+                        className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {bookingSubmitting ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            Continue to Payment
+                            <ArrowRightIcon className="w-5 h-5" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  paymentData && (
+                    paymentData.clientSecret === 'mock_secret' ? (
+                      <PaymentStep 
+                        clientSecret={paymentData.clientSecret}
+                        reference={paymentData.reference}
+                        amount={paymentData.amount}
+                        currency={paymentData.currency}
+                        onSuccess={handlePaymentSuccess}
+                        onBack={() => setBookingStep('details')}
+                      />
                     ) : (
-                      'Confirm Booking'
-                    )}
-                  </button>
-                </div>
-              </form>
+                      <Elements 
+                        stripe={stripePromise} 
+                        options={{ 
+                          clientSecret: paymentData.clientSecret,
+                          appearance: { theme: 'stripe' }
+                        }}
+                      >
+                        <PaymentStep 
+                          clientSecret={paymentData.clientSecret}
+                          reference={paymentData.reference}
+                          amount={paymentData.amount}
+                          currency={paymentData.currency}
+                          onSuccess={handlePaymentSuccess}
+                          onBack={() => setBookingStep('details')}
+                        />
+                      </Elements>
+                    )
+                  )
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
