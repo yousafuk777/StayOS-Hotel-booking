@@ -196,14 +196,14 @@ export default function TenantsPage() {
         </div>
 
         {/* Tenants Table */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 slide-up border border-gray-200 overflow-visible" style={{ animationDelay: '0.2s' }}>
+        <div className="glass-card rounded-2xl p-6 md:p-8 slide-up border border-gray-200" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold gradient-text">
               {STATUS_CONFIG[filter]?.label || 'All Tenants'}
             </h2>
           </div>
 
-          <div className="overflow-visible">
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -268,8 +268,8 @@ export default function TenantsPage() {
                           {tenant.status?.toUpperCase() || 'UNKNOWN'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 relative text-right">
-                        <div className="flex items-center justify-end pr-4">
+                      <td className="py-4 px-4 relative" style={{ minWidth: '180px' }}>
+                        <div className="flex items-center justify-end">
                           <div className="relative inline-block text-left">
                             <button 
                               onClick={(e) => {
@@ -288,29 +288,34 @@ export default function TenantsPage() {
                             {activeDropdown === tenant.id && (
                               <>
                                 <div 
-                                  className="fixed inset-0 z-10" 
+                                  className="fixed inset-0 z-40" 
                                   onClick={() => setActiveDropdown(null)}
                                 ></div>
-                                <div className="absolute right-0 top-full mt-3 w-56 glass-card border border-white/20 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top-right">
-                                  <div className="p-1.5 space-y-0.5">
+                                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
+                                  <div className="py-2">
+                                    {/* Edit Button */}
                                     <button 
-                                      className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1A2E2B] hover:bg-white/50 rounded-xl flex items-center gap-3 transition-colors"
-                                      onClick={() => {
+                                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 flex items-center gap-3 transition-colors border-b border-gray-100"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         setSelectedTenantForEdit(tenant);
                                         setActiveDropdown(null);
                                       }}
                                     >
-                                      <span className="text-xl">📝</span> Edit Details
+                                      <span className="text-lg">📝</span>
+                                      <span>Edit Details</span>
                                     </button>
                                     
+                                    {/* Upload Image Button */}
                                     <button 
-                                      className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1A2E2B] hover:bg-white/50 rounded-xl flex items-center gap-3 transition-colors"
-                                      onClick={() => {
+                                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 flex items-center gap-3 transition-colors border-b border-gray-100"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         const input = document.createElement('input')
                                         input.type = 'file'
                                         input.accept = 'image/*'
-                                        input.onchange = (e: any) => {
-                                          const file = e.target.files[0]
+                                        input.onchange = (evt: any) => {
+                                          const file = evt.target.files[0]
                                           if (file && tenant.hotels?.[0]?.id) {
                                             handleImageUpload(tenant.hotels[0].id, file)
                                           }
@@ -322,41 +327,47 @@ export default function TenantsPage() {
                                       {uploadingHotelId === (tenant.hotels?.[0]?.id) ? (
                                         <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                                       ) : (
-                                        <span className="text-xl">🖼️</span>
+                                        <span className="text-lg">🖼️</span>
                                       )}
-                                      Upload Property Image
+                                      <span>Upload Image</span>
                                     </button>
 
+                                    {/* Suspend/Activate Button */}
                                     <button 
-                                      className={`w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3 transition-colors ${
+                                      className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-3 transition-colors border-b border-gray-100 ${
                                         tenant.status === 'active' 
-                                          ? 'text-amber-600 hover:bg-amber-50/50' 
-                                          : 'text-emerald-600 hover:bg-emerald-50/50'
+                                          ? 'text-amber-600 hover:bg-amber-50' 
+                                          : 'text-green-600 hover:bg-green-50'
                                       }`}
-                                      onClick={() => handleToggleStatus(tenant)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleStatus(tenant);
+                                      }}
                                       disabled={processingId === tenant.id}
                                     >
                                       {processingId === tenant.id ? (
                                         <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
                                       ) : (
-                                        <span className="text-xl">{tenant.status === 'active' ? '⏸' : '▶️'}</span>
+                                        <span className="text-lg">{tenant.status === 'active' ? '⏸️' : '▶️'}</span>
                                       )}
-                                      {tenant.status === 'active' ? 'Suspend Hotel' : 'Activate Hotel'}
+                                      <span>{tenant.status === 'active' ? 'Suspend' : 'Activate'}</span>
                                     </button>
 
-                                    <div className="h-px bg-gray-200/50 my-1 mx-2"></div>
-
+                                    {/* Delete Button */}
                                     <button 
-                                      className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 rounded-xl flex items-center gap-3 transition-colors"
-                                      onClick={() => handleDeleteTenant(tenant.id, tenant.name)}
+                                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteTenant(tenant.id, tenant.hotels?.[0]?.name || tenant.name);
+                                      }}
                                       disabled={processingId === tenant.id}
                                     >
                                       {processingId === tenant.id ? (
                                         <div className="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full"></div>
                                       ) : (
-                                        <span className="text-xl">🗑️</span>
+                                        <span className="text-lg">🗑️</span>
                                       )}
-                                      Delete Hotel
+                                      <span>Delete Tenant</span>
                                     </button>
                                   </div>
                                 </div>
