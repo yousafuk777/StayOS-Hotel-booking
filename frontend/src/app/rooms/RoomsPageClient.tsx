@@ -115,8 +115,25 @@ export default function RoomsPageClient() {
   }
 
   const getPrimaryImage = (room: Room) => {
-    const primaryImage = room.images.find(img => img.is_primary)
-    return primaryImage ? `${API_BASE_URL}${primaryImage.image_url}` : '/placeholder-room.jpg'
+    if (room.images && room.images.length > 0) {
+      const primaryImage = room.images.find(img => img.is_primary)
+      const firstImage = primaryImage || room.images[0]
+      // Check if it's a full URL or relative path
+      if (firstImage.image_url.startsWith('http')) {
+        return firstImage.image_url
+      }
+      return `${API_BASE_URL}${firstImage.image_url}`
+    }
+    // Return a beautiful placeholder based on room ID
+    const placeholders = [
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
+      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
+      'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80'
+    ]
+    return placeholders[room.id % placeholders.length]
   }
 
   const getHotelImage = () => {
@@ -126,12 +143,33 @@ export default function RoomsPageClient() {
   const handleCheckAvailability = () => {
     console.log('Check Availability clicked', { checkInDate, checkOutDate, guests })
     if (!checkInDate || !checkOutDate) {
-      setToastMessage('⚠️ Please select both check-in and check-out dates')
+      setToastMessage('⚠️ Please select both check-in and check-out dates to see available rooms')
       setTimeout(() => setToastMessage(null), 4000)
       return
     }
-    setToastMessage('✅ Checking availability...')
+    
+    // Validate dates
+    const checkIn = new Date(checkInDate)
+    const checkOut = new Date(checkOutDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    if (checkIn < today) {
+      setToastMessage('⚠️ Check-in date cannot be in the past')
+      setTimeout(() => setToastMessage(null), 4000)
+      return
+    }
+    
+    if (checkOut <= checkIn) {
+      setToastMessage('⚠️ Check-out date must be after check-in date')
+      setTimeout(() => setToastMessage(null), 4000)
+      return
+    }
+    
+    setToastMessage('✅ Showing available rooms for your dates!')
     setTimeout(() => setToastMessage(null), 3000)
+    
+    // Scroll to rooms section
     const roomsSection = document.getElementById('rooms-section')
     if (roomsSection) {
       roomsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -178,6 +216,13 @@ export default function RoomsPageClient() {
     setBookingSubmitting(true)
 
     try {
+      // Validate hotel exists
+      if (!hotel || !hotel.id) {
+        setToastMessage('❌ Hotel information not found. Please refresh the page.')
+        setTimeout(() => setToastMessage(null), 4000)
+        return
+      }
+
       // Prepare booking data
       const bookingData = {
         guest_name: bookingForm.guestName,
@@ -189,19 +234,23 @@ export default function RoomsPageClient() {
         num_guests: bookingForm.guests,
         special_requests: bookingForm.specialRequests,
         hotel_id: hotel.id,
-        room_total: 0, // Will be calculated by backend
+        room_total: 0,
+        addon_total: 0,
+        discount_amount: 0,
+        tax_amount: 0,
         total_amount: 0,
         status: 'pending'
       }
 
-      console.log('Submitting booking:', bookingData)
+      console.log('📤 Submitting booking:', bookingData)
+      console.log('🏨 Hotel ID:', hotel.id)
 
       // Submit to backend
       const response = await api.post('/api/v1/public/bookings', bookingData)
 
-      console.log('Booking response:', response.data)
+      console.log('✅ Booking response:', response.data)
 
-      setToastMessage('✅ Booking submitted successfully! Check your email for confirmation.')
+      setToastMessage('✅ Booking submitted successfully! Reference: ' + (response.data.reference_number || 'Check your email'))
       setShowBookingForm(false)
       
       // Reset form
@@ -217,9 +266,13 @@ export default function RoomsPageClient() {
 
       setTimeout(() => setToastMessage(null), 6000)
     } catch (error: any) {
-      console.error('Booking submission error:', error)
-      console.error('Error response:', error.response?.data)
-      setToastMessage(`❌ Booking failed: ${error.response?.data?.detail || 'Please try again'}`)
+      console.error('❌ Booking submission error:', error)
+      console.error('❌ Error response:', error.response?.data)
+      console.error('❌ Error status:', error.response?.status)
+      
+      // Show detailed error message
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Please try again'
+      setToastMessage(`❌ Booking failed: ${errorMsg}`)
       setTimeout(() => setToastMessage(null), 6000)
     } finally {
       setBookingSubmitting(false)
@@ -508,7 +561,8 @@ export default function RoomsPageClient() {
                   type="date" 
                   value={checkInDate}
                   onChange={(e) => setCheckInDate(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base"
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base cursor-pointer"
                 />
               </div>
               <div className="flex flex-col">
@@ -517,7 +571,8 @@ export default function RoomsPageClient() {
                   type="date" 
                   value={checkOutDate}
                   onChange={(e) => setCheckOutDate(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base"
+                  min={checkInDate || new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:outline-none transition text-sm md:text-base cursor-pointer"
                 />
               </div>
               <div className="flex flex-col">
@@ -621,7 +676,7 @@ export default function RoomsPageClient() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
             <button 
               onClick={() => {
                 setSelectedCategory(null)
@@ -653,6 +708,43 @@ export default function RoomsPageClient() {
             ))}
           </div>
 
+          {/* Active Filters Summary */}
+          {(checkInDate || checkOutDate || selectedCategory !== null) && (
+            <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                {checkInDate && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-700">Check-in:</span>
+                    <span className="text-primary-600 font-bold">{new Date(checkInDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {checkOutDate && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-700">Check-out:</span>
+                    <span className="text-primary-600 font-bold">{new Date(checkOutDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {selectedCategory !== null && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-700">Room Type:</span>
+                    <span className="text-primary-600 font-bold">{selectedRoomType}</span>
+                  </div>
+                )}
+                <button 
+                  onClick={() => {
+                    setCheckInDate('')
+                    setCheckOutDate('')
+                    setSelectedCategory(null)
+                    setSelectedRoomType('All Rooms')
+                  }}
+                  className="ml-auto text-red-600 hover:text-red-700 font-semibold"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Room Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {hotel.room_categories
@@ -675,6 +767,15 @@ export default function RoomsPageClient() {
                       alt={category.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
+                    {/* Image count indicator */}
+                    {room.images && room.images.length > 1 && (
+                      <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                        <span className="text-white text-xs font-semibold flex items-center gap-1">
+                          <CameraIcon className="w-3 h-3" />
+                          {room.images.length} photos
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-lg">
                       <span className={`text-sm font-bold ${
                         room.status === 'available' || room.status === 'clean' ? 'text-green-600' : 'text-orange-600'

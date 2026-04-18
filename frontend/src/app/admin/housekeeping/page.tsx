@@ -267,12 +267,32 @@ export default function HousekeepingPage() {
           <div className="glass-card rounded-2xl overflow-hidden slide-up" style={{ animationDelay: '0.7s' }}>
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold gradient-text">Room Status Overview</h2>
-              <p className="text-[#2D4A42]">Rooms organized by current status</p>
+              <p className="text-[#2D4A42]">
+                {housekeepingFilter === 'all' 
+                  ? `Showing all ${rooms.length} rooms` 
+                  : `Showing ${rooms.filter(r => r.status === housekeepingFilter).length} ${housekeepingFilter} rooms`}
+              </p>
             </div>
 
             <div className="overflow-x-auto">
-              {['clean', 'dirty', 'cleaning', 'inspection', 'maintenance'].map((status) => {
-                const statusRooms = rooms.filter(room => room.status === status)
+              {(housekeepingFilter === 'all' ? ['clean', 'dirty', 'cleaning', 'inspection', 'maintenance'] : [housekeepingFilter]).map((status) => {
+                let statusRooms = rooms.filter(room => room.status === status)
+                
+                // Apply staff filter
+                if (selectedStaff !== 'all') {
+                  statusRooms = statusRooms.filter(room => room.assignedTo === selectedStaff)
+                }
+                
+                // Apply search filter
+                if (searchQuery) {
+                  const query = searchQuery.toLowerCase()
+                  statusRooms = statusRooms.filter(room => 
+                    room.number.toLowerCase().includes(query) ||
+                    room.type.toLowerCase().includes(query) ||
+                    (room.assignedTo && room.assignedTo.toLowerCase().includes(query))
+                  )
+                }
+                
                 const statusInfo = STATUS_CONFIG[status]
 
                 return (
@@ -415,33 +435,67 @@ export default function HousekeepingPage() {
             <h2 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-3">
               👥 Housekeeping Staff
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {staffList.filter(s => s.role === 'housekeeping').map((staff, index) => (
-                <div key={staff.id} className="glass p-6 rounded-xl slide-up" style={{ animationDelay: `${1.6 + index * 0.1}s` }}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold">
-                      {staff.first_name.charAt(0)}
+            {staffList.filter(s => s.role === 'housekeeping').length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">👤</div>
+                <h3 className="text-xl font-bold text-gray-700 mb-2">No Housekeeping Staff</h3>
+                <p className="text-gray-600">Add staff members with housekeeping role to assign tasks</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {staffList.filter(s => s.role === 'housekeeping').map((staff, index) => {
+                  // Count assigned rooms
+                  const assignedRooms = rooms.filter(r => r.assignedToId === staff.id)
+                  const cleaningCount = assignedRooms.filter(r => r.status === 'cleaning').length
+                  const completedCount = assignedRooms.filter(r => r.status === 'clean').length
+                  
+                  return (
+                    <div key={staff.id} className="glass p-6 rounded-xl slide-up" style={{ animationDelay: `${1.6 + index * 0.1}s` }}>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold">
+                          {staff.first_name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-[#1A2E2B]">{staff.first_name} {staff.last_name}</h3>
+                          <p className="text-sm text-[#2D4A42]">{staff.role}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[#2D4A42]">Status</span>
+                          <span className={`font-bold ${staff.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                            {staff.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[#2D4A42]">Email</span>
+                          <span className="text-xs text-[#2D4A42] truncate max-w-[150px]">{staff.email}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[#2D4A42]">Active Tasks</span>
+                          <span className="font-bold text-blue-600">{cleaningCount} cleaning</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[#2D4A42]">Completed Today</span>
+                          <span className="font-bold text-green-600">{completedCount} rooms</span>
+                        </div>
+                        <div className="pt-2 border-t border-gray-200">
+                          <button 
+                            onClick={() => {
+                              setSelectedStaff(`${staff.first_name} ${staff.last_name}`)
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }}
+                            className="w-full text-sm text-blue-600 hover:text-blue-700 font-semibold py-2"
+                          >
+                            View Assigned Rooms →
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-[#1A2E2B]">{staff.first_name} {staff.last_name}</h3>
-                      <p className="text-sm text-[#2D4A42]">{staff.role}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-[#2D4A42]">Status</span>
-                      <span className={`font-bold ${staff.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                        {staff.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-[#2D4A42]">Email</span>
-                      <span className="text-xs text-[#2D4A42] truncate max-w-[150px]">{staff.email}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
