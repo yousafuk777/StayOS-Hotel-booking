@@ -11,8 +11,10 @@ export default function TenantsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
+  const [showActionsModal, setShowActionsModal] = useState(false)
+  const [selectedTenantForActions, setSelectedTenantForActions] = useState<any>(null)
   const [processingId, setProcessingId] = useState<number | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingHotelId, setUploadingHotelId] = useState<number | null>(null)
   const [selectedTenantForEdit, setSelectedTenantForEdit] = useState<any>(null)
@@ -44,46 +46,36 @@ export default function TenantsPage() {
       await api.post(`/api/v1/hotels/${hotelId}/image`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      alert('Success! Image updated successfully.')
+      setToastMessage('✅ Image uploaded successfully!')
+      setTimeout(() => setToastMessage(null), 3000)
       fetchTenants()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload failed:', error)
-      alert('Failed to upload image.')
+      setToastMessage(`❌ Failed to upload image: ${error.response?.data?.detail || 'Unknown error'}`)
+      setTimeout(() => setToastMessage(null), 5000)
     } finally {
       setUploadingHotelId(null)
-      setActiveDropdown(null)
-    }
-  }
-
-  const handleDeleteTenant = async (id: number, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${name}"? This action is irreversible.`)) return
-    
-    setProcessingId(id)
-    try {
-      await api.delete(`/api/v1/super-admin/tenants/${id}`)
-      setTenants(prev => prev.filter(t => t.id !== id))
-      setTotalCount(prev => prev - 1)
-    } catch (error) {
-      console.error('Delete failed:', error)
-      alert('Failed to delete tenant. Please try again.')
-    } finally {
-      setProcessingId(null)
-      setActiveDropdown(null)
     }
   }
 
   const handleToggleStatus = async (tenant: any) => {
     const newStatus = tenant.status === 'active' ? 'suspended' : 'active'
+    const action = tenant.status === 'active' ? 'suspend' : 'activate'
+    
     setProcessingId(tenant.id)
     try {
+      console.log(`🔄 ${action} tenant:`, tenant.id)
       await api.patch(`/api/v1/super-admin/tenants/${tenant.id}`, { status: newStatus })
       setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
-    } catch (error) {
-      console.error('Status update failed:', error)
-      alert('Failed to update tenant status.')
+      setToastMessage(`✅ Tenant ${action}ed successfully!`)
+      setTimeout(() => setToastMessage(null), 3000)
+      setShowActionsModal(false)
+    } catch (error: any) {
+      console.error(`❌ Status update failed:`, error)
+      setToastMessage(`❌ Failed to ${action} tenant: ${error.response?.data?.detail || 'Unknown error'}`)
+      setTimeout(() => setToastMessage(null), 5000)
     } finally {
       setProcessingId(null)
-      setActiveDropdown(null)
     }
   }
 
@@ -100,6 +92,18 @@ export default function TenantsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-[100] flex items-center gap-3 slide-up ${
+          toastMessage.startsWith('✅') 
+            ? 'bg-green-500 text-white' 
+            : 'bg-red-500 text-white'
+        }`}>
+          <span className="text-xl">{toastMessage.startsWith('✅') ? '✅' : '❌'}</span>
+          <span className="font-semibold">{toastMessage.replace(/^[✅❌]\\s*/, '')}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between fade-in p-2">
         <div>
@@ -270,112 +274,19 @@ export default function TenantsPage() {
                       </td>
                       <td className="py-4 px-4 relative" style={{ minWidth: '180px' }}>
                         <div className="flex items-center justify-end">
-                          <div className="relative inline-block text-left">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveDropdown(activeDropdown === tenant.id ? null : tenant.id);
-                              }}
-                              className={`glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-bold flex items-center gap-2 ${
-                                activeDropdown === tenant.id ? 'bg-gray-100 ring-4 ring-blue-500/10' : 'text-[#1A2E2B]'
-                              }`}
-                            >
-                              <span>{activeDropdown === tenant.id ? '✕' : '⚙️'}</span>
-                              <span>Actions</span>
-                            </button>
-
-                            {/* Action Dropdown */}
-                            {activeDropdown === tenant.id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-40" 
-                                  onClick={() => setActiveDropdown(null)}
-                                ></div>
-                                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
-                                  <div className="py-2">
-                                    {/* Edit Button */}
-                                    <button 
-                                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 flex items-center gap-3 transition-colors border-b border-gray-100"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedTenantForEdit(tenant);
-                                        setActiveDropdown(null);
-                                      }}
-                                    >
-                                      <span className="text-lg">📝</span>
-                                      <span>Edit Details</span>
-                                    </button>
-                                    
-                                    {/* Upload Image Button */}
-                                    <button 
-                                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 flex items-center gap-3 transition-colors border-b border-gray-100"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const input = document.createElement('input')
-                                        input.type = 'file'
-                                        input.accept = 'image/*'
-                                        input.onchange = (evt: any) => {
-                                          const file = evt.target.files[0]
-                                          if (file && tenant.hotels?.[0]?.id) {
-                                            handleImageUpload(tenant.hotels[0].id, file)
-                                          }
-                                        }
-                                        input.click()
-                                      }}
-                                      disabled={uploadingHotelId !== null}
-                                    >
-                                      {uploadingHotelId === (tenant.hotels?.[0]?.id) ? (
-                                        <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                                      ) : (
-                                        <span className="text-lg">🖼️</span>
-                                      )}
-                                      <span>Upload Image</span>
-                                    </button>
-
-                                    {/* Suspend/Activate Button */}
-                                    <button 
-                                      className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-3 transition-colors border-b border-gray-100 ${
-                                        tenant.status === 'active' 
-                                          ? 'text-amber-600 hover:bg-amber-50' 
-                                          : 'text-green-600 hover:bg-green-50'
-                                      }`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleStatus(tenant);
-                                      }}
-                                      disabled={processingId === tenant.id}
-                                    >
-                                      {processingId === tenant.id ? (
-                                        <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
-                                      ) : (
-                                        <span className="text-lg">{tenant.status === 'active' ? '⏸️' : '▶️'}</span>
-                                      )}
-                                      <span>{tenant.status === 'active' ? 'Suspend' : 'Activate'}</span>
-                                    </button>
-
-                                    {/* Delete Button */}
-                                    <button 
-                                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteTenant(tenant.id, tenant.hotels?.[0]?.name || tenant.name);
-                                      }}
-                                      disabled={processingId === tenant.id}
-                                    >
-                                      {processingId === tenant.id ? (
-                                        <div className="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full"></div>
-                                      ) : (
-                                        <span className="text-lg">🗑️</span>
-                                      )}
-                                      <span>Delete Tenant</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
+                          <button 
+                            onClick={() => {
+                              setSelectedTenantForActions(tenant)
+                              setShowActionsModal(true)
+                            }}
+                            className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all text-sm font-bold flex items-center gap-2 text-[#1A2E2B]"
+                          >
+                            <span>⚙️</span>
+                            <span>Actions</span>
+                          </button>
                         </div>
                       </td>
+
                     </tr>
                   ))
                 )}
@@ -397,6 +308,123 @@ export default function TenantsPage() {
         onSuccess={fetchTenants}
         tenant={selectedTenantForEdit}
       />
+
+      {/* Actions Modal */}
+      {showActionsModal && selectedTenantForActions && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Actions</h2>
+                  <p className="text-blue-100 text-sm mt-1">
+                    {selectedTenantForActions.hotels?.[0]?.name || selectedTenantForActions.name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowActionsModal(false)}
+                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                >
+                  <span className="text-2xl">✕</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-3">
+              {/* Edit Button */}
+              <button 
+                onClick={() => {
+                  setSelectedTenantForEdit(selectedTenantForActions)
+                  setShowActionsModal(false)
+                }}
+                className="w-full px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-xl flex items-center gap-4 transition-all group"
+              >
+                <span className="text-2xl group-hover:scale-110 transition-transform">📝</span>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-900">Edit Details</div>
+                  <div className="text-xs text-gray-600">Update tenant information</div>
+                </div>
+              </button>
+              
+              {/* Upload Image Button */}
+              <button 
+                onClick={() => {
+                  const input = document.createElement('input')
+                  input.type = 'file'
+                  input.accept = 'image/*'
+                  input.onchange = (evt: any) => {
+                    const file = evt.target.files[0]
+                    if (file && selectedTenantForActions.hotels?.[0]?.id) {
+                      handleImageUpload(selectedTenantForActions.hotels[0].id, file)
+                    }
+                  }
+                  input.click()
+                }}
+                disabled={uploadingHotelId !== null}
+                className="w-full px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-xl flex items-center gap-4 transition-all group disabled:opacity-50"
+              >
+                {uploadingHotelId === (selectedTenantForActions.hotels?.[0]?.id) ? (
+                  <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                ) : (
+                  <span className="text-2xl group-hover:scale-110 transition-transform">🖼️</span>
+                )}
+                <div className="text-left">
+                  <div className="font-semibold text-gray-900">Upload Image</div>
+                  <div className="text-xs text-gray-600">Change hotel logo</div>
+                </div>
+              </button>
+
+              {/* Suspend/Activate Button */}
+              <button 
+                onClick={() => handleToggleStatus(selectedTenantForActions)}
+                disabled={processingId === selectedTenantForActions.id}
+                className={`w-full px-4 py-3 rounded-xl flex items-center gap-4 transition-all group disabled:opacity-50 ${
+                  selectedTenantForActions.status === 'active'
+                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-700'
+                    : 'bg-green-50 hover:bg-green-100 text-green-700'
+                }`}
+              >
+                {processingId === selectedTenantForActions.id ? (
+                  <div className="animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full"></div>
+                ) : (
+                  <span className="text-2xl group-hover:scale-110 transition-transform">
+                    {selectedTenantForActions.status === 'active' ? '⏸️' : '▶️'}
+                  </span>
+                )}
+                <div className="text-left">
+                  <div className="font-semibold">
+                    {selectedTenantForActions.status === 'active' ? 'Suspend' : 'Activate'}
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {selectedTenantForActions.status === 'active' ? 'Temporarily disable' : 'Re-enable access'}
+                  </div>
+                </div>
+              </button>
+
+              {/* Delete Button - DISABLED */}
+              <div className="px-4 py-3 bg-gray-100 rounded-xl flex items-center gap-4 opacity-50 cursor-not-allowed">
+                <span className="text-2xl">🗑️</span>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-500">Delete Tenant</div>
+                  <div className="text-xs text-gray-500">🔒 Disabled for safety</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => setShowActionsModal(false)}
+                className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold text-gray-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
