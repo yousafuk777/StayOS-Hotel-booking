@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1 import (
     auth, super_admin, rooms, staff, 
-    bookings, guests, hotels, notifications, tenants
+    bookings, guests, hotels, notifications, tenants, public
 )
 
 # Create main API router
@@ -24,3 +24,4 @@ api_router.include_router(tenants.router, prefix="/tenants", tags=["Tenants"])
 # Include platform management and discovery routes
 api_router.include_router(super_admin.router, prefix="/super-admin", tags=["Super Admin"])
 api_router.include_router(hotels.router, prefix="/hotels", tags=["Hotels Discovery"])
+api_router.include_router(public.router, prefix="/public", tags=["Public API"])

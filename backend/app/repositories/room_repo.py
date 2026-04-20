@@ -54,13 +54,19 @@ class RoomRepository(TenantScopedRepository[Room]):
 
     @classmethod
     async def get_all_global(
-        cls, db: AsyncSession, skip: int = 0, limit: int = 100
+        cls, db: AsyncSession, skip: int = 0, limit: int = 100, hotel_id: Optional[int] = None
     ) -> List[Room]:
         """Fetch all rooms across all tenants (Super Admin View)."""
         stmt = (
             select(cls.model)
             .where(cls.model.is_deleted == False)
-            .options(
+        )
+        
+        if hotel_id:
+            stmt = stmt.where(cls.model.hotel_id == hotel_id)
+            
+        stmt = (
+            stmt.options(
                 selectinload(cls.model.category), 
                 selectinload(cls.model.images),
                 selectinload(cls.model.assigned_staff)

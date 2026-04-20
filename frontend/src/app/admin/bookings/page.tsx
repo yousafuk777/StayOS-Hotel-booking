@@ -112,7 +112,7 @@ export default function BookingsPage() {
   // Auto-focus first field when modal opens
   useEffect(() => {
     if (showAddModal) {
-      // Fetch hotels and rooms
+      // Fetch hotels and initial rooms
       fetchHotelsAndRooms()
       
       // Small delay to ensure DOM is ready
@@ -124,6 +124,46 @@ export default function BookingsPage() {
       }, 100)
     }
   }, [showAddModal])
+
+  // Fetch rooms when selected hotel changes
+  useEffect(() => {
+    if (selectedHotelId && showAddModal) {
+      const fetchRoomsForHotel = async () => {
+        try {
+          console.log(`🚪 Fetching rooms for hotel ${selectedHotelId}...`)
+          const roomsRes = await api.get('/api/v1/rooms', {
+            params: { hotel_id: selectedHotelId, limit: 100 }
+          })
+          
+          let roomsList = []
+          if (Array.isArray(roomsRes.data)) {
+            roomsList = roomsRes.data
+          } else if (roomsRes.data.rooms && Array.isArray(roomsRes.data.rooms)) {
+            roomsList = roomsRes.data.rooms
+          } else if (roomsRes.data.data && Array.isArray(roomsRes.data.data)) {
+            roomsList = roomsRes.data.data
+          }
+          
+          console.log(`🚪 Found ${roomsList.length} rooms for hotel ${selectedHotelId}`)
+          setRooms(roomsList)
+          
+          // Auto-select first room of the new hotel if current room is not in the new list
+          if (roomsList.length > 0) {
+            const currentRoomStillValid = roomsList.some(r => r.id === selectedRoomId)
+            if (!currentRoomStillValid) {
+              setSelectedRoomId(roomsList[0].id)
+            }
+          } else {
+            setSelectedRoomId(null)
+          }
+        } catch (error) {
+          console.error('❌ Failed to fetch rooms for hotel:', error)
+        }
+      }
+      
+      fetchRoomsForHotel()
+    }
+  }, [selectedHotelId, showAddModal])
 
   const fetchHotelsAndRooms = async () => {
     try {
@@ -142,15 +182,6 @@ export default function BookingsPage() {
       console.log('🏨 Hotels is array:', Array.isArray(hotelsRes.data))
       console.log('🏨 Hotels count:', hotelsRes.data?.length || 0)
       
-      // Fetch rooms
-      console.log('📡 Fetching: GET /api/v1/rooms')
-      const roomsRes = await api.get('/api/v1/rooms')
-      
-      console.log('✅ Rooms API response status:', roomsRes.status)
-      console.log('🚪 Rooms response data:', roomsRes.data)
-      console.log('🚪 Rooms is array:', Array.isArray(roomsRes.data))
-      console.log('🚪 Rooms count:', roomsRes.data?.length || 0)
-      
       // Handle different response formats
       let hotelsList = []
       if (Array.isArray(hotelsRes.data)) {
@@ -166,31 +197,14 @@ export default function BookingsPage() {
         console.warn('⚠️ Unexpected hotels response format:', typeof hotelsRes.data)
       }
       
-      let roomsList = []
-      if (Array.isArray(roomsRes.data)) {
-        roomsList = roomsRes.data
-        console.log('✅ Using direct array format for rooms')
-      } else if (roomsRes.data.rooms && Array.isArray(roomsRes.data.rooms)) {
-        roomsList = roomsRes.data.rooms
-        console.log('✅ Using .rooms property format')
-      } else {
-        console.warn('⚠️ Unexpected rooms response format:', typeof roomsRes.data)
-      }
-      
       console.log('🏨 Processed hotels:', hotelsList.length, 'hotels')
       if (hotelsList.length > 0) {
         console.log('📋 First hotel:', hotelsList[0])
       }
       
-      console.log('🚪 Processed rooms:', roomsList.length, 'rooms')
-      if (roomsList.length > 0) {
-        console.log('📋 First room:', roomsList[0])
-      }
-      
       setHotels(hotelsList)
-      setRooms(roomsList)
       
-      // Auto-select first hotel and room
+      // Auto-select first hotel
       if (hotelsList.length > 0 && hotelsList[0].id) {
         setSelectedHotelId(hotelsList[0].id)
         console.log('✅ Auto-selected hotel ID:', hotelsList[0].id, '- Name:', hotelsList[0].name)
@@ -198,21 +212,9 @@ export default function BookingsPage() {
         console.warn('⚠️ No hotels to auto-select')
       }
       
-      if (roomsList.length > 0 && roomsList[0].id) {
-        setSelectedRoomId(roomsList[0].id)
-        console.log('✅ Auto-selected room ID:', roomsList[0].id)
-      } else {
-        console.warn('⚠️ No rooms to auto-select')
-      }
-      
       if (hotelsList.length === 0) {
         console.error('❌ PROBLEM: No hotels found! This is why the dropdown is empty.')
         console.error('💡 SOLUTION: Check if hotels exist in database and are active.')
-      }
-      
-      if (roomsList.length === 0) {
-        console.error('❌ PROBLEM: No rooms found! This is why the dropdown is empty.')
-        console.error('💡 SOLUTION: Check if rooms exist in database.')
       }
     } catch (error: any) {
       console.error('❌ Failed to fetch hotels/rooms:', error)
