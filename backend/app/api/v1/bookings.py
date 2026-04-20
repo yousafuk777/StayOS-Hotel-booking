@@ -238,16 +238,35 @@ async def create_public_booking(
         num_guests = booking_data.get('num_guests', 1)
         special_requests = booking_data.get('special_requests', '')
         
+        print(f'🔍 [Public Booking] Extracted - hotel_id: {hotel_id}, guest_name: {guest_name}, email: {email}')
+        
         # Validate required fields
         if not all([hotel_id, guest_name, email, phone, check_in, check_out]):
-            raise HTTPException(status_code=400, detail="Missing required fields")
+            missing = []
+            if not hotel_id: missing.append('hotel_id')
+            if not guest_name: missing.append('guest_name')
+            if not email: missing.append('email')
+            if not phone: missing.append('phone')
+            if not check_in: missing.append('check_in_date')
+            if not check_out: missing.append('check_out_date')
+            raise HTTPException(status_code=400, detail=f"Missing required fields: {', '.join(missing)}")
         
         # Get hotel to find tenant_id
+        print(f'🔍 [Public Booking] Fetching hotel with ID: {hotel_id}')
         hotel = await db.get(Hotel, hotel_id)
-        if not hotel or not hotel.is_active:
-            raise HTTPException(status_code=404, detail="Hotel not found or inactive")
+        print(f'🔍 [Public Booking] Hotel found: {hotel is not None}')
+        
+        if not hotel:
+            raise HTTPException(status_code=404, detail=f"Hotel with ID {hotel_id} not found")
+        
+        if not hotel.is_active:
+            raise HTTPException(status_code=400, detail="Hotel is not active")
         
         tenant_id = hotel.tenant_id
+        print(f'✅ [Public Booking] Found tenant_id: {tenant_id} from hotel')
+        
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="Hotel has no tenant_id associated")
         
         # Create or find guest user
         # Split name into first and last
@@ -255,12 +274,15 @@ async def create_public_booking(
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else ''
         
+        print(f'🔍 [Public Booking] Looking for user with email: {email}')
+        
         # Check if user/guest exists by email
         user_query = select(User).where(User.email == email)
         user_result = await db.execute(user_query)
         guest = user_result.scalar_one_or_none()
         
         if not guest:
+            print(f'🆕 [Public Booking] Creating new guest user...')
             # Create new guest user with minimal info
             from app.core.security import get_password_hash
             guest = User(
@@ -277,6 +299,11 @@ async def create_public_booking(
             print(f'✅ [Public Booking] Created new guest user ID: {guest.id}')
         else:
             print(f'✅ [Public Booking] Found existing guest user ID: {guest.id}')
+        
+        # Verify guest was created/found
+        if not guest or not guest.id:
+            print(f'❌ [Public Booking] Guest creation failed! guest={guest}')
+            raise HTTPException(status_code=500, detail="Failed to create guest user")
         
         # Prepare booking data
         booking_create = BookingCreate(
@@ -297,6 +324,8 @@ async def create_public_booking(
             email=email,
             phone=phone
         )
+        
+        print(f'📤 [Public Booking] Calling BookingRepository.create_booking...')
         
         # Create booking
         booking = await BookingRepository.create_booking(

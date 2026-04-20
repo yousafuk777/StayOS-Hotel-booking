@@ -28,6 +28,11 @@ export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRoom, setSelectedRoom] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [hotels, setHotels] = useState<any[]>([])
+  const [rooms, setRooms] = useState<any[]>([])
+  const [selectedHotelId, setSelectedHotelId] = useState<number | null>(null)
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
+  const [currentDate, setCurrentDate] = useState(new Date())
   const router = useRouter()
 
   // Use global bookings context
@@ -48,6 +53,48 @@ export default function BookingsPage() {
     return new Date(year, month - 1, day)
   }
 
+  // Get calendar days for the current month
+  const getCalendarDays = () => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    
+    // First day of the month
+    const firstDay = new Date(year, month, 1)
+    // Last day of the month
+    const lastDay = new Date(year, month + 1, 0)
+    
+    // Start from the Sunday before the first day
+    const startDate = new Date(firstDay)
+    startDate.setDate(startDate.getDate() - startDate.getDay())
+    
+    const days = []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // Generate 42 days (6 weeks)
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate)
+      date.setDate(startDate.getDate() + i)
+      
+      // Find bookings for this date
+      const dateStr = date.toISOString().split('T')[0]
+      const dayBookings = bookings.filter(booking => {
+        const checkin = booking.checkin
+        const checkout = booking.checkout
+        return dateStr >= checkin && dateStr <= checkout
+      })
+      
+      days.push({
+        date,
+        isCurrentMonth: date.getMonth() === month,
+        isToday: date.getTime() === today.getTime(),
+        bookings: dayBookings
+      })
+    }
+    
+    return days
+  }
+
   const [newBooking, setNewBooking] = useState({
     guest: '',
     email: '',
@@ -65,6 +112,9 @@ export default function BookingsPage() {
   // Auto-focus first field when modal opens
   useEffect(() => {
     if (showAddModal) {
+      // Fetch hotels and rooms
+      fetchHotelsAndRooms()
+      
       // Small delay to ensure DOM is ready
       setTimeout(() => {
         const firstField = document.querySelector('input[name="guest"]') as HTMLInputElement
@@ -74,6 +124,115 @@ export default function BookingsPage() {
       }, 100)
     }
   }, [showAddModal])
+
+  const fetchHotelsAndRooms = async () => {
+    try {
+      console.log('🏨 Fetching hotels and rooms...')
+      console.log('🔑 Auth token exists:', !!localStorage.getItem('access_token'))
+      console.log('🏢 Tenant ID:', localStorage.getItem('tenant_id'))
+      
+      // Fetch all hotels (not just /mine)
+      console.log('📡 Fetching: GET /api/v1/hotels/?limit=50')
+      const hotelsRes = await api.get('/api/v1/hotels/', {
+        params: { limit: 50 }
+      })
+      
+      console.log('✅ Hotels API response status:', hotelsRes.status)
+      console.log('🏨 Hotels response data:', hotelsRes.data)
+      console.log('🏨 Hotels is array:', Array.isArray(hotelsRes.data))
+      console.log('🏨 Hotels count:', hotelsRes.data?.length || 0)
+      
+      // Fetch rooms
+      console.log('📡 Fetching: GET /api/v1/rooms')
+      const roomsRes = await api.get('/api/v1/rooms')
+      
+      console.log('✅ Rooms API response status:', roomsRes.status)
+      console.log('🚪 Rooms response data:', roomsRes.data)
+      console.log('🚪 Rooms is array:', Array.isArray(roomsRes.data))
+      console.log('🚪 Rooms count:', roomsRes.data?.length || 0)
+      
+      // Handle different response formats
+      let hotelsList = []
+      if (Array.isArray(hotelsRes.data)) {
+        hotelsList = hotelsRes.data
+        console.log('✅ Using direct array format')
+      } else if (hotelsRes.data.hotels && Array.isArray(hotelsRes.data.hotels)) {
+        hotelsList = hotelsRes.data.hotels
+        console.log('✅ Using .hotels property format')
+      } else if (hotelsRes.data.data && Array.isArray(hotelsRes.data.data)) {
+        hotelsList = hotelsRes.data.data
+        console.log('✅ Using .data property format')
+      } else {
+        console.warn('⚠️ Unexpected hotels response format:', typeof hotelsRes.data)
+      }
+      
+      let roomsList = []
+      if (Array.isArray(roomsRes.data)) {
+        roomsList = roomsRes.data
+        console.log('✅ Using direct array format for rooms')
+      } else if (roomsRes.data.rooms && Array.isArray(roomsRes.data.rooms)) {
+        roomsList = roomsRes.data.rooms
+        console.log('✅ Using .rooms property format')
+      } else {
+        console.warn('⚠️ Unexpected rooms response format:', typeof roomsRes.data)
+      }
+      
+      console.log('🏨 Processed hotels:', hotelsList.length, 'hotels')
+      if (hotelsList.length > 0) {
+        console.log('📋 First hotel:', hotelsList[0])
+      }
+      
+      console.log('🚪 Processed rooms:', roomsList.length, 'rooms')
+      if (roomsList.length > 0) {
+        console.log('📋 First room:', roomsList[0])
+      }
+      
+      setHotels(hotelsList)
+      setRooms(roomsList)
+      
+      // Auto-select first hotel and room
+      if (hotelsList.length > 0 && hotelsList[0].id) {
+        setSelectedHotelId(hotelsList[0].id)
+        console.log('✅ Auto-selected hotel ID:', hotelsList[0].id, '- Name:', hotelsList[0].name)
+      } else {
+        console.warn('⚠️ No hotels to auto-select')
+      }
+      
+      if (roomsList.length > 0 && roomsList[0].id) {
+        setSelectedRoomId(roomsList[0].id)
+        console.log('✅ Auto-selected room ID:', roomsList[0].id)
+      } else {
+        console.warn('⚠️ No rooms to auto-select')
+      }
+      
+      if (hotelsList.length === 0) {
+        console.error('❌ PROBLEM: No hotels found! This is why the dropdown is empty.')
+        console.error('💡 SOLUTION: Check if hotels exist in database and are active.')
+      }
+      
+      if (roomsList.length === 0) {
+        console.error('❌ PROBLEM: No rooms found! This is why the dropdown is empty.')
+        console.error('💡 SOLUTION: Check if rooms exist in database.')
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to fetch hotels/rooms:', error)
+      console.error('❌ Error response:', error.response)
+      console.error('❌ Error status:', error.response?.status)
+      console.error('❌ Error data:', error.response?.data)
+      console.error('❌ Error message:', error.message)
+      
+      if (error.response?.status === 401) {
+        console.error('🔒 AUTH ERROR: You are not authenticated. Please login again.')
+      } else if (error.response?.status === 403) {
+        console.error('🚫 PERMISSION ERROR: You do not have permission to access this resource.')
+      } else if (error.response?.status === 404) {
+        console.error('🔍 NOT FOUND: The API endpoint was not found.')
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        console.error('🌐 NETWORK ERROR: Backend server is not running on port 8000')
+        console.error('💡 Start backend: cd backend && uvicorn app.main:app --reload --port 8000')
+      }
+    }
+  }
 
   // Handle Enter key navigation between fields
   const handleKeyDown = (e: React.KeyboardEvent, nextFieldName?: string) => {
@@ -190,9 +349,20 @@ export default function BookingsPage() {
       const checkoutDate = parseLocalDate(newBooking.checkout)
       const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
       
+      // Validate hotel and room selection
+      if (!selectedHotelId) {
+        setSubmitError('❌ No hotel available. Please create a hotel first.')
+        return
+      }
+      
+      if (!selectedRoomId) {
+        setSubmitError('❌ No room available. Please create rooms first.')
+        return
+      }
+      
       const bookingData: any = {
-        hotel_id: 1,
-        room_id: 1,
+        hotel_id: selectedHotelId,
+        room_id: selectedRoomId,
         guest_name: newBooking.guest.trim(),
         email: newBooking.email.trim(),
         phone: newBooking.phone.trim(),
@@ -247,40 +417,40 @@ export default function BookingsPage() {
       setSubmitError('')
     } catch (err: any) {
       console.error('❌ Booking submission error:', err)
+      console.error('❌ Error response:', err.response?.data)
+      console.error('❌ Error status:', err.response?.status)
       
-      let errorMsg = 'Failed to create booking'
+      // Extract detailed error message
+      let errorMessage = 'Failed to create booking. Please try again.'
       
-      // Try different error formats from backend
       if (err.response?.data?.detail) {
-        // FastAPI validation or custom error
-        if (Array.isArray(err.response.data.detail)) {
-          errorMsg = err.response.data.detail.map((e: any) => `${e.loc[1] || e.loc[0]}: ${e.msg}`).join(', ')
-        } else {
-          errorMsg = err.response.data.detail
+        if (typeof err.response.data.detail === 'string') {
+          errorMessage = err.response.data.detail
+        } else if (Array.isArray(err.response.data.detail)) {
+          // Validation errors
+          errorMessage = err.response.data.detail.map((e: any) => e.msg).join(', ')
+        } else if (err.response.data.detail.message) {
+          errorMessage = err.response.data.detail.message
         }
-      } else if (err.response?.data?.message) {
-        errorMsg = err.response.data.message
-      } else if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.message === 'Network Error') {
-        errorMsg = 'Network error - Backend server may not be running'
-      } else if (err.code === 'ECONNABORTED') {
-        errorMsg = 'Request timeout - Server took too long to respond'
-      } else if (err.code === 'ECONNREFUSED') {
-        errorMsg = 'Connection refused - Backend server is not running'
-      } else if (err.message) {
-        errorMsg = err.message
       }
       
-      setSubmitError(errorMsg)
+      if (err.response?.status === 400) {
+        errorMessage = '❌ Invalid booking data: ' + errorMessage
+      } else if (err.response?.status === 404) {
+        errorMessage = '❌ Hotel or room not found. Please check your selection.'
+      } else if (err.response?.status === 500) {
+        errorMessage = '❌ Server error. Please check backend logs.'
+      }
       
-      console.error('📋 Full error details:', {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        message: err.message,
-        code: err.code
-      })
+      setSubmitError(errorMessage)
+      
+      // Highlight the error message
+      setTimeout(() => {
+        const errorDiv = document.querySelector('.bg-red-50')
+        if (errorDiv) {
+          errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
       
       // Handle unauthorized
       const token = localStorage.getItem('access_token')
@@ -308,20 +478,44 @@ export default function BookingsPage() {
     if (!selectedBooking) return
   
     try {
-      await api.put(`/api/v1/bookings/${selectedBooking.id}`, {
+      console.log('📝 Updating booking:', selectedBooking.id)
+      
+      // Calculate nights
+      const checkinDate = parseLocalDate(selectedBooking.checkin)
+      const checkoutDate = parseLocalDate(selectedBooking.checkout)
+      const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
+      
+      // Send all fields to backend
+      const updateData = {
+        guest_name: selectedBooking.guest,
+        room_type: selectedBooking.room,
+        check_in_date: selectedBooking.checkin,
+        check_out_date: selectedBooking.checkout,
+        nights: nights,
+        num_guests: selectedBooking.guests,
         status: selectedBooking.status,
-        // other fields if needed
-      })
+        total_amount: selectedBooking.amount
+      }
+      
+      console.log('📤 Update data:', updateData)
+      
+      await api.put(`/api/v1/bookings/${selectedBooking.id}`, updateData)
+      
+      console.log('✅ Booking updated successfully')
       setShowEditModal(false)
+      setSelectedBooking(null)
       refreshBookings()
     } catch (err: any) {
-      console.error('Error updating booking:', err)
+      console.error('❌ Error updating booking:', err)
+      console.error('❌ Error response:', err.response?.data)
       const errorDetail = err.response?.data?.detail
       if (Array.isArray(errorDetail)) {
         const messages = errorDetail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', ')
-        console.error('Validation Error:', messages)
+        console.error('❌ Validation Error:', messages)
+        alert(`Validation Error: ${messages}`)
       } else {
-        console.error(errorDetail || 'Failed to update booking')
+        console.error('❌ Error:', errorDetail || 'Failed to update booking')
+        alert(`Error: ${errorDetail || 'Failed to update booking'}`)
       }
     }
   }
@@ -534,10 +728,137 @@ export default function BookingsPage() {
               </table>
             </div>
           ) : (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">📅</div>
-              <h3 className="text-2xl font-bold gradient-text mb-2">Calendar View</h3>
-              <p className="text-[#2D4A42]">Interactive booking calendar coming soon</p>
+            <div className="space-y-6">
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold gradient-text">📅 Booking Calendar</h3>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => {
+                      const newDate = new Date(currentDate)
+                      newDate.setMonth(newDate.getMonth() - 1)
+                      setCurrentDate(newDate)
+                    }}
+                    className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="glass px-6 py-2 rounded-xl font-bold text-[#1A2E2B]">
+                    {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      const newDate = new Date(currentDate)
+                      newDate.setMonth(newDate.getMonth() + 1)
+                      setCurrentDate(newDate)
+                    }}
+                    className="glass px-4 py-2 rounded-xl hover:bg-gray-100 transition-all"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="glass-card rounded-2xl p-6">
+                {/* Days of Week */}
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center font-bold text-[#1A2E2B] py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar Days */}
+                <div className="grid grid-cols-7 gap-2">
+                  {getCalendarDays().map((day: any, idx: number) => (
+                    <div 
+                      key={idx}
+                      className={`min-h-[100px] p-2 rounded-xl border-2 transition-all ${
+                        day.isCurrentMonth 
+                          ? 'bg-white border-gray-200 hover:border-blue-300' 
+                          : 'bg-gray-50 border-gray-100 opacity-50'
+                      } ${
+                        day.isToday 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-sm font-bold ${
+                          day.isToday 
+                            ? 'text-blue-600 bg-blue-100 px-2 py-1 rounded-full' 
+                            : 'text-[#1A2E2B]'
+                        }`}>
+                          {day.date.getDate()}
+                        </span>
+                        {day.bookings.length > 0 && (
+                          <span className="text-xs bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 rounded-full font-bold">
+                            {day.bookings.length}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Bookings for this day */}
+                      <div className="space-y-1">
+                        {day.bookings.slice(0, 3).map((booking: Booking) => (
+                          <div
+                            key={booking.id}
+                            className={`text-xs p-1.5 rounded-lg font-semibold cursor-pointer truncate transition-all hover:scale-105 ${
+                              booking.status === 'confirmed' 
+                                ? 'bg-green-100 text-green-800 border border-green-300' 
+                                : booking.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                                : booking.status === 'cancelled'
+                                ? 'bg-red-100 text-red-800 border border-red-300'
+                                : booking.status === 'checked_in'
+                                ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                : 'bg-purple-100 text-purple-800 border border-purple-300'
+                            }`}
+                            onClick={() => handleViewBooking(booking)}
+                            title={`${booking.guest} - ${booking.room}`}
+                          >
+                            {booking.guest.split(' ')[0]}
+                          </div>
+                        ))}
+                        {day.bookings.length > 3 && (
+                          <div className="text-xs text-[#2D4A42] font-semibold pl-1">
+                            +{day.bookings.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="glass-card rounded-2xl p-6">
+                <h4 className="font-bold text-[#1A2E2B] mb-3">📊 Status Legend</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
+                    <span className="text-sm font-semibold text-[#1A2E2B]">Pending</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-green-100 border-2 border-green-300"></div>
+                    <span className="text-sm font-semibold text-[#1A2E2B]">Confirmed</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
+                    <span className="text-sm font-semibold text-[#1A2E2B]">Checked In</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-purple-100 border-2 border-purple-300"></div>
+                    <span className="text-sm font-semibold text-[#1A2E2B]">Checked Out</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-red-100 border-2 border-red-300"></div>
+                    <span className="text-sm font-semibold text-[#1A2E2B]">Cancelled</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -569,6 +890,54 @@ export default function BookingsPage() {
                   ❌ {submitError}
                 </div>
               )}
+              
+              {/* Hotel and Room Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
+                    🏨 Hotel *
+                  </label>
+                  <select
+                    value={selectedHotelId || ''}
+                    onChange={(e) => setSelectedHotelId(parseInt(e.target.value))}
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    required
+                  >
+                    <option value="">Select Hotel</option>
+                    {hotels.map(hotel => (
+                      <option key={hotel.id} value={hotel.id}>
+                        {hotel.name}
+                      </option>
+                    ))}
+                  </select>
+                  {hotels.length === 0 && (
+                    <p className="text-xs text-red-600 mt-1">⚠️ No hotels found. Please create a hotel first.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
+                    🚪 Room *
+                  </label>
+                  <select
+                    value={selectedRoomId || ''}
+                    onChange={(e) => setSelectedRoomId(parseInt(e.target.value))}
+                    className="input-field w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    required
+                  >
+                    <option value="">Select Room</option>
+                    {rooms.map(room => (
+                      <option key={room.id} value={room.id}>
+                        Room {room.room_number} - {room.category?.name || 'Standard'}
+                      </option>
+                    ))}
+                  </select>
+                  {rooms.length === 0 && (
+                    <p className="text-xs text-red-600 mt-1">⚠️ No rooms found. Please create rooms first.</p>
+                  )}
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-[#1A2E2B] mb-2">
