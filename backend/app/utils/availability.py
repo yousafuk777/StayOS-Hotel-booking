@@ -25,5 +25,5 @@ async def check_room_availability(
         query = query.where(Booking.id != exclude_booking_id)
 
     result = await db.execute(query)
-    conflicting = result.scalar_one_or_none()
+    conflicting = result.first()
     return conflicting is None

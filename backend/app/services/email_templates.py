@@ -103,3 +103,38 @@ def booking_notification_hotel(
     </div>
     """
     return subject, html
+
+
+def magic_link_email(magic_link_url: str) -> tuple[str, str]:
+    """Returns (subject, html_body) for guest magic link login email."""
+    subject = "Your StayOS Login Link"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+      <div style="background-color: #1a3c34; padding: 24px; text-align: center;">
+        <h1 style="color: white; margin: 0;">StayOS</h1>
+      </div>
+      <div style="padding: 32px; background: #ffffff;">
+        <h2 style="color: #1a3c34;">Your Login Link</h2>
+        <p>Click the button below to access your bookings. 
+           This link expires in <strong>15 minutes</strong> and can only be used once.</p>
+
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="{magic_link_url}"
+             style="background: #1a3c34; color: white; padding: 14px 28px;
+                    text-decoration: none; border-radius: 6px;
+                    display: inline-block; font-weight: bold;">
+            Access My Bookings
+          </a>
+        </div>
+
+        <p style="color: #666; font-size: 13px;">
+          If you didn't request this, you can safely ignore this email.
+          <br/>This link will expire automatically.
+        </p>
+      </div>
+      <div style="background: #f9f9f9; padding: 16px; text-align: center; font-size: 12px; color: #999;">
+        StayOS Security Notification
+      </div>
+    </div>
+    """
+    return subject, html

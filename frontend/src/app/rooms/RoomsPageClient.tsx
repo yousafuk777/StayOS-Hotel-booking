@@ -98,6 +98,7 @@ export default function RoomsPageClient() {
     amount: number
     currency: string
   } | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -252,6 +253,7 @@ export default function RoomsPageClient() {
       
       setToastMessage('✅ Payment authorized! Your booking is confirmed.')
       setShowBookingForm(false)
+      setIsSuccess(true)
       setBookingStep('details')
       setPaymentData(null)
       
@@ -282,6 +284,40 @@ export default function RoomsPageClient() {
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading your experience...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-xl bg-gray-50 rounded-[3rem] p-16 shadow-2xl border border-gray-100"
+        >
+          <div className="w-24 h-24 bg-green-100 text-green-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-5xl shadow-inner rotate-3">
+            ✨
+          </div>
+          <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter">Booking Confirmed!</h2>
+          <p className="text-gray-500 font-bold mb-10 leading-relaxed text-lg">
+            We've sent a magic login link to your email. Use it to access the <span className="text-primary-600">Guest Portal</span> to manage your stay, view details, or cancel if needed.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/guest/login" 
+              className="bg-primary-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-primary-600/20 active:scale-95 transition-all"
+            >
+              Open Guest Portal
+            </Link>
+            <button 
+              onClick={() => setIsSuccess(false)}
+              className="bg-white text-gray-400 px-10 py-4 rounded-2xl font-black border border-gray-200 active:scale-95 transition-all shadow-sm"
+            >
+              Back to Hotel
+            </button>
+          </div>
+        </motion.div>
       </div>
     )
   }

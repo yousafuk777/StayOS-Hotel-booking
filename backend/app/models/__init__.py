@@ -9,6 +9,7 @@ from app.models.payment import Payment
 from app.models.review import Review
 from app.models.notification import Notification
 from app.models.theme import Theme, UserThemePreference
+from app.models.guest_magic_link import GuestMagicLink
 
 __all__ = [
     "Base",
@@ -26,4 +27,5 @@ __all__ = [
     "Notification",
     "Theme",
     "UserThemePreference",
+    "GuestMagicLink",
 ]

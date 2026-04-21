@@ -330,12 +330,18 @@ class BookingRepository(TenantScopedRepository):
                 sys.stdout.flush()
                 
                 # Check if a user with this email already exists (case-insensitive)
-                existing_user = await db.execute(
-                    select(User).where(
+                if email:
+                    stmt = select(User).where(
                         User.tenant_id == tenant_id,
-                        User.email.ilike(email)  # Case-insensitive search
+                        User.email.ilike(email)
                     )
-                )
+                else:
+                    stmt = select(User).where(
+                        User.tenant_id == tenant_id,
+                        User.email.is_(None)
+                    )
+                
+                existing_user = await db.execute(stmt)
                 existing_user = existing_user.scalar_one_or_none()
                 
                 print(f'🔍 [BookingRepo] Query result: {existing_user is not None}', flush=True)

@@ -18,7 +18,7 @@ def require_module_access(module: str, require_write: bool = False):
 
         # Super admin bypasses all checks
         if role == "super_admin":
-            return
+            return current_user
 
         # Guest is blocked from all admin endpoints
         if role == "guest":

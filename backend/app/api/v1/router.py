@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 from app.api.v1 import (
     auth, super_admin, rooms, staff, 
-    bookings, guests, hotels, notifications, tenants, stripe_webhook
+    bookings, guests, hotels, notifications, tenants, stripe_webhook,
+    guest_auth, guest_portal
 )
 
 # Create main API router
@@ -16,6 +17,10 @@ api_router.include_router(guests.router, prefix="/guests", tags=["Guests"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(tenants.router, prefix="/tenants", tags=["Tenants"])
 api_router.include_router(stripe_webhook.router, prefix="/payments", tags=["Payments"])
+
+# Guest Portal routes
+api_router.include_router(guest_auth.router, tags=["Guest Auth"])
+api_router.include_router(guest_portal.router, tags=["Guest Portal"])
 
 # TODO: Apply require_feature("analytics") when analytics router is implemented
 # TODO: Apply require_feature("promotions") when promotions router is implemented

@@ -57,7 +57,15 @@ class TenantMiddleware(BaseHTTPMiddleware):
             request.state.tenant = resolved_tenant
             
         except Exception as e:
-            return JSONResponse(status_code=500, content={"detail": f"Tenant resolution error: {str(e)}"})
+            import traceback
+            print(f"❌ [TenantMiddleware] CRITICAL ERROR:")
+            traceback.print_exc()
+            response = JSONResponse(status_code=500, content={"detail": f"Tenant resolution error: {str(e)}"})
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            return response
 
         return await call_next(request)
 
