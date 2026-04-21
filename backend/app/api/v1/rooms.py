@@ -46,13 +46,7 @@ async def read_rooms(
     """
     # If Super Admin and no specific tenant, show all rooms or specific hotel if provided
     if current_user.tenant_id is None:
-        if hotel_id:
-            # Special case for Super Admin selecting a hotel
-            # We fetch hotel first to get tenant_id if needed, but repo only needs hotel_id if we have one
-            # Actually room repo needs both. This might need another repo method.
-            # For now, just show all.
-            pass
-        return await RoomRepository.get_all_global(db, skip=skip, limit=limit)
+        return await RoomRepository.get_all_global(db, skip=skip, limit=limit, hotel_id=hotel_id)
 
     # Standard Tenant View
     user_hotel_id = await get_user_hotel_id(db, current_user.tenant_id)
