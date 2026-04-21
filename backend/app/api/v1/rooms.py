@@ -258,6 +258,42 @@ async def upload_room_image(
     else:
         return await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
 
+@router.delete("/{id}/image", response_model=RoomResponse, dependencies=[Depends(require_module_access("rooms", require_write=True))])
+async def delete_room_image(
+    *,
+    db: AsyncSession = Depends(get_db),
+    id: int,
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Delete all images for a room.
+    """
+    print(f'🗑️ [API] Deleting images for room {id}')
+    
+    if current_user.tenant_id is None:
+        room = await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        room = await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    tenant_id = room.tenant_id
+    
+    # Delete all images for this room
+    from sqlalchemy import delete
+    stmt = delete(RoomImage).where(RoomImage.room_id == id, RoomImage.tenant_id == tenant_id)
+    result = await db.execute(stmt)
+    await db.commit()
+    
+    print(f'✅ [API] Deleted {result.rowcount} images for room {id}')
+    
+    # Return updated room
+    if current_user.tenant_id is None:
+        return await RoomRepository.get_by_id_global(db, room_id=id)
+    else:
+        return await RoomRepository.get_with_relations(db, tenant_id=current_user.tenant_id, room_id=id)
+
 @router.get("/dashboard-summary")
 async def get_dashboard_summary(
     db: AsyncSession = Depends(get_db),

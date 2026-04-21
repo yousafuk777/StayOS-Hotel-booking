@@ -72,17 +72,43 @@ export default function SettingsPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
 
-  // Load settings from localStorage
+  // Load hotel data from API and populate settings
   useEffect(() => {
-    const savedSettings = localStorage.getItem('hotel-settings')
-    if (savedSettings) {
-      try {
-        setSettings(JSON.parse(savedSettings))
-      } catch (error) {
-        console.error('Error loading settings:', error)
-      }
-    }
+    fetchHotel()
   }, [])
+
+  // Update settings when hotel data loads
+  useEffect(() => {
+    if (hotel) {
+      setSettings({
+        general: {
+          name: hotel.name || '',
+          description: hotel.description || '',
+          checkInTime: '15:00',
+          checkOutTime: '11:00'
+        },
+        contact: {
+          email: hotel.email || '',
+          phone: hotel.phone || '',
+          address: hotel.address_line1 || ''
+        },
+        amenities: [],
+        policies: {
+          cancellation: '',
+          checkInRequirements: '',
+          petPolicy: ''
+        },
+        payment: {
+          methods: ['Credit Cards', 'Debit Cards', 'Cash'],
+          terms: ''
+        },
+        notifications: {
+          email: ['New booking confirmations', 'Booking modifications'],
+          sms: ['Check-in reminders']
+        }
+      })
+    }
+  }, [hotel])
 
   // RBAC Fallback Check
   useEffect(() => {
@@ -97,12 +123,27 @@ export default function SettingsPage() {
     }
   }, [router])
 
-  // Save settings to localStorage
-  const saveSettings = () => {
-    localStorage.setItem('hotel-settings', JSON.stringify(settings))
-    setHasChanges(false)
-    // Show success message
-    alert('Settings saved successfully!')
+  // Save settings to API
+  const saveSettings = async () => {
+    try {
+      setSaving(true)
+      await apiClient.patch('/api/v1/hotels/mine', {
+        name: settings.general.name,
+        description: settings.general.description,
+        address_line1: settings.contact.address,
+        phone: settings.contact.phone,
+        email: settings.contact.email,
+      })
+      setToast('✅ Settings saved successfully!')
+      setHasChanges(false)
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      setToast('❌ Failed to save settings')
+      setTimeout(() => setToast(null), 3000)
+    } finally {
+      setSaving(false)
+    }
   }
 
   // Update settings
@@ -175,10 +216,6 @@ export default function SettingsPage() {
   }
 
   const isEmpty = !settings.general.name && !settings.contact.email && settings.amenities.length === 0
-
-  useEffect(() => {
-    fetchHotel()
-  }, [])
 
   const fetchHotel = async () => {
     try {

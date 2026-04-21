@@ -30,6 +30,7 @@ export default function RoomsPage() {
   })
   const [editRoomImageFile, setEditRoomImageFile] = useState<File | null>(null)
   const [editRoomImagePreview, setEditRoomImagePreview] = useState<string | null>(null)
+  const [removeImage, setRemoveImage] = useState(false)
   const [showCalendarModal, setShowCalendarModal] = useState(false)
   const [selectedRoomType, setSelectedRoomType] = useState('all')
   const [selectedFloor, setSelectedFloor] = useState('all')
@@ -123,6 +124,8 @@ export default function RoomsPage() {
     })
     setEditRoomImageFile(null)
     setEditRoomImagePreview(room.image)
+    setRemoveImage(false)
+    setSelectedRoom(room)
     setShowEditModal(true)
   }
 
@@ -140,10 +143,22 @@ export default function RoomsPage() {
         amenities: editRoomData.amenities
       }
       
+      console.log('📤 Updating room:', selectedRoom.id, updateData)
       const { data: updatedRoom } = await apiClient.put(`/api/v1/rooms/${selectedRoom.id}`, updateData)
       
+      // Handle image removal
+      if (removeImage) {
+        console.log('🗑️ Removing room image')
+        try {
+          await apiClient.delete(`/api/v1/rooms/${selectedRoom.id}/image`)
+        } catch (err) {
+          console.error('Error removing image:', err)
+          // Don't fail the whole update if image removal fails
+        }
+      }
       // Handle image upload if a new file is selected
-      if (editRoomImageFile) {
+      else if (editRoomImageFile) {
+        console.log('📸 Uploading new room image')
         const formData = new FormData()
         formData.append('file', editRoomImageFile)
         await apiClient.post(`/api/v1/rooms/${selectedRoom.id}/image`, formData, {
@@ -153,10 +168,14 @@ export default function RoomsPage() {
       
       await fetchRooms()
       setShowEditModal(false)
-      setToastMessage('Room updated successfully')
+      setSelectedRoom(null)
+      setEditRoomImageFile(null)
+      setEditRoomImagePreview(null)
+      setRemoveImage(false)
+      setToastMessage('✅ Room updated successfully!')
     } catch (error: any) {
-      console.error('Error updating room:', error.response?.data || error.message)
-      alert(error.response?.data?.detail || 'Failed to update room')
+      console.error('❌ Error updating room:', error.response?.data || error.message)
+      setToastMessage(`❌ Failed to update room: ${error.response?.data?.detail || error.message}`)
     } finally {
       setLoading(false)
     }
@@ -854,13 +873,26 @@ export default function RoomsPage() {
                       }}
                     />
                     {editRoomImagePreview && (
-                       <button 
-                         type="button"
-                         onClick={() => document.getElementById('edit-room-image')?.click()}
-                         className="text-sm font-bold text-blue-600 hover:underline"
-                       >
-                         Change Image
-                       </button>
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button"
+                          onClick={() => document.getElementById('edit-room-image')?.click()}
+                          className="text-sm font-bold text-blue-600 hover:underline"
+                        >
+                          📸 Change Image
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setRemoveImage(true)
+                            setEditRoomImagePreview(null)
+                            setEditRoomImageFile(null)
+                          }}
+                          className="text-sm font-bold text-red-600 hover:underline"
+                        >
+                          🗑️ Remove Image
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -894,36 +926,55 @@ export default function RoomsPage() {
                       if (window.confirm('⚠️ Are you sure you want to delete this room? This action cannot be undone.')) {
                         try {
                           setIsDeleting(true)
+                          console.log('🗑️ Deleting room:', selectedRoom.id)
                           await apiClient.delete(`/api/v1/rooms/${selectedRoom.id}`)
                           await fetchRooms()
                           setShowEditModal(false)
                           setSelectedRoom(null)
-                          setToastMessage('Room deleted successfully')
-                        } catch (error) {
-                          console.error('Error deleting room:', error)
-                          alert('Failed to delete room')
+                          setEditRoomImageFile(null)
+                          setEditRoomImagePreview(null)
+                          setRemoveImage(false)
+                          setToastMessage('✅ Room deleted successfully!')
+                        } catch (error: any) {
+                          console.error('❌ Error deleting room:', error)
+                          setToastMessage(`❌ Failed to delete room: ${error.response?.data?.detail || 'Unknown error'}`)
                         } finally {
                           setIsDeleting(false)
                         }
                       }
                     }}
-                    className="glass px-6 py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50 transition-all border border-red-100 flex items-center gap-2"
-                    disabled={isDeleting}
+                    className="glass px-6 py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50 transition-all border border-red-100 flex items-center gap-2 disabled:opacity-50"
+                    disabled={isDeleting || loading}
                   >
-                    {isDeleting ? 'Deleting...' : '🗑️ Delete Room'}
+                    {isDeleting ? '🔄 Deleting...' : '🗑️ Delete Room'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="flex-1 glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all"
+                    onClick={() => {
+                      setShowEditModal(false)
+                      setSelectedRoom(null)
+                      setEditRoomImageFile(null)
+                      setEditRoomImagePreview(null)
+                      setRemoveImage(false)
+                    }}
+                    className="flex-1 glass px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all disabled:opacity-50"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 btn-primary px-6 py-3 rounded-xl font-semibold text-white shadow-lg"
+                    className="flex-1 btn-primary px-6 py-3 rounded-xl font-semibold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    disabled={loading}
                   >
-                    ✓ Update Room
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Updating...</span>
+                      </>
+                    ) : (
+                      <span>✓ Update Room</span>
+                    )}
                   </button>
                 </div>
               </div>
