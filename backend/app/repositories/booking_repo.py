@@ -5,6 +5,8 @@ from datetime import datetime
 from app.models.booking import Booking, BookingRoom
 from app.models.room import Room
 from app.repositories.base import TenantScopedRepository
+from app.services.stripe_service import stripe_service
+import asyncio
 
 
 class BookingRepository(TenantScopedRepository):
@@ -201,6 +203,22 @@ class BookingRepository(TenantScopedRepository):
 
             update_data['nights'] = (check_out_date - check_in_date).days
 
+        # Handle Payment Capture/Refund if status changed
+        if 'status' in update_data:
+            new_status = update_data['status']
+            old_status = existing_booking.status
+            
+            if new_status != old_status:
+                if new_status == 'checked_in' and existing_booking.payment_status == 'authorized':
+                    if existing_booking.stripe_payment_intent_id:
+                        # Capture payment asynchronously
+                        asyncio.create_task(stripe_service.capture_payment(existing_booking.stripe_payment_intent_id))
+                
+                elif new_status == 'cancelled' and existing_booking.payment_status == 'authorized':
+                    if existing_booking.stripe_payment_intent_id:
+                        # Refund/Cancel payment asynchronously
+                        asyncio.create_task(stripe_service.refund_payment(existing_booking.stripe_payment_intent_id))
+
         stmt = (
             update(Booking)
             .where(
@@ -250,6 +268,7 @@ class BookingRepository(TenantScopedRepository):
         import uuid
         from datetime import datetime
         import sys
+        from app.utils.availability import check_room_availability
         
         print('🔥 [BookingRepo] create_booking method called!', flush=True)
         sys.stdout.flush()
@@ -281,6 +300,26 @@ class BookingRepository(TenantScopedRepository):
             if not booking_data.get('hotel_id'):
                 raise ValueError("hotel_id is required")
             
+            # 1. Overlap Check & Fetch Room for Pricing
+            room = None
+            if room_id:
+                # Fetch room with category for pricing
+                stmt = select(Room).options(selectinload(Room.category)).where(Room.id == room_id)
+                res = await db.execute(stmt)
+                room = res.scalar_one_or_none()
+                
+                if not room:
+                    raise ValueError(f"Room with ID {room_id} not found")
+
+                is_available = await check_room_availability(
+                    room_id=room_id,
+                    check_in=booking_data.get('check_in_date'),
+                    check_out=booking_data.get('check_out_date'),
+                    db=db
+                )
+                if not is_available:
+                    raise ValueError("This room is no longer available for the selected dates.")
+            
             # If guest_id is missing but we have a name, create a dummy guest account
             if not booking_data.get("guest_id") and guest_name:
                 from app.models.user import User, UserRole
@@ -291,12 +330,18 @@ class BookingRepository(TenantScopedRepository):
                 sys.stdout.flush()
                 
                 # Check if a user with this email already exists (case-insensitive)
-                existing_user = await db.execute(
-                    select(User).where(
+                if email:
+                    stmt = select(User).where(
                         User.tenant_id == tenant_id,
-                        User.email.ilike(email)  # Case-insensitive search
+                        User.email.ilike(email)
                     )
-                )
+                else:
+                    stmt = select(User).where(
+                        User.tenant_id == tenant_id,
+                        User.email.is_(None)
+                    )
+                
+                existing_user = await db.execute(stmt)
                 existing_user = existing_user.scalar_one_or_none()
                 
                 print(f'🔍 [BookingRepo] Query result: {existing_user is not None}', flush=True)
@@ -323,10 +368,10 @@ class BookingRepository(TenantScopedRepository):
                         last_name=last_name,
                         email=email or f"guest_{uuid.uuid4().hex[:6]}@example.com",
                         phone=phone or "",
-                        hashed_password=hash_password("guest_auto_pass_123"),
+                        hashed_password=None,  # No password for auto-created guests
                         role=UserRole.guest,
                         is_active=True,
-                        is_verified=True
+                        is_verified=False  # Verified via email link later
                     )
                     db.add(guest)
                     await db.flush()
@@ -337,11 +382,46 @@ class BookingRepository(TenantScopedRepository):
                 print(f'💾 [BookingRepo] No guest provided, using fallback ID 1')
                 booking_data["guest_id"] = 1
             
+            # 2. Calculate Pricing if missing
+            from decimal import Decimal
+            check_in_date = booking_data.get('check_in_date')
+            check_out_date = booking_data.get('check_out_date')
+            
+            # Ensure dates are datetime objects for calculation
+            if isinstance(check_in_date, str):
+                check_in_date = datetime.fromisoformat(check_in_date.replace('Z', '+00:00'))
+            if isinstance(check_out_date, str):
+                check_out_date = datetime.fromisoformat(check_out_date.replace('Z', '+00:00'))
+
+            if 'nights' not in booking_data or not booking_data['nights']:
+                booking_data['nights'] = (check_out_date - check_in_date).days
+            
+            if 'room_total' not in booking_data or booking_data['room_total'] is None:
+                if room:
+                    price_per_night = Decimal(str(room.effective_price))
+                    booking_data['room_total'] = price_per_night * Decimal(str(booking_data['nights']))
+                else:
+                    booking_data['room_total'] = Decimal('0.00')
+
+            # Ensure totals are present with default values
+            booking_data['addon_total'] = Decimal(str(booking_data.get('addon_total') or '0.00'))
+            booking_data['tax_amount'] = Decimal(str(booking_data.get('tax_amount') or '0.00'))
+            booking_data['discount_amount'] = Decimal(str(booking_data.get('discount_amount') or '0.00'))
+            
+            if 'total_amount' not in booking_data or booking_data['total_amount'] is None:
+                booking_data['total_amount'] = (
+                    booking_data['room_total'] + 
+                    booking_data['addon_total'] + 
+                    booking_data['tax_amount'] - 
+                    booking_data['discount_amount']
+                )
+
             print(f'💾 [BookingRepo] Creating booking with data: {booking_data}')
             
             booking = Booking(
                 tenant_id=tenant_id,
                 reference_number=ref,
+                room_id=room_id,
                 **booking_data
             )
             db.add(booking)

@@ -55,6 +55,10 @@ class BookingResponse(BaseModel):
     discount_amount: Decimal
     tax_amount: Decimal
     total_amount: Decimal
+    payment_status: str
+    stripe_payment_intent_id: Optional[str] = None
+    stripe_charge_id: Optional[str] = None
+    currency: str = "usd"
     special_requests: Optional[str] = None
     cancellation_reason: Optional[str] = None
     cancelled_at: Optional[datetime] = None
@@ -68,6 +72,17 @@ class BookingResponse(BaseModel):
     room_number: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class StripePaymentIntentResponse(BaseModel):
+    client_secret: str
+    payment_intent_id: str
+    amount: float
+    currency: str
+
+
+class PaymentConfirmRequest(BaseModel):
+    payment_intent_id: str
 
 
 class BookingListResponse(BaseModel):

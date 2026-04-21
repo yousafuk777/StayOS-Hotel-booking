@@ -82,7 +82,7 @@ export default function NewBookingForm({ onSuccess, onCancel }: NewBookingFormPr
         special_requests: formData.specialRequests
       }
 
-      await api.post('/api/v1/bookings', bookingData)
+      await api.post('/api/v1/bookings/', bookingData)
       alert('✅ Booking created successfully!')
       onSuccess()
     } catch (err: any) {
